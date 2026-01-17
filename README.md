@@ -9,9 +9,9 @@ and generate reports 📑 related to student participation.
 JU_AMS reduces paperwork 📂, improves operational efficiency ⚙️, and enhances communication 💬 between students and university management.
 
 
-1: SplashScren <img width="1899" height="920" alt="Splash" src="https://github.com/user-attachments/assets/0ce72ea7-99a3-48d1-80d8-7d203a386ff7" />
+1: SplashScren <img width="1899" height="920" alt="Splash" src="https://github.com/user-attachments/assets/3274f13d-96f5-4820-96ec-63495b470a36" />
 2: SignIn Page <img width="1901" height="921" alt="Login" src="https://github.com/user-attachments/assets/50ac3b89-aa61-45f2-8cf7-50e882bba8f7" />
-3: SignUp Page <img width="1898" height="919" alt="SignUp" src="https://github.com/user-attachments/assets/f3ac8cff-3d5b-45a1-9116-62c33eb08a75" />
-4: Admin Dashboard <img width="1903" height="925" alt="Admin" src="https://github.com/user-attachments/assets/fcbe86a8-5024-47f3-8845-b0e4d8dd7812" />
-5: Activities Page <img width="1907" height="915" alt="Screenshot 2026-01-15 162817" src="https://github.com/user-attachments/assets/2d1e0985-819b-46ba-840c-bee920e30347" />
-6: Toggle Darck-Mode <img width="1902" height="922" alt="Screenshot 2026-01-15 163852" src="https://github.com/user-attachments/assets/b397f2ba-1a81-48c8-8421-11bfdee90a5c" />
+3: SignUp Page <img width="1898" height="919" alt="SignUp" src="https://github.com/user-attachments/assets/2b5d3252-90dd-410c-bd9f-cabe5af66b8e" />
+4: Admin Dashboard <img width="1903" height="925" alt="Admin" src="https://github.com/user-attachments/assets/414a3d63-df07-4d0f-8485-799ef3f57bba" />
+5: Activities Page <img width="1907" height="915" alt="Screenshot 2026-01-15 162817" src="https://github.com/user-attachments/assets/c4fec27a-f898-44ac-bdca-888a31645f50" />
+6: Toggle Darck-Mode <img width="1902" height="922" alt="Screenshot 2026-01-15 163852" src="https://github.com/user-attachments/assets/ddf5c329-f394-4754-be64-f1b57dab563f" />
