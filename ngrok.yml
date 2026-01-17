@@ -1,0 +1,16 @@
+# Ngrok configuration file for running multiple tunnels from one terminal
+# Usage: ngrok start backend frontend
+
+version: "2"
+authtoken: # Your authtoken will be added automatically by ngrok
+
+tunnels:
+  backend:
+    addr: 3001
+    proto: http
+    inspect: true
+
+  frontend:
+    addr: 8080
+    proto: http
+    inspect: true

@@ -11,6 +11,14 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    // Allow ngrok hostnames for local development
+    allowedHosts: [
+      '.ngrok-free.app',
+      '.ngrok-free.dev',
+      '.ngrok.io',
+      '.ngrok.app',
+      'localhost',
+    ],
     proxy: {
       "/api": {
         target: "http://127.0.0.1:3001",
