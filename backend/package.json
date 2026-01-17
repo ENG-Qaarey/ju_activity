@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "0.0.1",
-  "description": "",
+  "description": "This folder contains the NestJS + Prisma API that powers the JU Activity Hub dashboard. Use this README as a single reference for installing dependencies, configuring the environment, running the server, and maintaining the database.",
   "author": "",
   "private": true,
   "license": "UNLICENSED",
@@ -91,5 +91,11 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  }
+  },
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "keywords": [],
+  "type": "commonjs"
 }
