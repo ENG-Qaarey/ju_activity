@@ -59,8 +59,8 @@ async function main() {
       email: 'jamiila@gmail.com', // Normalized to lowercase
       passwordHash: adminPassword,
       role: 'admin',
-      department: 'Systems',
-      joinedAt: new Date('2019-11-02'),
+      department: 'computer science and Information technology',
+      joinedAt: new Date('2025-11-09'),
       status: 'active',
       emailVerified: true,
       passwordVersion: 1,
