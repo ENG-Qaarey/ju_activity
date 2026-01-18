@@ -6,6 +6,7 @@ import * as express from 'express';
 import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { isIP } from 'net';
+import path = require('path');
 
 // Load environment variables before anything else
 config();
