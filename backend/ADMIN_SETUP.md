@@ -26,11 +26,8 @@ This script will:
 - Create or update the admin user with correct credentials
 - Ensure admin profile exists with full permissions
 
-### 2. Setup Admin in Clerk (for Frontend Login)
-
 ```bash
-cd backend
-npm run create-clerk-user
+ npm run seed
 ```
 
 This script will:
