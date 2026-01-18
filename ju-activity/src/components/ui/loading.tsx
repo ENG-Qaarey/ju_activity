@@ -12,24 +12,30 @@ interface LoadingProps {
 
 export const Loading = ({ size = "md", className, text, fullScreen = false }: LoadingProps) => {
   const sizeClasses = {
-    sm: "w-4 h-4",
-    md: "w-8 h-8",
-    lg: "w-12 h-12",
+    sm: "w-6 h-6",
+    md: "w-12 h-12",
+    lg: "w-20 h-20",
   };
 
   const content = (
-    <div className={cn("flex flex-col items-center justify-center gap-3", className)}>
+    <div className={cn("flex flex-col items-center justify-center gap-5", className)}>
       <motion.div
-        animate={{ rotate: 360 }}
-        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        animate={{ rotate: 360, scale: [1, 1.15, 1] }}
+        transition={{
+          repeat: Infinity,
+          duration: 1.2,
+          ease: "easeInOut",
+        }}
+        className="drop-shadow-lg"
       >
         <Loader2 className={cn("text-primary", sizeClasses[size])} />
       </motion.div>
       {text && (
         <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-sm text-muted-foreground"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-base font-medium text-primary/80 font-sans tracking-wide"
         >
           {text}
         </motion.p>

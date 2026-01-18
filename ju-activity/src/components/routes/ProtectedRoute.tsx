@@ -13,7 +13,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   const location = useLocation();
 
   if (!isHydrated) {
-    return <Loading fullScreen text="Restoring session..." />;
+    return <Loading fullScreen text="Loading..." />;
   }
 
   // If not authenticated, redirect to login
