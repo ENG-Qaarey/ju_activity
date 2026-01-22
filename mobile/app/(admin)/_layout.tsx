@@ -137,7 +137,7 @@ export default function AdminLayout() {
           tabBarStyle: {
             borderTopWidth: 1,
             borderTopColor: '#F1F5F9',
-            height: 65,
+            height: 85,
             paddingBottom: 10,
             paddingTop: 10,
           },
