@@ -8,9 +8,14 @@ import {
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
 
+import { useColorScheme } from '@/src/hooks/use-color-scheme';
+import { Colors } from '@/src/data/theme';
+
 export default function ManageUsers() {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [activeFilter, setActiveFilter] = React.useState('All');
+  const colorScheme = useColorScheme() ?? 'light';
+  const theme = Colors[colorScheme];
 
   const users = [
     { 
@@ -68,22 +73,25 @@ export default function ManageUsers() {
 
         {/* Search & Filter Layer */}
         <View style={styles.searchSection}>
-            <View style={styles.searchBar}>
-                <Search size={18} color="#94A3B8" />
+            <View style={[styles.searchBar, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <Search size={18} color={theme.textSecondary} />
                 <TextInput 
                     placeholder="Search users by name or email..." 
-                    style={styles.searchInput}
-                    placeholderTextColor="#94A3B8"
+                    style={[styles.searchInput, { color: theme.text }]}
+                    placeholderTextColor={theme.textSecondary}
                 />
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterContent}>
                 {filters.map((filter) => (
                     <TouchableOpacity 
                         key={filter} 
-                        style={[styles.filterChip, activeFilter === filter && styles.filterChipActive]}
+                        style={[
+                          styles.filterChip, 
+                          { backgroundColor: activeFilter === filter ? theme.text : theme.card, borderColor: activeFilter === filter ? theme.text : theme.border }
+                        ]}
                         onPress={() => setActiveFilter(filter)}
                     >
-                        <Text style={[styles.filterChipText, activeFilter === filter && styles.filterChipTextActive]}>
+                        <Text style={[styles.filterChipText, { color: activeFilter === filter ? theme.background : theme.textSecondary }]}>
                             {filter}
                         </Text>
                     </TouchableOpacity>
@@ -94,7 +102,7 @@ export default function ManageUsers() {
         {/* User Management List */}
         <View style={styles.userList}>
             {users.map((user, idx) => (
-                <UserManagementCard key={idx} user={user} />
+                <UserManagementCard key={idx} user={user} theme={theme} />
             ))}
         </View>
       </ScrollView>
@@ -102,21 +110,21 @@ export default function ManageUsers() {
   );
 }
 
-function UserManagementCard({ user }: any) {
+function UserManagementCard({ user, theme }: any) {
     const isMe = user.isMe;
     const roleColor = user.role === 'ADMIN' ? '#3B82F6' : user.role === 'COORDINATOR' ? '#8B5CF6' : '#0EA5E9';
     
     return (
-        <GlassCard style={styles.userCard}>
+        <GlassCard style={[styles.userCard, { backgroundColor: theme.card }]}>
             <View style={styles.cardHeader}>
                 <View style={styles.userInfoRow}>
-                    <Image source={{ uri: user.avatar }} style={styles.avatar} />
+                    <Image source={{ uri: user.avatar }} style={[styles.avatar, { backgroundColor: theme.border }]} />
                     <View style={styles.userMainInfo}>
                         <View style={styles.nameActionRow}>
-                            <Text style={styles.userName} numberOfLines={1}>{user.name}</Text>
+                            <Text style={[styles.userName, { color: theme.text }]} numberOfLines={1}>{user.name}</Text>
                             {isMe && (
-                                <View style={styles.meBadge}>
-                                    <Text style={styles.meText}>YOU</Text>
+                                <View style={[styles.meBadge, { backgroundColor: '#F0F9FF', borderColor: '#BAE6FD' }]}>
+                                    <Text style={[styles.meText, { color: '#0EA5E9' }]}>YOU</Text>
                                 </View>
                             )}
                         </View>
@@ -124,43 +132,43 @@ function UserManagementCard({ user }: any) {
                             <View style={[styles.roleBadge, { backgroundColor: roleColor + '15' }]}>
                                 <Text style={[styles.roleText, { color: roleColor }]}>{user.role}</Text>
                             </View>
-                            <View style={styles.dotSeparator} />
-                            <Text style={styles.lastActiveText}>{user.lastActive}</Text>
+                            <View style={[styles.dotSeparator, { backgroundColor: theme.border }]} />
+                            <Text style={[styles.lastActiveText, { color: theme.textSecondary }]}>{user.lastActive}</Text>
                         </View>
                     </View>
                 </View>
                 <TouchableOpacity style={styles.moreBtn}>
-                    <MoreVertical size={20} color="#94A3B8" />
+                    <MoreVertical size={20} color={theme.textSecondary} />
                 </TouchableOpacity>
             </View>
 
-            <View style={styles.cardDetails}>
+            <View style={[styles.cardDetails, { backgroundColor: theme.background, borderColor: theme.border }]}>
                 <View style={styles.detailItem}>
-                    <Mail size={12} color="#94A3B8" />
-                    <Text style={styles.detailText} numberOfLines={1}>{user.email}</Text>
+                    <Mail size={12} color={theme.textSecondary} />
+                    <Text style={[styles.detailText, { color: theme.textSecondary }]} numberOfLines={1}>{user.email}</Text>
                 </View>
                 <View style={styles.detailItem}>
-                    <MapPin size={12} color="#94A3B8" />
-                    <Text style={styles.detailText} numberOfLines={1}>{user.dept}</Text>
+                    <MapPin size={12} color={theme.textSecondary} />
+                    <Text style={[styles.detailText, { color: theme.textSecondary }]} numberOfLines={1}>{user.dept}</Text>
                 </View>
                 <View style={styles.detailItem}>
-                    <Calendar size={12} color="#94A3B8" />
-                    <Text style={styles.detailText}>Joined {user.joined}</Text>
+                    <Calendar size={12} color={theme.textSecondary} />
+                    <Text style={[styles.detailText, { color: theme.textSecondary }]}>Joined {user.joined}</Text>
                 </View>
             </View>
 
             <View style={styles.cardActions}>
                 <View style={styles.statusGroup}>
                     <View style={styles.statusDot} />
-                    <Text style={styles.statusLabel}>Active</Text>
+                    <Text style={[styles.statusLabel, { color: theme.text }]}>Active</Text>
                 </View>
                 <View style={styles.actionGroup}>
-                    <TouchableOpacity style={styles.actionBtn}>
-                        <CheckCircle2 size={16} color="#0EA5E9" />
-                        <Text style={styles.actionBtnText}>Restrict</Text>
+                    <TouchableOpacity style={[styles.actionBtn, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                        <CheckCircle2 size={16} color={theme.primary} />
+                        <Text style={[styles.actionBtnText, { color: theme.primary }]}>Restrict</Text>
                     </TouchableOpacity>
                     {!isMe && (
-                        <TouchableOpacity style={[styles.actionBtn, styles.deleteAction]}>
+                        <TouchableOpacity style={[styles.actionBtn, styles.deleteAction, { backgroundColor: theme.card }]}>
                             <Trash2 size={16} color="#EF4444" />
                             <Text style={[styles.actionBtnText, styles.deleteText]}>Remove</Text>
                         </TouchableOpacity>
@@ -205,7 +213,6 @@ const styles = StyleSheet.create({
   searchBar: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    backgroundColor: '#FFFFFF', 
     borderRadius: 18, 
     paddingHorizontal: 16, 
     height: 54,
@@ -216,59 +223,52 @@ const styles = StyleSheet.create({
     elevation: 3,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#F1F5F9'
   },
-  searchInput: { flex: 1, marginLeft: 12, fontSize: 15, fontWeight: '500', color: '#1E293B' },
+  searchInput: { flex: 1, marginLeft: 12, fontSize: 15, fontWeight: '500' },
   filterScroll: { marginHorizontal: -16 },
   filterContent: { paddingHorizontal: 16, gap: 10 },
-  filterChip: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 14, backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#F1F5F9' },
-  filterChipActive: { backgroundColor: '#1E293B', borderColor: '#1E293B' },
-  filterChipText: { fontSize: 13, fontWeight: '700', color: '#64748B' },
-  filterChipTextActive: { color: '#FFFFFF' },
+  filterChip: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 14, borderWidth: 1 },
+  filterChipText: { fontSize: 13, fontWeight: '700' },
   userList: { gap: 16 },
   userCard: { padding: 16, borderRadius: 28 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   userInfoRow: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  avatar: { width: 48, height: 48, borderRadius: 16, backgroundColor: '#F1F5F9' },
+  avatar: { width: 48, height: 48, borderRadius: 16 },
   userMainInfo: { flex: 1 },
   nameActionRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  userName: { fontSize: 17, fontWeight: '800', color: '#1E293B' },
-  meBadge: { backgroundColor: '#F0F9FF', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: '#BAE6FD' },
-  meText: { fontSize: 9, fontWeight: '900', color: '#0EA5E9' },
+  userName: { fontSize: 17, fontWeight: '800' },
+  meBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1 },
+  meText: { fontSize: 9, fontWeight: '900' },
   roleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
   roleBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
   roleText: { fontSize: 10, fontWeight: '900', letterSpacing: 0.5 },
-  dotSeparator: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: '#CBD5E1' },
-  lastActiveText: { fontSize: 11, color: '#94A3B8', fontWeight: '600' },
+  dotSeparator: { width: 3, height: 3, borderRadius: 1.5 },
+  lastActiveText: { fontSize: 11, fontWeight: '600' },
   moreBtn: { width: 32, height: 32, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
   cardDetails: { 
-    backgroundColor: '#F8FAFC', 
     padding: 12, 
     borderRadius: 18, 
     gap: 8,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
     marginBottom: 16
   },
   detailItem: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  detailText: { fontSize: 12, color: '#64748B', fontWeight: '500', flex: 1 },
+  detailText: { fontSize: 12, fontWeight: '500', flex: 1 },
   cardActions: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   statusGroup: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   statusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#22C55E' },
-  statusLabel: { fontSize: 12, fontWeight: '700', color: '#1E293B' },
+  statusLabel: { fontSize: 12, fontWeight: '700' },
   actionGroup: { flexDirection: 'row', gap: 8 },
   actionBtn: { 
     flexDirection: 'row', 
     alignItems: 'center', 
     gap: 6, 
-    backgroundColor: '#FFFFFF', 
     paddingHorizontal: 12, 
     paddingVertical: 8, 
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0'
   },
-  actionBtnText: { fontSize: 12, fontWeight: '800', color: '#0EA5E9' },
+  actionBtnText: { fontSize: 12, fontWeight: '800' },
   deleteAction: { borderColor: '#FEE2E2' },
   deleteText: { color: '#EF4444' },
 });
