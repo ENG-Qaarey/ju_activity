@@ -2,16 +2,23 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, ScrollView } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { Drawer } from 'react-native-drawer-layout';
-import { LayoutDashboard, Calendar, FileText, Bell, User, Search, Menu, Folders, Monitor, Users, Settings, TrendingUp, ListChecks } from 'lucide-react-native';
+import { 
+  LayoutGrid, FilePlus, Calendar, Activity, Bell, 
+  Inbox, Users, UserCog, BarChart3, Terminal,
+  Menu, Search, User
+} from 'lucide-react-native';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { Image } from 'expo-image';
+import { usePathname } from 'expo-router';
 
 export default function AdminLayout() {
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
   const colorScheme = useColorScheme() ?? 'light';
-  const theme = Colors[colorScheme];
+  
+  const isActive = (path: string) => pathname === path;
 
   const renderDrawerContent = () => (
     <View style={styles.drawerContainer}>
@@ -23,45 +30,64 @@ export default function AdminLayout() {
       <View style={styles.drawerLinks}>
         <ScrollView showsVerticalScrollIndicator={false}>
           <DrawerLink 
-            icon={LayoutDashboard} 
+            icon={LayoutGrid} 
             label="Dashboard" 
             onPress={() => { router.push('/(admin)/dashboard'); setOpen(false); }}
-            active 
+            active={isActive('/dashboard')} 
           />
           <DrawerLink 
-            icon={Folders} 
+            icon={FilePlus} 
             label="Create Activity" 
             onPress={() => { router.push('/(admin)/create'); setOpen(false); }} 
+            active={isActive('/create')}
           />
           <DrawerLink 
             icon={Calendar} 
             label="Admin Activities" 
-            onPress={() => { router.push('/(admin)/activities/index'); setOpen(false); }}
+            onPress={() => { router.push('/(admin)/activities'); setOpen(false); }}
+            active={isActive('/activities') || pathname.includes('/activities')}
           />
           <DrawerLink 
-            icon={Monitor} 
+            icon={Activity} 
             label="Monitor Activities" 
-            onPress={() => { router.push('/(admin)/dashboard'); setOpen(false); }}
+            onPress={() => { router.push('/(admin)/monitor'); setOpen(false); }}
+            active={isActive('/monitor')}
           />
           <DrawerLink 
             icon={Bell} 
             label="Notifications" 
-            onPress={() => { router.push('/(admin)/dashboard'); setOpen(false); }}
+            onPress={() => { router.push('/(admin)/notifications'); setOpen(false); }}
+            active={isActive('/notifications')}
           />
           <DrawerLink 
-            icon={FileText} 
+            icon={Inbox} 
             label="Applications" 
-            onPress={() => { router.push('/(admin)/applications/index'); setOpen(false); }}
+            onPress={() => { router.push('/(admin)/applications'); setOpen(false); }}
+            active={isActive('/applications') || pathname.includes('/applications')}
           />
           <DrawerLink 
             icon={Users} 
             label="Directory" 
-            onPress={() => { router.push('/(admin)/users/index'); setOpen(false); }}
+            onPress={() => { router.push('/(admin)/users'); setOpen(false); }}
+            active={isActive('/users') || pathname.includes('/users')}
           />
           <DrawerLink 
-            icon={User} 
-            label="Profile" 
-            onPress={() => { router.push('/(admin)/profile/index'); setOpen(false); }}
+            icon={UserCog} 
+            label="Manage Users" 
+            onPress={() => { router.push('/(admin)/manage-users'); setOpen(false); }}
+            active={isActive('/manage-users')}
+          />
+          <DrawerLink 
+            icon={BarChart3} 
+            label="Advanced Reports" 
+            onPress={() => { router.push('/(admin)/reports'); setOpen(false); }}
+            active={isActive('/reports')}
+          />
+          <DrawerLink 
+            icon={Terminal} 
+            label="Audit Logs" 
+            onPress={() => { router.push('/(admin)/audit-logs'); setOpen(false); }}
+            active={isActive('/audit-logs')}
           />
         </ScrollView>
       </View>
@@ -98,7 +124,7 @@ export default function AdminLayout() {
               style={styles.menuBtn}
               onPress={() => setOpen(true)}
             >
-              <Menu size={24} color="#1E293B" />
+              <Menu size={24} color="#4FA3F7" />
             </TouchableOpacity>
           ),
           headerTitle: () => (
@@ -151,32 +177,32 @@ export default function AdminLayout() {
           name="dashboard"
           options={{
             title: 'Dash',
-            tabBarIcon: ({ color }) => <LayoutDashboard size={24} color={color} />,
+            tabBarIcon: ({ color }) => <LayoutGrid size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="activities/index"
+          name="activities"
           options={{
             title: 'Activities',
             tabBarIcon: ({ color }) => <Calendar size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="applications/index"
+          name="applications"
           options={{
             title: 'Apps',
-            tabBarIcon: ({ color }) => <FileText size={24} color={color} />,
+            tabBarIcon: ({ color }) => <Inbox size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="users/index"
+          name="users"
           options={{
             title: 'Users',
             tabBarIcon: ({ color }) => <Users size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="profile/index"
+          name="profile"
           options={{
             title: 'Profile',
             tabBarIcon: ({ color }) => <User size={24} color={color} />,
@@ -184,10 +210,27 @@ export default function AdminLayout() {
         />
         <Tabs.Screen 
           name="create" 
-          options={{ 
-            href: null,
-            headerTitle: "Create Activity"
-          }} 
+          options={{ href: null, headerTitle: "Create Activity" }} 
+        />
+        <Tabs.Screen 
+          name="monitor" 
+          options={{ href: null, headerTitle: "Monitor Activities" }} 
+        />
+        <Tabs.Screen 
+          name="notifications" 
+          options={{ href: null, headerTitle: "Notifications" }} 
+        />
+        <Tabs.Screen 
+          name="manage-users" 
+          options={{ href: null, headerTitle: "Manage Users" }} 
+        />
+        <Tabs.Screen 
+          name="reports" 
+          options={{ href: null, headerTitle: "Advanced Reports" }} 
+        />
+        <Tabs.Screen 
+          name="audit-logs" 
+          options={{ href: null, headerTitle: "Audit Logs" }} 
         />
       </Tabs>
     </Drawer>
@@ -200,7 +243,7 @@ function DrawerLink({ icon: Icon, label, active, onPress }: any) {
       style={[styles.drawerLink, active && styles.drawerLinkActive]}
       onPress={onPress}
     >
-      <Icon size={22} color={active ? '#FFFFFF' : '#64748B'} />
+      <Icon size={20} color={active ? '#FFFFFF' : '#64748B'} strokeWidth={active ? 2.5 : 2} />
       <Text style={[styles.drawerLinkLabel, active && styles.drawerLinkLabelActive]}>{label}</Text>
     </TouchableOpacity>
   );
@@ -208,14 +251,14 @@ function DrawerLink({ icon: Icon, label, active, onPress }: any) {
 
 const styles = StyleSheet.create({
   drawerContainer: { flex: 1, backgroundColor: '#FFFFFF' },
-  drawerHeader: { padding: 24, paddingTop: 60, marginBottom: 20 },
-  brandTitle: { fontSize: 28, fontWeight: '900', color: '#4FA3F7', letterSpacing: -1 },
+  drawerHeader: { padding: 24, paddingTop: 60, marginBottom: 10 },
+  brandTitle: { fontSize: 24, fontWeight: '900', color: '#0EA5E9', letterSpacing: -1 },
   roleLabel: { fontSize: 10, fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginTop: 4 },
   drawerLinks: { flex: 1, paddingHorizontal: 16 },
-  drawerLink: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, marginBottom: 4 },
-  drawerLinkActive: { backgroundColor: '#4FA3F7' },
-  drawerLinkLabel: { fontSize: 15, fontWeight: '600', color: '#64748B', marginLeft: 12 },
-  drawerLinkLabelActive: { color: '#FFFFFF' },
+  drawerLink: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16, borderRadius: 12, marginBottom: 4 },
+  drawerLinkActive: { backgroundColor: '#3B82F6' },
+  drawerLinkLabel: { fontSize: 16, fontWeight: '500', color: '#64748B', marginLeft: 16 },
+  drawerLinkLabelActive: { color: '#FFFFFF', fontWeight: '700' },
   drawerFooter: { padding: 16, borderTopWidth: 1, borderTopColor: '#F1F5F9', marginBottom: 20 },
   profileBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 12, borderRadius: 12 },
   avatar: { width: 36, height: 36, borderRadius: 18, marginRight: 10 },
