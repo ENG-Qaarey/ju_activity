@@ -4,7 +4,13 @@ import { Eye, Calendar, Clock, MapPin, Users, User, Search, Filter, Edit3, Trash
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
 
+import { useColorScheme } from '@/src/hooks/use-color-scheme';
+import { Colors } from '@/src/data/theme';
+
 export default function AdminActivities() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const theme = Colors[colorScheme];
+
   return (
     <GradientBackground>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
@@ -24,24 +30,24 @@ export default function AdminActivities() {
 
         {/* Search and Filters - Matching Monitor Style */}
         <View style={styles.searchRow}>
-            <View style={styles.searchContainer}>
-                <Search size={18} color="#94A3B8" style={styles.searchIcon} />
+            <View style={[styles.searchContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <Search size={18} color={theme.textSecondary} style={styles.searchIcon} />
                 <TextInput 
                     placeholder="Quick search activities..." 
-                    style={styles.searchInput}
-                    placeholderTextColor="#94A3B8"
+                    style={[styles.searchInput, { color: theme.text }]}
+                    placeholderTextColor={theme.textSecondary}
                 />
             </View>
-            <TouchableOpacity style={styles.filterBtn}>
-                <Filter size={16} color="#0EA5E9" />
+            <TouchableOpacity style={[styles.filterBtn, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <Filter size={16} color={theme.primary} />
             </TouchableOpacity>
         </View>
 
         {/* Section Header - Matching Monitor Style */}
         <View style={styles.sectionHeader}>
             <View>
-                <Text style={styles.sectionTitle}>Activities Feed</Text>
-                <Text style={styles.sectionSubtitle}>System-wide event management</Text>
+                <Text style={[styles.sectionTitle, { color: theme.text }]}>Activities Feed</Text>
+                <Text style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>System-wide event management</Text>
             </View>
         </View>
 
@@ -56,6 +62,7 @@ export default function AdminActivities() {
                 location="Main Hall" 
                 attendees="1/12"
                 status="Upcoming" 
+                theme={theme}
             />
             <AdminActivityCard 
                 month="JAN" 
@@ -67,6 +74,7 @@ export default function AdminActivities() {
                 location="Auditorium" 
                 attendees="45/50"
                 status="Ongoing" 
+                theme={theme}
             />
              <AdminActivityCard 
                 month="JAN" 
@@ -78,6 +86,7 @@ export default function AdminActivities() {
                 location="IT Lab 03" 
                 attendees="12/20"
                 status="Completed" 
+                theme={theme}
             />
         </View>
       </ScrollView>
@@ -85,31 +94,32 @@ export default function AdminActivities() {
   );
 }
 
-function AdminActivityCard({ month, day, category, creator, title, time, location, attendees, status }: any) {
+function AdminActivityCard({ month, day, category, creator, title, time, location, attendees, status, theme }: any) {
     const isOngoing = status === 'Ongoing';
     const isCompleted = status === 'Completed';
     const isUpcoming = status === 'Upcoming';
     
     // Status style mapping
     let statusColor = '#0EA5E9';
-    let statusBg = '#F0F9FF';
-    if (isOngoing) { statusColor = '#22C55E'; statusBg = '#F0FDF4'; }
-    if (isCompleted) { statusColor = '#64748B'; statusBg = '#F8FAFC'; }
+    let statusBg = theme.background; // Default fallback
+    if (isOngoing) { statusColor = '#22C55E'; statusBg = '#22C55E15'; }
+    else if (isCompleted) { statusColor = theme.textSecondary; statusBg = theme.textSecondary + '15'; }
+    else { statusBg = '#0EA5E915'; } // Upcoming
 
     return (
-        <GlassCard style={styles.card}>
+        <GlassCard style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
             {/* Left: Enhanced Date Block */}
-            <View style={styles.dateBlock}>
-                <Text style={styles.dateMonth}>{month}</Text>
-                <Text style={styles.dateDay}>{day}</Text>
+            <View style={[styles.dateBlock, { backgroundColor: theme.background, borderColor: theme.border }]}>
+                <Text style={[styles.dateMonth, { color: theme.textSecondary }]}>{month}</Text>
+                <Text style={[styles.dateDay, { color: theme.text }]}>{day}</Text>
                 <View style={styles.dateLine} />
             </View>
 
             {/* Middle: Content & Metadata */}
             <View style={styles.cardMain}>
                 <View style={styles.tagRow}>
-                    <View style={styles.categoryBadge}>
-                        <Text style={styles.categoryText}>{category}</Text>
+                    <View style={[styles.categoryBadge, { backgroundColor: theme.border }]}>
+                        <Text style={[styles.categoryText, { color: theme.textSecondary }]}>{category}</Text>
                     </View>
                     <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
                         <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
@@ -117,42 +127,42 @@ function AdminActivityCard({ month, day, category, creator, title, time, locatio
                     </View>
                 </View>
 
-                <Text style={styles.activityTitle} numberOfLines={1}>{title}</Text>
+                <Text style={[styles.activityTitle, { color: theme.text }]} numberOfLines={1}>{title}</Text>
                 
                 <View style={styles.metaGrid}>
                     <View style={styles.metaItem}>
-                        <Clock size={12} color="#94A3B8" />
-                        <Text style={styles.metaText}>{time}</Text>
+                        <Clock size={12} color={theme.textSecondary} />
+                        <Text style={[styles.metaText, { color: theme.textSecondary }]}>{time}</Text>
                     </View>
                     <View style={styles.metaItem}>
-                        <MapPin size={12} color="#94A3B8" />
-                        <Text style={styles.metaText} numberOfLines={1}>{location}</Text>
+                        <MapPin size={12} color={theme.textSecondary} />
+                        <Text style={[styles.metaText, { color: theme.textSecondary }]} numberOfLines={1}>{location}</Text>
                     </View>
                     <View style={styles.metaItem}>
-                        <Users size={12} color="#94A3B8" />
-                        <Text style={styles.metaText}>{attendees}</Text>
+                        <Users size={12} color={theme.textSecondary} />
+                        <Text style={[styles.metaText, { color: theme.textSecondary }]}>{attendees}</Text>
                     </View>
                 </View>
 
                 <View style={styles.creatorRow}>
-                    <View style={styles.creatorAvatar}>
-                        <User size={10} color="#64748B" />
+                    <View style={[styles.creatorAvatar, { backgroundColor: theme.border }]}>
+                        <User size={10} color={theme.textSecondary} />
                     </View>
-                    <Text style={styles.creatorName}>{creator}</Text>
+                    <Text style={[styles.creatorName, { color: theme.textSecondary }]}>{creator}</Text>
                 </View>
             </View>
 
             {/* Right: Actions Column - Stacked Vertically */}
-            <View style={styles.actionsColumn}>
-                <TouchableOpacity style={[styles.actionBtn, styles.viewBtn]}>
-                    <Eye size={12} color="#0EA5E9" />
-                    <Text style={[styles.actionBtnText, { color: '#0EA5E9' }]}>View</Text>
+            <View style={[styles.actionsColumn, { borderLeftColor: theme.border }]}>
+                <TouchableOpacity style={[styles.actionBtn, { backgroundColor: theme.primary + '15', borderColor: theme.primary + '30' }]}>
+                    <Eye size={12} color={theme.primary} />
+                    <Text style={[styles.actionBtnText, { color: theme.primary }]}>View</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionBtn, styles.editBtn]}>
+                <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#8B5CF615', borderColor: '#8B5CF630' }]}>
                     <Edit3 size={12} color="#8B5CF6" />
                     <Text style={[styles.actionBtnText, { color: '#8B5CF6' }]}>Edit</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionBtn, styles.deleteBtn]}>
+                <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#EF444415', borderColor: '#EF444430' }]}>
                     <Trash2 size={12} color="#EF4444" />
                     <Text style={[styles.actionBtnText, { color: '#EF4444' }]}>Del</Text>
                 </TouchableOpacity>
@@ -195,78 +205,58 @@ const styles = StyleSheet.create({
     flex: 1, 
     flexDirection: 'row', 
     alignItems: 'center', 
-    backgroundColor: '#FFFFFF', 
     borderRadius: 14, 
     paddingHorizontal: 12, 
     height: 44, 
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 2 }, 
-    shadowOpacity: 0.05, 
-    shadowRadius: 5, 
-    elevation: 2 
+    borderWidth: 1,
   },
   searchIcon: { marginRight: 8 },
-  searchInput: { flex: 1, height: '100%', fontSize: 13, color: '#1E293B', fontWeight: '500' },
+  searchInput: { flex: 1, height: '100%', fontSize: 13, fontWeight: '500' },
   filterBtn: { 
     width: 44, 
     height: 44, 
     borderRadius: 14, 
-    backgroundColor: '#FFFFFF', 
     justifyContent: 'center', 
     alignItems: 'center', 
     borderWidth: 1, 
-    borderColor: '#F1F5F9',
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 2 }, 
-    shadowOpacity: 0.05, 
-    shadowRadius: 5, 
-    elevation: 2 
   },
   sectionHeader: { marginBottom: 16, paddingHorizontal: 4 },
-  sectionTitle: { fontSize: 18, fontWeight: '900', color: '#1E293B' },
-  sectionSubtitle: { fontSize: 12, color: '#64748B', marginTop: 2 },
+  sectionTitle: { fontSize: 18, fontWeight: '900' },
+  sectionSubtitle: { fontSize: 12, marginTop: 2 },
   list: { gap: 12 },
   card: { 
     flexDirection: 'row', 
     padding: 12, 
     borderRadius: 24, 
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
   },
   dateBlock: { 
     width: 58, 
     height: 65, 
-    backgroundColor: '#FFFFFF', 
     borderRadius: 16, 
     justifyContent: 'center', 
     marginTop: 10,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#F1F5F9',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
   },
-  dateMonth: { fontSize: 10, fontWeight: '800', color: '#64748B', textTransform: 'uppercase' },
-  dateDay: { fontSize: 20, fontWeight: '900', color: '#1E293B', marginTop: -2 },
+  dateMonth: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
+  dateDay: { fontSize: 20, fontWeight: '900', marginTop: -2 },
   dateLine: { width: 12, height: 2, backgroundColor: '#0EA5E9', marginTop: 2, borderRadius: 1 },
   cardMain: { flex: 1, paddingLeft: 14, paddingRight: 10 },
   tagRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
-  categoryBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, backgroundColor: '#F1F5F9' },
-  categoryText: { fontSize: 9, fontWeight: '800', color: '#64748B', textTransform: 'uppercase' },
+  categoryBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+  categoryText: { fontSize: 9, fontWeight: '800', textTransform: 'uppercase' },
   statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, gap: 4 },
   statusDot: { width: 4, height: 4, borderRadius: 2 },
   statusText: { fontSize: 9, fontWeight: '800', textTransform: 'uppercase' },
-  activityTitle: { fontSize: 16, fontWeight: '800', color: '#1E293B', marginBottom: 8 },
+  activityTitle: { fontSize: 16, fontWeight: '800', marginBottom: 8 },
   metaGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 8 },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  metaText: { fontSize: 11, color: '#64748B', fontWeight: '600' },
+  metaText: { fontSize: 11, fontWeight: '600' },
   creatorRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  creatorAvatar: { width: 18, height: 18, borderRadius: 9, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
-  creatorName: { fontSize: 10, color: '#94A3B8', fontWeight: '700' },
-  actionsColumn: { paddingLeft: 12, borderLeftWidth: 1, borderLeftColor: '#F1F5F9', gap: 6, justifyContent: 'center' },
+  creatorAvatar: { width: 18, height: 18, borderRadius: 9, justifyContent: 'center', alignItems: 'center' },
+  creatorName: { fontSize: 10, fontWeight: '700' },
+  actionsColumn: { paddingLeft: 12, borderLeftWidth: 1, gap: 6, justifyContent: 'center' },
   actionBtn: { 
     flexDirection: 'row', 
     alignItems: 'center', 
@@ -278,8 +268,5 @@ const styles = StyleSheet.create({
     minWidth: 58,
   },
   actionBtnText: { fontSize: 10, fontWeight: '800' },
-  viewBtn: { backgroundColor: '#F0F9FF', borderColor: '#BAE6FD' },
-  editBtn: { backgroundColor: '#F5F3FF', borderColor: '#DDD6FE' },
-  deleteBtn: { backgroundColor: '#FEF2F2', borderColor: '#FECACA' },
 });
  
