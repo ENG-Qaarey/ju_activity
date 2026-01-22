@@ -1,150 +1,177 @@
 import React from 'react';
 import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from 'react-native';
-import { Users, Activity, FileText, Bell, TrendingUp, AlertTriangle, ShieldCheck, ChevronRight, UserPlus, Monitor, FileSearch, Folders, Settings, ListChecks } from 'lucide-react-native';
+import { 
+  Users, Activity, FileText, Bell, TrendingUp, AlertTriangle, 
+  ShieldCheck, ChevronRight, UserPlus, Monitor, FileSearch, 
+  Folders, Settings, ListChecks, Clock 
+} from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
-import { ThemedText } from '@/src/components/themed-text';
-import { useColorScheme } from '@/src/hooks/use-color-scheme';
-import { Colors } from '@/src/data/theme';
 
 export default function AdminDashboard() {
-  const colorScheme = useColorScheme() ?? 'light';
-  const theme = Colors[colorScheme];
-
   return (
     <GradientBackground>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
-        {/* Blue Header Banner */}
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+        {/* Premium Header Banner */}
         <View style={styles.headerBanner}>
             <View style={{ flex: 1 }}>
-                <View style={styles.bannerTitleRow}>
-                    <Text style={styles.bannerTitle}>Admin Dashboard</Text>
-                    <ShieldCheck size={24} color="#FFFFFF" style={{ marginLeft: 8 }} />
+                <View style={styles.bannerTopRow}>
+                    <View style={styles.shieldIconBox}>
+                        <ShieldCheck size={20} color="#FFFFFF" />
+                    </View>
+                    <View style={styles.statusPill}>
+                        <View style={styles.statusDot} />
+                        <Text style={styles.statusText}>System Online</Text>
+                    </View>
                 </View>
-                <Text style={styles.bannerSubtitle}>Monitor system performance and manage users</Text>
-            </View>
-            <View style={styles.statusBadge}>
-                <View style={styles.statusDot} />
-                <Text style={styles.statusText}>System Status: Healthy</Text>
+                <Text style={styles.bannerTitle}>Admin Center</Text>
+                <Text style={styles.bannerSubtitle}>Monitor metrics and orchestrate campus activities.</Text>
             </View>
         </View>
 
-        {/* Stats Row */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsScroll}>
-            <ImageStatCard label="Total Users" value="4" icon={Users} color="#0EA5E9" />
-            <ImageStatCard label="Active Users" value="4" icon={UserPlus} color="#22C55E" />
-            <ImageStatCard label="Inactive Users" value="0" icon={Users} color="#F59E0B" />
-            <ImageStatCard label="Active Rate" value="100%" icon={Activity} color="#8B5CF6" />
+        {/* Dynamic Stats Scroll */}
+        <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Performance Overview</Text>
+            <TrendingUp size={16} color="#22C55E" />
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsScroll} contentContainerStyle={styles.statsScrollContent}>
+            <StatCard label="Total Users" value="1,240" icon={Users} color="#0EA5E9" trend="+12%" />
+            <StatCard label="Activities" value="48" icon={Activity} color="#8B5CF6" trend="+5%" />
+            <StatCard label="Pending Apps" value="32" icon={FileSearch} color="#F59E0B" trend="-2%" />
+            <StatCard label="System Load" value="14%" icon={Monitor} color="#22C55E" trend="Stable" />
         </ScrollView>
 
-        <View style={styles.flexGrid}>
-            {/* Quick Actions */}
-            <View style={styles.column}>
-                <ThemedText style={styles.sectionTitle}>Quick Actions</ThemedText>
-                <View style={styles.quickActionsList}>
-                    <QuickActionLink icon={Folders} label="Create Activity" />
-                    <QuickActionLink icon={Monitor} label="Monitor Activities" />
-                    <QuickActionLink icon={FileSearch} label="Review Applications" />
-                    <QuickActionLink icon={Users} label="Directory" />
-                    <QuickActionLink icon={Settings} label="Manage Users" />
-                    <QuickActionLink icon={FileText} label="Reports" />
-                    <QuickActionLink icon={TrendingUp} label="Advanced Reports" />
-                    <QuickActionLink icon={ListChecks} label="Audit Logs" />
-                </View>
-            </View>
+        {/* Quick Actions Grid */}
+        <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Terminal Hub</Text>
+        </View>
+        <View style={styles.actionGrid}>
+            <ActionTile icon={Folders} label="Create" subLabel="New Activity" color="#0EA5E9" />
+            <ActionTile icon={Monitor} label="Monitor" subLabel="All Events" color="#8B5CF6" />
+            <ActionTile icon={FileSearch} label="Review" subLabel="Student Apps" color="#F59E0B" />
+            <ActionTile icon={Users} label="Directory" subLabel="JU Database" color="#22C55E" />
+            <ActionTile icon={Settings} label="Staff" subLabel="Manage Team" color="#64748B" />
+            <ActionTile icon={ListChecks} label="Audit" subLabel="System Logs" color="#EC4899" />
+        </View>
 
-            {/* System Alerts */}
-            <View style={styles.column}>
-                <View style={styles.alertsHeader}>
-                    <AlertTriangle size={18} color="#F59E0B" />
-                    <ThemedText style={[styles.sectionTitle, { marginLeft: 8, marginBottom: 0 }]}>System Alerts</ThemedText>
-                </View>
-                <View style={styles.alertsList}>
-                    <SystemAlert 
-                        color="#F59E0B" 
-                        msg="High traffic detected on activity registrations" 
-                        time="2 min ago" 
-                    />
-                    <SystemAlert 
-                        color="#3B82F6" 
-                        msg="New coordinator account created" 
-                        time="16 min ago" 
-                    />
-                    <SystemAlert 
-                        color="#22C55E" 
-                        msg="System backup completed successfully" 
-                        time="1 hour ago" 
-                    />
-                </View>
-            </View>
+        {/* System Intelligence / Alerts */}
+        <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>System Intelligence</Text>
+        </View>
+        <View style={styles.alertsList}>
+            <AlertItem 
+                type="warning" 
+                msg="High registration traffic detected" 
+                time="2 min ago" 
+            />
+            <AlertItem 
+                type="info" 
+                msg="New coordinator account approved" 
+                time="16 min ago" 
+            />
+            <AlertItem 
+                type="success" 
+                msg="Weekly database backup verified" 
+                time="1 hour ago" 
+            />
         </View>
       </ScrollView>
     </GradientBackground>
   );
 }
 
-function ImageStatCard({ label, value, icon: Icon, color }: any) {
+function StatCard({ label, value, icon: Icon, color, trend }: any) {
   return (
-    <GlassCard style={styles.statsCard}>
-        <View style={styles.cardTop}>
-            <View style={[styles.iconBox, { backgroundColor: color + '15' }]}>
+    <GlassCard style={styles.statCard}>
+        <View style={styles.statCardHeader}>
+            <View style={[styles.statIconBox, { backgroundColor: color + '15' }]}>
                 <Icon size={18} color={color} />
             </View>
-            <TrendingUp size={14} color="#22C55E" />
+            <Text style={[styles.trendText, { color: trend.startsWith('+') ? '#22C55E' : trend.startsWith('-') ? '#EF4444' : '#94A3B8' }]}>
+                {trend}
+            </Text>
         </View>
-        <Text style={styles.cardVal}>{value}</Text>
-        <Text style={styles.cardLab}>{label}</Text>
+        <Text style={styles.statValue}>{value}</Text>
+        <Text style={styles.statLabel}>{label}</Text>
     </GlassCard>
   )
 }
 
-function QuickActionLink({ icon: Icon, label }: any) {
+function ActionTile({ icon: Icon, label, subLabel, color }: any) {
     return (
-        <TouchableOpacity style={styles.actionLink}>
-            <Icon size={18} color="#0EA5E9" style={{ marginRight: 12 }} />
-            <Text style={styles.actionLabel}>{label}</Text>
+        <TouchableOpacity style={styles.actionTileWrapper}>
+            <GlassCard style={styles.actionTile}>
+                <View style={[styles.actionIconBox, { backgroundColor: color + '10' }]}>
+                    <Icon size={24} color={color} />
+                </View>
+                <Text style={styles.actionTileLabel}>{label}</Text>
+                <Text style={styles.actionTileSub}>{subLabel}</Text>
+            </GlassCard>
         </TouchableOpacity>
     )
 }
 
-function SystemAlert({ color, msg, time }: any) {
+function AlertItem({ type, msg, time }: any) {
+    const isWarning = type === 'warning';
+    const isSuccess = type === 'success';
+    const color = isWarning ? '#F59E0B' : isSuccess ? '#22C55E' : '#3B82F6';
+    
     return (
-        <View style={[styles.alertBox, { backgroundColor: color + '08', borderLeftColor: color }]}>
-            <View style={[styles.alertDot, { backgroundColor: color }]} />
-            <View style={{ flex: 1 }}>
+        <GlassCard style={styles.alertCard}>
+            <View style={[styles.alertIndicator, { backgroundColor: color }]} />
+            <View style={{ flex: 1, paddingLeft: 12 }}>
                 <Text style={styles.alertMsg}>{msg}</Text>
-                <Text style={styles.alertTime}>{time}</Text>
+                <View style={styles.alertFooter}>
+                    <Clock size={10} color="#94A3B8" />
+                    <Text style={styles.alertTime}>{time}</Text>
+                </View>
             </View>
-        </View>
+            <ChevronRight size={14} color="#CBD5E1" />
+        </GlassCard>
     )
 }
 
 const styles = StyleSheet.create({
   scrollView: { flex: 1 },
-  contentContainer: { padding: 16, paddingTop: 20, paddingBottom: 40 },
-  headerBanner: { backgroundColor: '#4FA3F7', padding: 24, borderRadius: 24, marginBottom: 10, shadowColor: '#4FA3F7', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 10 },
-  bannerTitleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  bannerTitle: { fontSize: 28, fontWeight: '900', color: '#FFFFFF' },
-  bannerSubtitle: { fontSize: 14, color: '#E0F2FE', fontWeight: '500' },
-  statusBadge: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 255, 255, 0.2)', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 24, marginTop: 16 },
-  statusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFFFFF', marginRight: 8 },
-  statusText: { fontSize: 12, fontWeight: '700', color: '#FFFFFF' },
+  contentContainer: { padding: 16, paddingTop: 14, paddingBottom: 60 },
+  headerBanner: { 
+    backgroundColor: '#0EA5E9', 
+    padding: 24, 
+    borderRadius: 28, 
+    marginBottom: 24, 
+    shadowColor: '#0EA5E9', 
+    shadowOffset: { width: 0, height: 10 }, 
+    shadowOpacity: 0.3, 
+    shadowRadius: 15, 
+    elevation: 8 
+  },
+  bannerTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  shieldIconBox: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255, 255, 255, 0.2)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.3)' },
+  statusPill: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 255, 255, 0.2)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.3)' },
+  statusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FFFFFF', marginRight: 6 },
+  statusText: { fontSize: 10, fontWeight: '800', color: '#FFFFFF', textTransform: 'uppercase' },
+  bannerTitle: { fontSize: 30, fontWeight: '900', color: '#FFFFFF', letterSpacing: -0.5 },
+  bannerSubtitle: { fontSize: 13, color: '#FFFFFF', opacity: 0.8, marginTop: 6, lineHeight: 18, maxWidth: '85%' },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, paddingHorizontal: 4 },
+  sectionTitle: { fontSize: 16, fontWeight: '800', color: '#1E293B', textTransform: 'uppercase', letterSpacing: 1 },
   statsScroll: { flexGrow: 0, marginBottom: 24 },
-  statsCard: { width: 150, padding: 16, marginRight: 12 },
-  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 },
-  iconBox: { width: 36, height: 36, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
-  cardVal: { fontSize: 24, fontWeight: '800', color: '#1E293B' },
-  cardLab: { fontSize: 12, color: '#64748B', fontWeight: '600', marginTop: 4 },
-  flexGrid: { gap: 24 },
-  column: { },
-  sectionTitle: { fontSize: 15, fontWeight: '800', color: '#1E293B', marginBottom: 16 },
-  quickActionsList: { gap: 10 },
-  actionLink: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFFFFF', borderColor: '#0EA5E9', borderWidth: 1, padding: 14, borderRadius: 12 },
-  actionLabel: { fontSize: 14, color: '#0EA5E9', fontWeight: '700' },
-  alertsList: { gap: 12 },
-  alertsHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  alertBox: { flexDirection: 'row', alignItems: 'flex-start', padding: 16, borderRadius: 12, borderLeftWidth: 4, backgroundColor: '#FFFFFF' },
-  alertDot: { width: 6, height: 6, borderRadius: 3, marginTop: 7, marginRight: 12 },
-  alertMsg: { fontSize: 14, fontWeight: '700', color: '#1E293B' },
-  alertTime: { fontSize: 11, color: '#94A3B8', marginTop: 4 },
+  statsScrollContent: { paddingRight: 16 },
+  statCard: { width: 140, padding: 16, marginRight: 12, borderRadius: 20 },
+  statCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  statIconBox: { width: 34, height: 34, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  trendText: { fontSize: 11, fontWeight: '700' },
+  statValue: { fontSize: 22, fontWeight: '900', color: '#1E293B' },
+  statLabel: { fontSize: 11, color: '#64748B', fontWeight: '600', marginTop: 4 },
+  actionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
+  actionTileWrapper: { width: '48%' },
+  actionTile: { padding: 16, borderRadius: 20, alignItems: 'center' },
+  actionIconBox: { width: 48, height: 48, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+  actionTileLabel: { fontSize: 14, fontWeight: '800', color: '#1E293B' },
+  actionTileSub: { fontSize: 10, color: '#94A3B8', marginTop: 2, fontWeight: '600' },
+  alertsList: { gap: 10 },
+  alertCard: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 18 },
+  alertIndicator: { width: 4, height: 28, borderRadius: 2 },
+  alertMsg: { fontSize: 13, fontWeight: '700', color: '#1E293B' },
+  alertFooter: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  alertTime: { fontSize: 11, color: '#94A3B8', fontWeight: '500' },
 });
