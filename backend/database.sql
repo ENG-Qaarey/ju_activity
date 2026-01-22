@@ -19,7 +19,7 @@ CREATE TYPE "AuditAction" AS ENUM (
 CREATE TABLE "users" (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
-  email TEXT UNIQUE NOT NULL,
+  email TEXT NOT NULL,
   role "UserRole" NOT NULL,
   studentId TEXT,
   avatar TEXT,
@@ -31,7 +31,7 @@ CREATE TABLE "users" (
   emailVerificationCodeExpiresAt TIMESTAMP,
   passwordHash TEXT NOT NULL,
   passwordVersion INT NOT NULL DEFAULT 0,
-  createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
+  createdAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updatedAt TIMESTAMP NOT NULL DEFAULT NOW(),
   CONSTRAINT users_email_idx UNIQUE (email)
 );
@@ -44,7 +44,7 @@ CREATE TABLE "admins" (
   permissions TEXT NOT NULL,
   accessLevel TEXT NOT NULL DEFAULT 'full',
   lastLogin TIMESTAMP,
-  createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
+  createdAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updatedAt TIMESTAMP NOT NULL DEFAULT NOW(),
   CONSTRAINT admins_userid_fkey FOREIGN KEY (userId) REFERENCES "users"(id) ON DELETE CASCADE
 );
@@ -56,7 +56,7 @@ CREATE TABLE "coordinators" (
   specialization TEXT,
   maxActivities INT NOT NULL DEFAULT 10,
   approvalLevel TEXT NOT NULL DEFAULT 'standard',
-  createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
+  createdAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updatedAt TIMESTAMP NOT NULL DEFAULT NOW(),
   CONSTRAINT coordinators_userid_fkey FOREIGN KEY (userId) REFERENCES "users"(id) ON DELETE CASCADE
 );
@@ -69,16 +69,15 @@ CREATE TABLE "activities" (
   description TEXT NOT NULL,
   category "ActivityCategory" NOT NULL,
   date DATE NOT NULL,
-  time TEXT NOT NULL,
+  time TIME NOT NULL,
   location TEXT NOT NULL,
   capacity INT NOT NULL,
   enrolled INT NOT NULL DEFAULT 0,
-  coordinatorId UUID NOT NULL,
-  coordinatorName TEXT NOT NULL,
+  coordinatorId UUID,
   status "ActivityStatus" NOT NULL DEFAULT 'upcoming',
-  createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
+  createdAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updatedAt TIMESTAMP NOT NULL DEFAULT NOW(),
-  CONSTRAINT activities_coordinatorid_fkey FOREIGN KEY (coordinatorId) REFERENCES "users"(id)
+  CONSTRAINT activities_coordinatorid_fkey FOREIGN KEY (coordinatorId) REFERENCES "users"(id) ON DELETE SET NULL
 );
 CREATE INDEX activities_coordinatorid_idx ON "activities" (coordinatorId);
 CREATE INDEX activities_status_idx ON "activities" (status);
@@ -94,10 +93,10 @@ CREATE TABLE "applications" (
   appliedAt DATE NOT NULL,
   status "ApplicationStatus" NOT NULL DEFAULT 'pending',
   notes TEXT,
-  createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
+  createdAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updatedAt TIMESTAMP NOT NULL DEFAULT NOW(),
-  CONSTRAINT applications_studentid_fkey FOREIGN KEY (studentId) REFERENCES "users"(id),
-  CONSTRAINT applications_activityid_fkey FOREIGN KEY (activityId) REFERENCES "activities"(id),
+  CONSTRAINT applications_studentid_fkey FOREIGN KEY (studentId) REFERENCES "users"(id) ON DELETE CASCADE,
+  CONSTRAINT applications_activityid_fkey FOREIGN KEY (activityId) REFERENCES "activities"(id) ON DELETE CASCADE,
   CONSTRAINT applications_unique_student_activity UNIQUE (studentId, activityId)
 );
 CREATE INDEX applications_studentid_idx ON "applications" (studentId);
@@ -112,10 +111,10 @@ CREATE TABLE "notifications" (
   message TEXT NOT NULL,
   type "NotificationType" NOT NULL,
   read BOOLEAN NOT NULL DEFAULT FALSE,
-  createdAt DATE NOT NULL,
+  createdAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   senderRole "UserRole",
   recipientId UUID NOT NULL,
-  CONSTRAINT notifications_recipientid_fkey FOREIGN KEY (recipientId) REFERENCES "users"(id)
+  CONSTRAINT notifications_recipientid_fkey FOREIGN KEY (recipientId) REFERENCES "users"(id) ON DELETE CASCADE
 );
 CREATE INDEX notifications_read_idx ON "notifications" (read);
 CREATE INDEX notifications_createdat_idx ON "notifications" (createdAt);
@@ -130,13 +129,13 @@ CREATE TABLE "attendance" (
   applicationId UUID UNIQUE NOT NULL,
   status "AttendanceStatus" NOT NULL,
   markedAt DATE NOT NULL,
-  markedBy UUID NOT NULL,
-  createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
+  markedBy UUID,
+  createdAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   updatedAt TIMESTAMP NOT NULL DEFAULT NOW(),
-  CONSTRAINT attendance_activityid_fkey FOREIGN KEY (activityId) REFERENCES "activities"(id),
-  CONSTRAINT attendance_studentid_fkey FOREIGN KEY (studentId) REFERENCES "users"(id),
-  CONSTRAINT attendance_applicationid_fkey FOREIGN KEY (applicationId) REFERENCES "applications"(id),
-  CONSTRAINT attendance_markedby_fkey FOREIGN KEY (markedBy) REFERENCES "users"(id),
+  CONSTRAINT attendance_activityid_fkey FOREIGN KEY (activityId) REFERENCES "activities"(id) ON DELETE CASCADE,
+  CONSTRAINT attendance_studentid_fkey FOREIGN KEY (studentId) REFERENCES "users"(id) ON DELETE CASCADE,
+  CONSTRAINT attendance_applicationid_fkey FOREIGN KEY (applicationId) REFERENCES "applications"(id) ON DELETE CASCADE,
+  CONSTRAINT attendance_markedby_fkey FOREIGN KEY (markedBy) REFERENCES "users"(id) ON DELETE SET NULL,
   CONSTRAINT attendance_unique_activity_student UNIQUE (activityId, studentId)
 );
 CREATE INDEX attendance_activityid_idx ON "attendance" (activityId);
@@ -153,7 +152,7 @@ CREATE TABLE "audit_logs" (
   entityId TEXT,
   message TEXT,
   metadata JSONB,
-  createdAt TIMESTAMP NOT NULL DEFAULT NOW(),
+  createdAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   CONSTRAINT auditlogs_actorid_fkey FOREIGN KEY (actorId) REFERENCES "users"(id) ON DELETE SET NULL,
   CONSTRAINT auditlogs_targetid_fkey FOREIGN KEY (targetId) REFERENCES "users"(id) ON DELETE SET NULL
 );
