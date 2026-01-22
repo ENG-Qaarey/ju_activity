@@ -1,1 +1,1 @@
-export { default } from '@/src/pages/student/StudentProfile';
+export { default } from '@/src/pages/admin/AdminProfile';
