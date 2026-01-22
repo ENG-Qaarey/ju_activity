@@ -2,12 +2,12 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, ScrollView } from 'react-native';
 import { Tabs, useRouter } from 'expo-router';
 import { Drawer } from 'react-native-drawer-layout';
-import { LayoutDashboard, Calendar, FileText, Bell, User, Search, Menu, Folders, Monitor, Users, Settings, TrendingUp, ListChecks } from 'lucide-react-native';
+import { LayoutDashboard, Calendar, FileText, Bell, User, Search, Menu } from 'lucide-react-native';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { Image } from 'expo-image';
 
-export default function HybridLayout() {
+export default function StudentLayout() {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const colorScheme = useColorScheme() ?? 'light';
@@ -17,6 +17,7 @@ export default function HybridLayout() {
     <View style={styles.drawerContainer}>
       <View style={styles.drawerHeader}>
         <Text style={styles.brandTitle}>JU-AMS</Text>
+        <Text style={styles.roleLabel}>STUDENT HUB</Text>
       </View>
       
       <View style={styles.drawerLinks}>
@@ -24,38 +25,28 @@ export default function HybridLayout() {
           <DrawerLink 
             icon={LayoutDashboard} 
             label="Dashboard" 
-            onPress={() => { router.push('/(tabs)/home'); setOpen(false); }}
+            onPress={() => { router.push('/(student)/home/index'); setOpen(false); }}
             active 
           />
           <DrawerLink 
-            icon={Folders} 
-            label="Create Activity" 
-            onPress={() => { router.push('/(admin)/dashboard'); setOpen(false); }} 
-          />
-          <DrawerLink 
             icon={Calendar} 
-            label="Admin Activities" 
-            onPress={() => { router.push('/(admin)/activities/index'); setOpen(false); }} 
+            label="All Activities" 
+            onPress={() => { router.push('/(student)/activities/index'); setOpen(false); }}
           />
           <DrawerLink 
-            icon={Monitor} 
-            label="Monitor Activities" 
-            onPress={() => { router.push('/(admin)/dashboard'); setOpen(false); }} 
+            icon={FileText} 
+            label="My Applications" 
+            onPress={() => { router.push('/(student)/applications/index'); setOpen(false); }}
           />
           <DrawerLink 
             icon={Bell} 
             label="Notifications" 
-            onPress={() => { router.push('/(tabs)/notifications'); setOpen(false); }} 
-          />
-          <DrawerLink 
-            icon={FileText} 
-            label="Applications" 
-            onPress={() => { router.push('/(tabs)/applications'); setOpen(false); }} 
+            onPress={() => { router.push('/(student)/notifications/index'); setOpen(false); }}
           />
           <DrawerLink 
             icon={User} 
-            label="Profile" 
-            onPress={() => { router.push('/(tabs)/profile'); setOpen(false); }} 
+            label="My Profile" 
+            onPress={() => { router.push('/(student)/profile/index'); setOpen(false); }}
           />
         </ScrollView>
       </View>
@@ -67,8 +58,8 @@ export default function HybridLayout() {
             style={styles.avatar} 
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>muscab axmed</Text>
-            <Text style={styles.profileEmail}>muscabqaarey@gmail.co..</Text>
+            <Text style={styles.profileName}>Student User</Text>
+            <Text style={styles.profileEmail}>student@gmail.com</Text>
           </View>
         </View>
       </View>
@@ -100,7 +91,7 @@ export default function HybridLayout() {
               <View>
                 <Text style={styles.headerHub}>JU ACTIVITY HUB</Text>
                 <View style={styles.onlineStatus}>
-                  <Text style={styles.userName}>muscab axmed</Text>
+                  <Text style={styles.userName}>Student Name</Text>
                   <View style={styles.statusDot} />
                   <Text style={styles.statusText}>Online</Text>
                 </View>
@@ -142,41 +133,40 @@ export default function HybridLayout() {
         }}
       >
         <Tabs.Screen
-          name="home"
+          name="home/index"
           options={{
             title: 'Home',
             tabBarIcon: ({ color }) => <LayoutDashboard size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="activities"
+          name="activities/index"
           options={{
-            title: 'Activities',
+            title: 'Explore',
             tabBarIcon: ({ color }) => <Calendar size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="applications"
+          name="applications/index"
           options={{
             title: 'Apps',
             tabBarIcon: ({ color }) => <FileText size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="notifications"
+          name="notifications/index"
           options={{
             title: 'Alerts',
             tabBarIcon: ({ color }) => <Bell size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="profile"
+          name="profile/index"
           options={{
-            title: 'Profile',
+            title: 'Me',
             tabBarIcon: ({ color }) => <User size={24} color={color} />,
           }}
         />
-        <Tabs.Screen name="index" options={{ href: null }} />
       </Tabs>
     </Drawer>
   );
@@ -195,137 +185,29 @@ function DrawerLink({ icon: Icon, label, active, onPress }: any) {
 }
 
 const styles = StyleSheet.create({
-  drawerContainer: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  drawerHeader: {
-    padding: 24,
-    paddingTop: 60,
-    marginBottom: 20,
-  },
-  brandTitle: {
-    fontSize: 28,
-    fontWeight: '900',
-    color: '#4FA3F7',
-    letterSpacing: -1,
-  },
-  drawerLinks: {
-    flex: 1,
-    paddingHorizontal: 16,
-  },
-  drawerLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 4,
-  },
-  drawerLinkActive: {
-    backgroundColor: '#4FA3F7',
-  },
-  drawerLinkLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#64748B',
-    marginLeft: 12,
-  },
-  drawerLinkLabelActive: {
-    color: '#FFFFFF',
-  },
-  drawerFooter: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    marginBottom: 20,
-  },
-  profileBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    padding: 12,
-    borderRadius: 12,
-  },
-  avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginRight: 10,
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  profileName: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#1E293B',
-  },
-  profileEmail: {
-    fontSize: 11,
-    color: '#64748B',
-  },
-  menuBtn: {
-    marginLeft: 16,
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 10,
-  },
-  headerTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerHub: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#94A3B8',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  onlineStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  userName: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1E293B',
-    marginRight: 6,
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#22C55E',
-    marginRight: 4,
-  },
-  statusText: {
-    fontSize: 12,
-    color: '#22C55E',
-    fontWeight: '600',
-  },
-  headerIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 16,
-    gap: 12,
-  },
-  headerIconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#F8FAFC',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerAvatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    borderWidth: 2,
-    borderColor: '#E2E8F0',
-  },
+  drawerContainer: { flex: 1, backgroundColor: '#FFFFFF' },
+  drawerHeader: { padding: 24, paddingTop: 60, marginBottom: 20 },
+  brandTitle: { fontSize: 28, fontWeight: '900', color: '#4FA3F7', letterSpacing: -1 },
+  roleLabel: { fontSize: 10, fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginTop: 4 },
+  drawerLinks: { flex: 1, paddingHorizontal: 16 },
+  drawerLink: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, marginBottom: 4 },
+  drawerLinkActive: { backgroundColor: '#4FA3F7' },
+  drawerLinkLabel: { fontSize: 15, fontWeight: '600', color: '#64748B', marginLeft: 12 },
+  drawerLinkLabelActive: { color: '#FFFFFF' },
+  drawerFooter: { padding: 16, borderTopWidth: 1, borderTopColor: '#F1F5F9', marginBottom: 20 },
+  profileBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 12, borderRadius: 12 },
+  avatar: { width: 36, height: 36, borderRadius: 18, marginRight: 10 },
+  profileInfo: { flex: 1 },
+  profileName: { fontSize: 13, fontWeight: '700', color: '#1E293B' },
+  profileEmail: { fontSize: 11, color: '#64748B' },
+  menuBtn: { marginLeft: 16, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 10 },
+  headerTitleContainer: { flexDirection: 'row', alignItems: 'center' },
+  headerHub: { fontSize: 10, fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1 },
+  onlineStatus: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
+  userName: { fontSize: 14, fontWeight: '700', color: '#1E293B', marginRight: 6 },
+  statusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#22C55E', marginRight: 4 },
+  statusText: { fontSize: 12, color: '#22C55E', fontWeight: '600' },
+  headerIcons: { flexDirection: 'row', alignItems: 'center', marginRight: 16, gap: 12 },
+  headerIconBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
+  headerAvatar: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: '#E2E8F0' },
 });
