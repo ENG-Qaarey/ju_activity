@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, ScrollView } from 'react-native';
-import { Tabs, useRouter } from 'expo-router';
+import { usePathname, Tabs, useRouter } from 'expo-router';
 import { Drawer } from 'react-native-drawer-layout';
 import { LayoutDashboard, Calendar, FileText, Bell, User, Search, Menu } from 'lucide-react-native';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
@@ -9,6 +9,7 @@ import { Image } from 'expo-image';
 
 export default function StudentLayout() {
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
@@ -25,28 +26,32 @@ export default function StudentLayout() {
           <DrawerLink 
             icon={LayoutDashboard} 
             label="Dashboard" 
-            onPress={() => { router.push('/(student)/home/index'); setOpen(false); }}
-            active 
+            onPress={() => { router.push('/(student)/home'); setOpen(false); }}
+            active={pathname === '/home'} 
           />
           <DrawerLink 
             icon={Calendar} 
             label="All Activities" 
-            onPress={() => { router.push('/(student)/activities/index'); setOpen(false); }}
+            onPress={() => { router.push('/(student)/activities'); setOpen(false); }}
+            active={pathname === '/activities'}
           />
           <DrawerLink 
             icon={FileText} 
             label="My Applications" 
-            onPress={() => { router.push('/(student)/applications/index'); setOpen(false); }}
+            onPress={() => { router.push('/(student)/applications'); setOpen(false); }}
+            active={pathname === '/applications'}
           />
           <DrawerLink 
             icon={Bell} 
             label="Notifications" 
-            onPress={() => { router.push('/(student)/notifications/index'); setOpen(false); }}
+            onPress={() => { router.push('/(student)/notifications'); setOpen(false); }}
+            active={pathname === '/notifications'}
           />
           <DrawerLink 
             icon={User} 
             label="My Profile" 
-            onPress={() => { router.push('/(student)/profile/index'); setOpen(false); }}
+            onPress={() => { router.push('/(student)/profile'); setOpen(false); }}
+            active={pathname === '/profile'}
           />
         </ScrollView>
       </View>
@@ -133,35 +138,35 @@ export default function StudentLayout() {
         }}
       >
         <Tabs.Screen
-          name="home/index"
+          name="home"
           options={{
             title: 'Home',
             tabBarIcon: ({ color }) => <LayoutDashboard size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="activities/index"
+          name="activities"
           options={{
             title: 'Explore',
             tabBarIcon: ({ color }) => <Calendar size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="applications/index"
+          name="applications"
           options={{
             title: 'Apps',
             tabBarIcon: ({ color }) => <FileText size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="notifications/index"
+          name="notifications"
           options={{
             title: 'Alerts',
             tabBarIcon: ({ color }) => <Bell size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="profile/index"
+          name="profile"
           options={{
             title: 'Me',
             tabBarIcon: ({ color }) => <User size={24} color={color} />,

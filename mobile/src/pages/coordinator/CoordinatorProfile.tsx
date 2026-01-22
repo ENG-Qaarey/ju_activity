@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from 'react-native';
 import { 
   User, Mail, Shield, Bell, CircleHelp, LogOut, 
-  ChevronRight, Settings, Calendar, Award, Star
+  ChevronRight, Settings, Users, BookOpen, Calendar
 } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { ThemedText } from '@/src/components/themed-text';
@@ -10,7 +10,7 @@ import { GlassCard } from '@/src/components/GlassCard';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 
-export default function StudentProfile() {
+export default function CoordinatorProfile() {
   const router = useRouter();
 
   return (
@@ -23,47 +23,47 @@ export default function StudentProfile() {
               source={{ uri: 'https://github.com/shadcn.png' }} 
               style={styles.avatar} 
             />
-            <View style={styles.studentBadge}>
-                <Award size={12} color="#FFFFFF" strokeWidth={3} />
+            <View style={styles.coordBadge}>
+                <User size={12} color="#FFFFFF" strokeWidth={3} />
             </View>
           </View>
-          <ThemedText style={styles.userName}>muscab axmed</ThemedText>
+          <ThemedText style={styles.userName}>Amiin Daahir</ThemedText>
           <View style={styles.roleLabel}>
-              <Text style={styles.roleText}>STUDENT PROFILE</Text>
+              <Text style={styles.roleText}>ACTIVITY COORDINATOR</Text>
           </View>
         </View>
 
-        {/* My Activity */}
+        {/* Activity & Management */}
         <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>My Engagement</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Activity Oversight</ThemedText>
           <GlassCard style={styles.card}>
-            <ProfileItem icon={Calendar} label="Activity History" color="#0EA5E9" />
-            <ProfileItem icon={Star} label="Points & Certificates" color="#F59E0B" />
+            <ProfileItem icon={Calendar} label="Managed Activities" color="#8B5CF6" />
+            <ProfileItem icon={Users} label="Faculty Directory" color="#0EA5E9" />
+            <ProfileItem icon={BookOpen} label="Coordination Logs" color="#F59E0B" />
           </GlassCard>
         </View>
 
-        {/* Account Settings */}
+        {/* Account Details */}
         <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>Account Settings</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Account Details</ThemedText>
           <GlassCard style={styles.card}>
             <ProfileItem icon={User} label="Personal Information" />
-            <ProfileItem icon={Shield} label="Security & Password" />
-            <ProfileItem icon={Bell} label="Notification Settings" />
+            <ProfileItem icon={Bell} label="Duty Notifications" />
+            <ProfileItem icon={Settings} label="App Settings" />
           </GlassCard>
         </View>
 
-        {/* Support & More */}
+        {/* Support & Power */}
         <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>Support & More</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Coordinator Support</ThemedText>
           <GlassCard style={styles.card}>
-            <ProfileItem icon={CircleHelp} label="Help Center" />
-            <ProfileItem icon={Settings} label="App Settings" />
+            <ProfileItem icon={CircleHelp} label="Coordinator Guide" />
             <ProfileItem icon={LogOut} label="Log Out" color="#EF4444" onPress={() => router.push('/login')} />
           </GlassCard>
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.versionText}>Student Hub v2.0 • JU-AMS</Text>
+          <Text style={styles.versionText}>Coordinator Hub v2.0 • JU-AMS</Text>
         </View>
       </ScrollView>
     </GradientBackground>
@@ -90,10 +90,10 @@ const styles = StyleSheet.create({
   header: { alignItems: 'center', marginBottom: 32 },
   avatarContainer: { position: 'relative', marginBottom: 16 },
   avatar: { width: 100, height: 100, borderRadius: 50, borderWidth: 4, borderColor: '#FFFFFF' },
-  studentBadge: { position: 'absolute', right: 4, bottom: 4, backgroundColor: '#0EA5E9', padding: 6, borderRadius: 12, borderWidth: 2, borderColor: '#FFFFFF' },
+  coordBadge: { position: 'absolute', right: 4, bottom: 4, backgroundColor: '#8B5CF6', padding: 6, borderRadius: 12, borderWidth: 2, borderColor: '#FFFFFF' },
   userName: { fontSize: 26, fontWeight: '900', color: '#1E293B', letterSpacing: -0.5 },
-  roleLabel: { backgroundColor: '#0EA5E915', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, marginTop: 8 },
-  roleText: { fontSize: 10, fontWeight: '800', color: '#0EA5E9', letterSpacing: 1 },
+  roleLabel: { backgroundColor: '#8B5CF615', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, marginTop: 8 },
+  roleText: { fontSize: 10, fontWeight: '800', color: '#8B5CF6', letterSpacing: 1 },
   section: { marginBottom: 24 },
   sectionTitle: { fontSize: 13, fontWeight: '800', color: '#94A3B8', marginBottom: 12, marginLeft: 4, textTransform: 'uppercase', letterSpacing: 1 },
   card: { padding: 8, borderRadius: 24, overflow: 'hidden' },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, ScrollView } from 'react-native';
-import { Tabs, useRouter } from 'expo-router';
+import { usePathname, Tabs, useRouter } from 'expo-router';
 import { Drawer } from 'react-native-drawer-layout';
 import { LayoutDashboard, Calendar, FileText, Bell, User, Search, Menu, CheckCircle, Plus, Activity, BarChart3, Clock } from 'lucide-react-native';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
@@ -9,6 +9,7 @@ import { Image } from 'expo-image';
 
 export default function CoordinatorLayout() {
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
@@ -26,37 +27,43 @@ export default function CoordinatorLayout() {
             icon={LayoutDashboard} 
             label="Dashboard" 
             onPress={() => { router.push('/(coordinator)/dashboard'); setOpen(false); }}
-            active 
+            active={pathname === '/dashboard'} 
           />
           <DrawerLink 
             icon={Plus} 
             label="Propose Activity" 
-            onPress={() => { router.push('/(coordinator)/activities/index'); setOpen(false); }}
+            onPress={() => { router.push('/(coordinator)/activities'); setOpen(false); }}
+            active={pathname.includes('/activities')}
           />
           <DrawerLink 
             icon={Calendar} 
             label="My Activities" 
-            onPress={() => { router.push('/(coordinator)/activities/index'); setOpen(false); }}
+            onPress={() => { router.push('/(coordinator)/activities'); setOpen(false); }}
+            active={pathname.includes('/activities')}
           />
           <DrawerLink 
             icon={FileText} 
             label="Review Applications" 
-            onPress={() => { router.push('/(coordinator)/applications/index'); setOpen(false); }}
+            onPress={() => { router.push('/(coordinator)/applications'); setOpen(false); }}
+            active={pathname.includes('/applications')}
           />
           <DrawerLink 
             icon={CheckCircle} 
             label="Check Attendance" 
-            onPress={() => { router.push('/(coordinator)/attendance/index'); setOpen(false); }}
+            onPress={() => { router.push('/(coordinator)/attendance'); setOpen(false); }}
+            active={pathname.includes('/attendance')}
           />
           <DrawerLink 
             icon={Bell} 
             label="Notifications" 
-            onPress={() => { router.push('/(coordinator)/dashboard'); setOpen(false); }}
+            onPress={() => { router.push('/(coordinator)/notifications'); setOpen(false); }}
+            active={pathname === '/notifications'}
           />
           <DrawerLink 
             icon={User} 
             label="Profile" 
-            onPress={() => { router.push('/(coordinator)/profile/index'); setOpen(false); }}
+            onPress={() => { router.push('/(coordinator)/profile'); setOpen(false); }}
+            active={pathname === '/profile'}
           />
         </ScrollView>
       </View>
@@ -150,28 +157,28 @@ export default function CoordinatorLayout() {
           }}
         />
         <Tabs.Screen
-          name="activities/index"
+          name="activities"
           options={{
             title: 'Activities',
             tabBarIcon: ({ color }) => <Calendar size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="applications/index"
+          name="applications"
           options={{
             title: 'Apps',
             tabBarIcon: ({ color }) => <FileText size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="attendance/index"
+          name="attendance"
           options={{
             title: 'Attendance',
             tabBarIcon: ({ color }) => <CheckCircle size={24} color={color} />,
           }}
         />
         <Tabs.Screen
-          name="profile/index"
+          name="profile"
           options={{
             title: 'Profile',
             tabBarIcon: ({ color }) => <User size={24} color={color} />,

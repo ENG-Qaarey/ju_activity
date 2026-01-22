@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from 'react-native';
 import { 
   User, Mail, Shield, Bell, CircleHelp, LogOut, 
-  ChevronRight, Settings, Calendar, Award, Star
+  ChevronRight, Settings, LayoutDashboard, Database, Lock
 } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { ThemedText } from '@/src/components/themed-text';
@@ -10,7 +10,7 @@ import { GlassCard } from '@/src/components/GlassCard';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 
-export default function StudentProfile() {
+export default function AdminProfile() {
   const router = useRouter();
 
   return (
@@ -23,47 +23,47 @@ export default function StudentProfile() {
               source={{ uri: 'https://github.com/shadcn.png' }} 
               style={styles.avatar} 
             />
-            <View style={styles.studentBadge}>
-                <Award size={12} color="#FFFFFF" strokeWidth={3} />
+            <View style={styles.adminBadge}>
+                <Shield size={12} color="#FFFFFF" strokeWidth={3} />
             </View>
           </View>
-          <ThemedText style={styles.userName}>muscab axmed</ThemedText>
+          <ThemedText style={styles.userName}>jamiila</ThemedText>
           <View style={styles.roleLabel}>
-              <Text style={styles.roleText}>STUDENT PROFILE</Text>
+              <Text style={styles.roleText}>SYSTEM ADMINISTRATOR</Text>
           </View>
         </View>
 
-        {/* My Activity */}
+        {/* Console Settings */}
         <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>My Engagement</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Console Management</ThemedText>
           <GlassCard style={styles.card}>
-            <ProfileItem icon={Calendar} label="Activity History" color="#0EA5E9" />
-            <ProfileItem icon={Star} label="Points & Certificates" color="#F59E0B" />
+            <ProfileItem icon={LayoutDashboard} label="Console Customization" color="#0EA5E9" />
+            <ProfileItem icon={Database} label="System Data Backup" color="#8B5CF6" />
+            <ProfileItem icon={Lock} label="Security Protocols" color="#F59E0B" />
           </GlassCard>
         </View>
 
-        {/* Account Settings */}
+        {/* Account Details */}
         <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>Account Settings</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Account Details</ThemedText>
           <GlassCard style={styles.card}>
             <ProfileItem icon={User} label="Personal Information" />
-            <ProfileItem icon={Shield} label="Security & Password" />
-            <ProfileItem icon={Bell} label="Notification Settings" />
+            <ProfileItem icon={Bell} label="Global Notifications" />
+            <ProfileItem icon={Settings} label="App Preferences" />
           </GlassCard>
         </View>
 
-        {/* Support & More */}
+        {/* Support & Power */}
         <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>Support & More</ThemedText>
+          <ThemedText style={styles.sectionTitle}>System Support</ThemedText>
           <GlassCard style={styles.card}>
-            <ProfileItem icon={CircleHelp} label="Help Center" />
-            <ProfileItem icon={Settings} label="App Settings" />
-            <ProfileItem icon={LogOut} label="Log Out" color="#EF4444" onPress={() => router.push('/login')} />
+            <ProfileItem icon={CircleHelp} label="Admin Hub Documentation" />
+            <ProfileItem icon={LogOut} label="Emergency Logout" color="#EF4444" onPress={() => router.push('/login')} />
           </GlassCard>
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.versionText}>Student Hub v2.0 • JU-AMS</Text>
+          <Text style={styles.versionText}>Admin Console v2.0.4 • Stable</Text>
         </View>
       </ScrollView>
     </GradientBackground>
@@ -90,10 +90,10 @@ const styles = StyleSheet.create({
   header: { alignItems: 'center', marginBottom: 32 },
   avatarContainer: { position: 'relative', marginBottom: 16 },
   avatar: { width: 100, height: 100, borderRadius: 50, borderWidth: 4, borderColor: '#FFFFFF' },
-  studentBadge: { position: 'absolute', right: 4, bottom: 4, backgroundColor: '#0EA5E9', padding: 6, borderRadius: 12, borderWidth: 2, borderColor: '#FFFFFF' },
+  adminBadge: { position: 'absolute', right: 4, bottom: 4, backgroundColor: '#EF4444', padding: 6, borderRadius: 12, borderWidth: 2, borderColor: '#FFFFFF' },
   userName: { fontSize: 26, fontWeight: '900', color: '#1E293B', letterSpacing: -0.5 },
-  roleLabel: { backgroundColor: '#0EA5E915', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, marginTop: 8 },
-  roleText: { fontSize: 10, fontWeight: '800', color: '#0EA5E9', letterSpacing: 1 },
+  roleLabel: { backgroundColor: '#3B82F615', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, marginTop: 8 },
+  roleText: { fontSize: 10, fontWeight: '800', color: '#3B82F6', letterSpacing: 1 },
   section: { marginBottom: 24 },
   sectionTitle: { fontSize: 13, fontWeight: '800', color: '#94A3B8', marginBottom: 12, marginLeft: 4, textTransform: 'uppercase', letterSpacing: 1 },
   card: { padding: 8, borderRadius: 24, overflow: 'hidden' },
