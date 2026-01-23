@@ -60,7 +60,7 @@ export default function MonitorActivities() {
                 <Text style={[styles.mainSectionTitle, { color: theme.text }]}>All Activities</Text>
                 <Text style={[styles.mainSectionSubtitle, { color: theme.textSecondary }]}>Upcoming and ongoing sessions across faculties</Text>
             </View>
-            <TouchableOpacity style={[styles.filterBtn, { backgroundColor: theme.card, shadowColor: theme.shadow }]}>
+            <TouchableOpacity style={[styles.filterBtn, { backgroundColor: theme.card, shadowColor: '#000' }]}>
                 <Filter size={18} color={theme.textSecondary} />
             </TouchableOpacity>
         </View>
