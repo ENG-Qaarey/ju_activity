@@ -5,7 +5,7 @@ import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 
 interface JuInputProps extends TextInputProps {
-  label: string;
+  label?: string;
   error?: string;
   helperText?: string;
   isPassword?: boolean;
@@ -15,16 +15,36 @@ export function JuInput({ label, error, helperText, isPassword, ...props }: JuIn
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   const [showPassword, setShowPassword] = React.useState(false);
+  const [isFocused, setIsFocused] = React.useState(false);
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
-      <View style={[styles.inputContainer, { borderColor: error ? theme.error : theme.border }]}>
+      {label && <Text style={[styles.label, { color: theme.text }]}>{label}</Text>}
+      <View style={[
+        styles.inputContainer, 
+        { 
+          borderColor: error ? theme.error : isFocused ? '#0EA5E9' : theme.border,
+          backgroundColor: isFocused ? '#F0F9FF' : 'rgba(255, 255, 255, 0.9)',
+          shadowColor: isFocused ? '#0EA5E9' : 'transparent',
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: isFocused ? 0.2 : 0,
+          shadowRadius: isFocused ? 8 : 0,
+          elevation: isFocused ? 2 : 0
+        }
+      ]}>
         <TextInput
           style={[styles.input, { color: theme.text }]}
           placeholderTextColor="#94A3B8"
           secureTextEntry={isPassword && !showPassword}
           {...props}
+          onFocus={(e) => {
+            setIsFocused(true);
+            props.onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setIsFocused(false);
+            props.onBlur?.(e);
+          }}
         />
         {isPassword && (
           <TouchableOpacity 
