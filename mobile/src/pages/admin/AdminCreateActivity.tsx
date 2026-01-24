@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput, Modal, FlatList } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput, Modal, FlatList, KeyboardAvoidingView, Platform } from 'react-native';
 import { ShieldCheck, FileText, Calendar, Clock, MapPin, Users, ChevronDown, Rocket, X, Check, Trash2, RefreshCw } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
@@ -332,11 +332,17 @@ export default function AdminCreateActivity() {
 
   return (
     <GradientBackground>
-      <ScrollView 
-        style={styles.scrollView} 
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
+        <ScrollView 
+          style={styles.scrollView} 
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
         {/* Admin Action Header */}
         <View style={styles.header}>
             <View style={styles.actionTag}>
@@ -359,12 +365,18 @@ export default function AdminCreateActivity() {
 
             {/* Form Fields */}
             <View style={styles.form}>
-                <JuInput 
-                    label="Activity Title *" 
-                    placeholder="e.g. University Innovation Forum" 
-                    value={formData.title}
-                    onChangeText={(text) => updateField('title', text)}
-                />
+                <View style={styles.textAreaContainer}>
+                    <Text style={styles.fieldLabel}>Activity Title *</Text>
+                    <TextInput 
+                        multiline 
+                        numberOfLines={2} 
+                        placeholder="e.g. University Innovation Forum" 
+                        style={[styles.textArea, { height: 45, borderColor: '#3B82F6' }]}
+                        placeholderTextColor="#94A3B8"
+                        value={formData.title}
+                        onChangeText={(text) => updateField('title', text)}
+                    />
+                </View>
 
                 <View style={styles.textAreaContainer}>
                     <Text style={styles.fieldLabel}>Description *</Text>
@@ -500,7 +512,8 @@ export default function AdminCreateActivity() {
                 </TouchableOpacity>
             </View>
         </GlassCard>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
       {renderPickerModal()}
     </GradientBackground>
   );
