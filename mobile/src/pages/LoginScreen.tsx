@@ -101,7 +101,7 @@ export default function Login() {
       await loginSuccess('/(admin)/dashboard', email);
     } else if (email === 'coordi@gmail.com' && password === '1234') {
       await loginSuccess('/(coordinator)/dashboard', email);
-    } else if (email === 'Student@gmail.com' && password === '1234') {
+    } else if (email === 'student@gmail.com' && password === '1234') {
       await loginSuccess('/(student)/home', email);
     } else {
       setError('Invalid email or password');

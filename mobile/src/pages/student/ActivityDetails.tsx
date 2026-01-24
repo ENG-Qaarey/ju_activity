@@ -6,27 +6,62 @@ import { GlassCard } from '@/src/components/GlassCard';
 import { JuButton } from '@/src/components/JuButton';
 import { ThemedText } from '@/src/components/themed-text';
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 export default function ActivityDetails() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const [applied, setApplied] = React.useState(false);
+  const [isApplying, setIsApplying] = React.useState(false);
+
+  const { 
+    title = 'Activity Details', 
+    category = 'General', 
+    description = 'No description available for this activity.',
+    date = 'TBD',
+    time = 'TBD',
+    location = 'To Be Announced',
+    enrolled = '0',
+    capacity = '0',
+    from 
+  } = params;
 
   const onShare = async () => {
     try {
       await Share.share({
-        message: 'Check out this activity at Jazeera University: Annual Tech Symposium 2026!',
+        message: `Check out this activity at Jazeera University: ${title}!`,
       });
     } catch (error: any) {
       console.log(error.message);
     }
   };
 
+  const handleApply = () => {
+    setIsApplying(true);
+    // Simulate API call
+    setTimeout(() => {
+        setIsApplying(false);
+        setApplied(true);
+    }, 1500);
+  };
+
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(student)/(tabs)/activities');
+    }
+  };
+
   return (
     <GradientBackground>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
         {/* Header Image & Actions */}
         <View style={styles.topActions}>
-            <TouchableOpacity style={styles.actionCircle} onPress={() => router.back()}>
+            <TouchableOpacity 
+              style={styles.actionCircle} 
+              onPress={handleBack}
+            >
                 <ArrowLeft size={22} color="#1E293B" />
             </TouchableOpacity>
             <View style={styles.rightActions}>
@@ -46,38 +81,37 @@ export default function ActivityDetails() {
 
         {/* Content */}
         <View style={styles.content}>
+            {applied && (
+                <View style={styles.successPanel}>
+                    <CheckCircle2 size={20} color="#22C55E" />
+                    <ThemedText style={styles.successText}>Application Submitted Successfully!</ThemedText>
+                </View>
+            )}
+
             <View style={styles.categoryBadge}>
-                <Text style={styles.categoryText}>Technical</Text>
+                <ThemedText style={styles.categoryText}>{category}</ThemedText>
             </View>
-            <ThemedText style={styles.title}>Annual Tech Symposium 2026</ThemedText>
+            <ThemedText style={styles.title}>{title}</ThemedText>
             
             <View style={styles.metaGrid}>
-                <MetaItem icon={Calendar} label="Date" value="Jan 25, 2026" />
-                <MetaItem icon={Clock} label="Time" value="10:00 AM - 4:00 PM" />
-                <MetaItem icon={MapPin} label="Location" value="Main Hall, Campus North" />
-                <MetaItem icon={Users} label="Participants" value="240/300 Joined" />
+                <MetaItem icon={Calendar} label="Date" value={date as string} />
+                <MetaItem icon={Clock} label="Time" value={time as string} />
+                <MetaItem icon={MapPin} label="Location" value={location as string} />
+                <MetaItem icon={Users} label="Participants" value={`${enrolled}/${capacity} Joined`} />
             </View>
 
             <View style={styles.section}>
                 <ThemedText style={styles.sectionTitle}>About Activity</ThemedText>
-                <Text style={styles.description}>
-                    Join us for the biggest technical gathering of the year at Jazeera University! 
-                    The Annual Tech Symposium is a day-long event featuring keynote speakers from 
-                    top tech industries, student innovation showcases, and hands-on workshops 
-                    on AI, Web3, and Mobile Development.
-                    {"\n\n"}
-                    Whether you're a developer, designer, or tech enthusiast, there's 
-                    something here for everyone. Don't miss out on networking opportunities 
-                    with industry experts and winning exciting prizes!
-                </Text>
+                <ThemedText style={styles.description}>
+                    {description as string}
+                </ThemedText>
             </View>
 
             <View style={styles.section}>
                 <ThemedText style={styles.sectionTitle}>Perks & Benefits</ThemedText>
                 <BenefitItem text="Certificate of Participation" />
                 <BenefitItem text="Professional Networking" />
-                <BenefitItem text="Refreshments & Lunch Provided" />
-                <BenefitItem text="Activity Hub Achievement Badge" />
+                <BenefitItem text="Refreshments Provided" />
             </View>
         </View>
       </ScrollView>
@@ -85,14 +119,28 @@ export default function ActivityDetails() {
       {/* Sticky Bottom Action */}
       <View style={styles.footer}>
           <View style={styles.footerInfo}>
-              <Text style={styles.footerLabel}>Registration Status</Text>
+              <ThemedText style={styles.footerLabel}>Registration Status</ThemedText>
               <View style={styles.statusRow}>
-                  <CheckCircle2 size={16} color="#22C55E" />
-                  <Text style={styles.statusVal}>Open until Jan 24</Text>
+                  {applied ? (
+                      <>
+                        <CheckCircle2 size={16} color="#22C55E" />
+                        <ThemedText style={[styles.statusVal, { color: '#22C55E' }]}>Applied</ThemedText>
+                      </>
+                  ) : (
+                      <>
+                        <Clock size={16} color="#0EA5E9" />
+                        <ThemedText style={styles.statusVal}>Open</ThemedText>
+                      </>
+                  )}
               </View>
           </View>
           <View style={{ flex: 1 }}>
-              <JuButton title="Join Activity" onPress={() => {}} />
+              <JuButton 
+                title={applied ? "Already Applied" : (isApplying ? "Applying..." : "Apply Activity")} 
+                onPress={handleApply}
+                variant={applied ? "outline" : "primary"}
+                disabled={applied || isApplying}
+              />
           </View>
       </View>
     </GradientBackground>
@@ -148,4 +196,16 @@ const styles = StyleSheet.create({
   footerLabel: { fontSize: 12, color: '#94A3B8', fontWeight: '600', marginBottom: 4 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   statusVal: { fontSize: 13, fontWeight: '800', color: '#1E293B' },
+  successPanel: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#DCFCE7', 
+    padding: 16, 
+    borderRadius: 16, 
+    marginBottom: 24, 
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#86EFAC'
+  },
+  successText: { color: '#166534', fontSize: 14, fontWeight: '700' },
 });

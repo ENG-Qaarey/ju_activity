@@ -18,17 +18,7 @@ export default function StudentNotifications() {
 
   return (
     <GradientBackground>
-      {/* Header Bar */}
-      <View style={styles.headerBar}>
-        <TouchableOpacity style={[styles.backBtn, { backgroundColor: theme.card }]} onPress={() => router.back()}>
-          <ArrowLeft size={20} color={theme.text} />
-        </TouchableOpacity>
-        <ThemedText style={styles.headerTitle}>Inbox</ThemedText>
-        <TouchableOpacity style={[styles.backBtn, { backgroundColor: theme.card }]}>
-          <MoreHorizontal size={20} color={theme.text} />
-        </TouchableOpacity>
-      </View>
-
+     
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
         {/* Title Section */}
         <View style={styles.titleSection}>

@@ -10,9 +10,10 @@ interface JuButtonProps {
   textStyle?: TextStyle;
   variant?: 'primary' | 'secondary' | 'outline';
   icon?: React.ElementType;
+  disabled?: boolean;
 }
 
-export function JuButton({ title, onPress, style, textStyle, variant = 'primary', icon: Icon }: JuButtonProps) {
+export function JuButton({ title, onPress, style, textStyle, variant = 'primary', icon: Icon, disabled }: JuButtonProps) {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
 
@@ -42,7 +43,13 @@ export function JuButton({ title, onPress, style, textStyle, variant = 'primary'
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
-      style={[styles.button, variantStyles.button, style]}
+      disabled={disabled}
+      style={[
+        styles.button, 
+        variantStyles.button, 
+        style,
+        disabled && { opacity: 0.5 }
+      ]}
     >
       <View style={styles.contentContainer}>
         {Icon && <Icon size={20} color={variantStyles.text.color} style={styles.icon} />}
