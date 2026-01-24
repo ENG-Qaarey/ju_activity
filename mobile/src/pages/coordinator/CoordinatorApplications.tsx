@@ -1,129 +1,232 @@
 import React from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { Filter, User, FileText, Check, X, Clock, ChevronRight } from 'lucide-react-native';
+import { Check, X, Clock, User, FileText, ChevronRight, Filter, ArrowLeft, Search, Zap } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
-import { ThemedText } from '@/src/components/themed-text';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import { useColorScheme } from '@/src/hooks/use-color-scheme';
+import { Colors } from '@/src/data/theme';
 
 export default function CoordinatorApplications() {
+  const router = useRouter();
+  const colorScheme = useColorScheme() ?? 'light';
+  const theme = Colors[colorScheme];
+
   return (
     <GradientBackground>
-      <View style={styles.container}>
-        {/* Header */}
+       {/* Premium Navigation */}
+       {/* <View style={styles.navBar}>
+        <TouchableOpacity style={[styles.navIconBtn, { backgroundColor: theme.card , marginTop: -25, marginLeft: 300 }]} onPress={() => router.back()}>
+          <Search size={20} color={theme.text} />
+        </TouchableOpacity>
+      </View> */}
+
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+        {/* Header Section */}
         <View style={styles.header}>
             <View>
-                <ThemedText style={styles.title}>All Applications</ThemedText>
-                <ThemedText style={styles.subtitle}>28 pending requests for your events</ThemedText>
+                <Text style={[styles.headerTitle, { color: theme.text }]}>Review Applications</Text>
+                <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>Filter and process student participation</Text>
             </View>
-            <TouchableOpacity style={styles.filterBtn}>
-                <Filter size={20} color="#64748B" />
+            <TouchableOpacity style={[styles.filterBtn, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <Filter size={18} color={theme.primary} />
             </TouchableOpacity>
         </View>
 
-        {/* Global Activity Filter */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterBar}>
-            <FilterPill label="All Activities" active />
-            <FilterPill label="UI/UX Masterclass" />
-            <FilterPill label="Planning 2026" />
-        </ScrollView>
+        {/* Analytic Stats Grid */}
+        <View style={styles.statsGrid}>
+            <StatCard icon={Clock} label="Pending" value="28" color="#F59E0B" theme={theme} />
+            <StatCard icon={Check} label="Approved" value="142" color="#22C55E" theme={theme} />
+            <StatCard icon={Zap} label="Growth" value="+12%" color="#0EA5E9" theme={theme} />
+        </View>
 
-        {/* List */}
-        <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
-            <CApplicationItem 
-                student="muscab axmed" 
-                activity="UI/UX Design Masterclass" 
+        {/* Section Header */}
+        <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Awaiting Action</Text>
+            <TouchableOpacity>
+                <Text style={[styles.viewAllText, { color: theme.primary }]}>View All</Text>
+            </TouchableOpacity>
+        </View>
+
+        {/* Application Feed */}
+        <View style={styles.list}>
+           <ApplicationItem 
+                student="Muscab Axmed" 
+                id="ID-2024-001" 
+                activity="UI/UX Masterclass" 
                 time="5 mins ago" 
-                status="Pending"
+                status="Pending" 
+                avatar="https://i.pravatar.cc/150?u=muscab"
+                theme={theme}
             />
-            <CApplicationItem 
-                student="fatuma farah" 
-                activity="UI/UX Design Masterclass" 
+           <ApplicationItem 
+                student="Fatuma Farah" 
+                id="ID-2024-042" 
+                activity="UI/UX Masterclass" 
                 time="42 mins ago" 
-                status="Pending"
+                status="Pending" 
+                avatar="https://i.pravatar.cc/150?u=fatuma"
+                theme={theme}
             />
-            <CApplicationItem 
-                student="axmed qaarey" 
+           <ApplicationItem 
+                student="Axmed Qaarey" 
+                id="ID-2024-115" 
                 activity="JU Open Day 2026" 
                 time="2 hours ago" 
-                status="Approved"
+                status="Approved" 
+                avatar="https://i.pravatar.cc/150?u=axmed"
+                theme={theme}
             />
-            <CApplicationItem 
-                student="deeqa warsame" 
-                activity="Planning 2026" 
+           <ApplicationItem 
+                student="Deeqa Warsame" 
+                id="ID-2024-098" 
+                activity="Leadership Seminar" 
                 time="Yesterday" 
-                status="Rejected"
+                status="Rejected" 
+                avatar="https://i.pravatar.cc/150?u=deeqa"
+                theme={theme}
             />
-        </ScrollView>
-      </View>
+        </View>
+      </ScrollView>
     </GradientBackground>
   );
 }
 
-function FilterPill({ label, active }: any) {
-  return (
-    <TouchableOpacity style={[styles.pill, active && styles.pillActive]}>
-        <Text style={[styles.pillText, active && styles.pillTextActive]}>{label}</Text>
-    </TouchableOpacity>
-  )
+function StatCard({ icon: Icon, label, value, color, theme }: any) {
+    return (
+        <GlassCard style={[styles.statCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={[styles.statIconContainer, { backgroundColor: color + '15' }]}>
+                <Icon size={18} color={color} />
+            </View>
+            <Text style={[styles.statValue, { color: theme.text }]}>{value}</Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{label}</Text>
+        </GlassCard>
+    );
 }
 
-function CApplicationItem({ student, activity, time, status }: any) {
-    const statusColor = status === 'Approved' ? '#22C55E' : status === 'Rejected' ? '#EF4444' : '#F59E0B';
-    
-    return (
-        <GlassCard style={styles.card}>
-            <View style={styles.cardMain}>
-                <View style={styles.leftCol}>
-                    <View style={styles.avatar}>
-                        <User size={20} color="#64748B" />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                        <ThemedText style={styles.sName}>{student}</ThemedText>
-                        <Text style={styles.aName} numberOfLines={1}>{activity}</Text>
-                    </View>
-                </View>
-                <View style={[styles.badge, { backgroundColor: statusColor + '10' }]}>
-                    <Text style={[styles.badgeText, { color: statusColor }]}>{status}</Text>
-                </View>
+function ApplicationItem({ student, id, activity, time, status, avatar, theme }: any) {
+  const isPending = status === 'Pending';
+  const isApproved = status === 'Approved';
+  const isRejected = status === 'Rejected';
+  
+  const statusColor = isApproved ? '#22C55E' : isRejected ? '#EF4444' : '#F59E0B';
+  const statusBg = isApproved ? '#22C55E15' : isRejected ? '#EF444415' : '#F59E0B15';
+  
+  return (
+    <GlassCard style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
+      <View style={styles.cardHeader}>
+        <View style={styles.studentInfo}>
+            <View style={[styles.avatarBox, { borderColor: theme.border }]}>
+                <Image source={{ uri: avatar }} style={styles.avatar} />
             </View>
-            <View style={styles.cardFooter}>
-                <View style={styles.timeRow}>
-                    <Clock size={12} color="#94A3B8" />
-                    <Text style={styles.timeText}>{time}</Text>
-                </View>
-                <TouchableOpacity style={styles.reviewBtn}>
-                    <Text style={styles.reviewText}>Review</Text>
-                    <ChevronRight size={14} color="#0EA5E9" />
+            <View>
+                <Text style={[styles.studentName, { color: theme.text }]}>{student}</Text>
+                <Text style={[styles.studentId, { color: theme.textSecondary }]}>{id}</Text>
+            </View>
+        </View>
+        <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
+            <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+            <Text style={[styles.statusText, { color: statusColor }]}>{status}</Text>
+        </View>
+      </View>
+
+      <View style={[styles.activityDetails, { backgroundColor: theme.background, borderColor: theme.border }]}>
+          <View style={[styles.activityIconBox, { backgroundColor: theme.primary + '15' }]}>
+                <FileText size={16} color={theme.primary} />
+          </View>
+          <View style={{ flex: 1 }}>
+              <Text style={[styles.activityLabel, { color: theme.textSecondary }]}>Requesting Access to</Text>
+              <Text style={[styles.activityTitle, { color: theme.text }]} numberOfLines={1}>{activity}</Text>
+          </View>
+      </View>
+
+      <View style={[styles.cardFooter, { borderTopColor: theme.border }]}>
+          <View style={styles.timeBox}>
+            <Clock size={12} color={theme.textSecondary} />
+            <Text style={[styles.timeValue, { color: theme.textSecondary }]}>{time}</Text>
+          </View>
+          
+          {isPending ? (
+              <View style={styles.actionGrid}>
+                  <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#EF444415', borderColor: '#EF444430' }]}>
+                    <X size={16} color="#EF4444" />
+                    <Text style={styles.rejectText}>Reject</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.actionBtn, { backgroundColor: theme.primary, borderColor: theme.primary }]}>
+                    <Check size={16} color="#FFFFFF" />
+                    <Text style={styles.approveText}>Approve</Text>
+                  </TouchableOpacity>
+              </View>
+          ) : (
+                <TouchableOpacity style={[styles.detailsBtn, { backgroundColor: theme.background, borderColor: theme.border }]}>
+                    <Text style={[styles.detailsBtnText, { color: theme.textSecondary }]}>Full Entry</Text>
+                    <ChevronRight size={14} color={theme.icon} />
                 </TouchableOpacity>
-            </View>
-        </GlassCard>
-    )
+          )}
+      </View>
+    </GlassCard>
+  );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, paddingTop: 60 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  title: { fontSize: 26, fontWeight: '900', color: '#1E293B' },
-  subtitle: { fontSize: 13, color: '#64748B', marginTop: 2 },
-  filterBtn: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 5, elevation: 2 },
-  filterBar: { flexGrow: 0, marginBottom: 20 },
-  pill: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: 'rgba(255, 255, 255, 0.5)', marginRight: 10, borderWidth: 1, borderColor: '#E2E8F0' },
-  pillActive: { backgroundColor: '#0EA5E9', borderColor: '#0EA5E9' },
-  pillText: { fontSize: 13, fontWeight: '600', color: '#64748B' },
-  pillTextActive: { color: '#FFFFFF' },
-  list: { flex: 1 },
-  listContent: { paddingBottom: 20 },
-  card: { padding: 16, marginBottom: 14 },
-  cardMain: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  leftCol: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  avatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
-  sName: { fontSize: 15, fontWeight: '700', color: '#1E293B' },
-  aName: { fontSize: 12, color: '#64748B', marginTop: 2 },
-  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  badgeText: { fontSize: 10, fontWeight: '700' },
-  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
-  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  timeText: { fontSize: 11, color: '#94A3B8' },
-  reviewBtn: { flexDirection: 'row', alignItems: 'center' },
-  reviewText: { fontSize: 13, fontWeight: '700', color: '#0EA5E9', marginRight: 2 },
+  scrollView: { flex: 1 },
+  contentContainer: { paddingHorizontal: 20, paddingBottom: 60 },
+  navBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 20,
+  },
+  navIconBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  navTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    opacity: 0.9,
+    letterSpacing: 0.5,
+  },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, marginTop: 10 },
+  headerTitle: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5 },
+  headerSubtitle: { fontSize: 13, marginTop: 2 },
+  filterBtn: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
+  statsGrid: { flexDirection: 'row', gap: 12, marginBottom: 30 },
+  statCard: { flex: 1, padding: 12, alignItems: 'center', borderRadius: 24, borderWidth: 1 },
+  statIconContainer: { width: 38, height: 38, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+  statValue: { fontSize: 20, fontWeight: '900' },
+  statLabel: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase', marginTop: 4 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingHorizontal: 4 },
+  sectionTitle: { fontSize: 16, fontWeight: '800' },
+  viewAllText: { fontSize: 13, fontWeight: '700' },
+  list: { gap: 14 },
+  card: { padding: 16, borderRadius: 24, borderWidth: 1 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
+  studentInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  avatarBox: { width: 44, height: 44, borderRadius: 14, borderWidth: 1, overflow: 'hidden' },
+  avatar: { width: '100%', height: '100%' },
+  studentName: { fontSize: 15, fontWeight: '800' },
+  studentId: { fontSize: 11, marginTop: 2 },
+  statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, gap: 5 },
+  statusDot: { width: 4, height: 4, borderRadius: 2 },
+  statusText: { fontSize: 9, fontWeight: '900', textTransform: 'uppercase' },
+  activityDetails: { flexDirection: 'row', gap: 12, padding: 12, borderRadius: 16, marginBottom: 16, borderWidth: 1 },
+  activityIconBox: { width: 32, height: 32, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  activityLabel: { fontSize: 9, fontWeight: '800', textTransform: 'uppercase' },
+  activityTitle: { fontSize: 13, fontWeight: '800', marginTop: 2 },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 14, borderTopWidth: 1 },
+  timeBox: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  timeValue: { fontSize: 11, fontWeight: '700' },
+  actionGrid: { flexDirection: 'row', gap: 10 },
+  actionBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 12, borderWidth: 1 },
+  rejectText: { color: '#EF4444', fontSize: 12, fontWeight: '800' },
+  approveText: { color: '#FFFFFF', fontSize: 12, fontWeight: '800' },
+  detailsBtn: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 12, borderRadius: 12, gap: 6, borderWidth: 1 },
+  detailsBtnText: { fontSize: 11, fontWeight: '800' },
 });
