@@ -1,10 +1,12 @@
-import { DarkTheme as NavDarkTheme, DefaultTheme as NavDefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme as NavDarkTheme, DefaultTheme as NavDefaultTheme, ThemeProvider as NavThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { Ionicons } from '@expo/vector-icons';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
+import { ThemeProvider } from '@/src/context/ThemeContext';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -36,15 +38,17 @@ export default function RootLayout() {
   };
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="login" />
-        <Stack.Screen name="register" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+    <ThemeProvider>
+      <NavThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="login" />
+          <Stack.Screen name="register" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+        </Stack>
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      </NavThemeProvider>
     </ThemeProvider>
   );
 }

@@ -1,0 +1,134 @@
+import React from 'react';
+import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import { 
+  User, Mail, Shield, Bell, CircleHelp, LogOut, 
+  ChevronRight, Settings, LayoutDashboard, Database, Lock,
+  Calendar, Users, BookOpen
+} from 'lucide-react-native';
+import { GradientBackground } from '@/src/components/GradientBackground';
+import { ThemedText } from '@/src/components/themed-text';
+import { GlassCard } from '@/src/components/GlassCard';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+
+import { useColorScheme } from '@/src/hooks/use-color-scheme';
+import { Colors } from '@/src/data/theme';
+
+export default function CoordinatorProfile() {
+  const router = useRouter();
+  const colorScheme = useColorScheme() ?? 'light';
+  const theme = Colors[colorScheme];
+
+  return (
+    <GradientBackground>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+        {/* Profile Header */}
+        <View style={styles.header}>
+          <View style={styles.avatarContainer}>
+            <Image 
+              source={{ uri: 'https://github.com/shadcn.png' }} 
+              style={[styles.avatar, { borderColor: theme.card }]} 
+            />
+            <View style={[styles.coordBadge, { borderColor: theme.card }]}>
+                <User size={12} color="#FFFFFF" strokeWidth={3} />
+            </View>
+          </View>
+          <ThemedText style={[styles.userName, { color: theme.text }]}>Amiin Daahir</ThemedText>
+          <View style={[styles.roleLabel, { backgroundColor: theme.primary + '20' }]}>
+              <Text style={[styles.roleText, { color: theme.primary }]}>ACTIVITY COORDINATOR</Text>
+          </View>
+        </View>
+
+        {/* Activity Oversight */}
+        <View style={styles.section}>
+          <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>Activity Oversight</ThemedText>
+          <GlassCard style={[styles.card, { backgroundColor: theme.card }]}>
+            <ProfileItem icon={Calendar} label="Managed Activities" color="#0EA5E9" theme={theme} />
+            <ProfileItem icon={Users} label="Student Directory" color="#8B5CF6" theme={theme} />
+            <ProfileItem icon={BookOpen} label="Coordination Logs" color="#F59E0B" theme={theme} />
+          </GlassCard>
+        </View>
+
+        {/* Account Details */}
+        <View style={styles.section}>
+          <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>Account Details</ThemedText>
+          <GlassCard style={[styles.card, { backgroundColor: theme.card }]}>
+            <ProfileItem 
+                icon={User} 
+                label="Personal Information" 
+                onPress={() => router.push('/(coordinator)/settings/personal')}
+                theme={theme}
+            />
+            <ProfileItem 
+                icon={Bell} 
+                label="Duty Notifications" 
+                onPress={() => router.push('/(coordinator)/settings/notifications')}
+                theme={theme}
+            />
+             <ProfileItem 
+                icon={Lock} 
+                label="Security & Password" 
+                onPress={() => router.push('/(coordinator)/settings/security')}
+                theme={theme}
+            />
+            <ProfileItem 
+                icon={Settings} 
+                label="App Preferences" 
+                onPress={() => router.push('/(coordinator)/settings/preferences')}
+                theme={theme}
+            />
+          </GlassCard>
+        </View>
+
+        {/* Support & Power */}
+        <View style={styles.section}>
+          <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>Coordinator Support</ThemedText>
+          <GlassCard style={[styles.card, { backgroundColor: theme.card }]}>
+            <ProfileItem icon={CircleHelp} label="Coordinator Documentation" theme={theme} />
+            <ProfileItem icon={LogOut} label="Logout" color="#EF4444" onPress={() => router.push('/login')} theme={theme} />
+          </GlassCard>
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={[styles.versionText, { color: theme.textSecondary }]}>Coordinator Portal v2.0.4 • Stable</Text>
+        </View>
+      </ScrollView>
+    </GradientBackground>
+  );
+}
+
+function ProfileItem({ icon: Icon, label, color, onPress, theme }: any) {
+  const itemColor = color || theme.text;
+  return (
+    <TouchableOpacity style={styles.item} onPress={onPress} activeOpacity={0.7}>
+      <View style={styles.itemLeft}>
+        <View style={[styles.iconBg, { backgroundColor: itemColor + '15' }]}>
+          <Icon size={20} color={itemColor} />
+        </View>
+        <Text style={[styles.itemLabel, { color: itemColor }]}>{label}</Text>
+      </View>
+      <ChevronRight size={18} color={theme.icon} />
+    </TouchableOpacity>
+  );
+}
+
+const styles = StyleSheet.create({
+  scrollView: { flex: 1 },
+  contentContainer: { padding: 20, paddingTop: 60 },
+  header: { alignItems: 'center', marginBottom: 20 },
+  avatarContainer: { position: 'relative', marginBottom: 16 },
+  avatar: { width: 100, height: 100, borderRadius: 50, borderWidth: 4 },
+  coordBadge: { position: 'absolute', right: 4, bottom: 4, backgroundColor: '#3B82F6', padding: 6, borderRadius: 12, borderWidth: 2 },
+  userName: { fontSize: 26, fontWeight: '900', letterSpacing: -0.5 },
+  roleLabel: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, marginTop: 8 },
+  roleText: { fontSize: 10, fontWeight: '800', letterSpacing: 1 },
+  section: { marginBottom: 24 },
+  sectionTitle: { fontSize: 13, fontWeight: '800', marginBottom: 12, marginLeft: 4, textTransform: 'uppercase', letterSpacing: 1 },
+  card: { padding: 8, borderRadius: 24, overflow: 'hidden' },
+  item: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 12 },
+  itemLeft: { flexDirection: 'row', alignItems: 'center' },
+  iconBg: { width: 42, height: 42, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
+  itemLabel: { fontSize: 16, fontWeight: '600' },
+  footer: { alignItems: 'center', marginTop: 20, marginBottom: 40 },
+  versionText: { fontSize: 11, fontWeight: '600' },
+});
