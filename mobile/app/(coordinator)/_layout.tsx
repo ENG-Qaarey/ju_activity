@@ -190,12 +190,36 @@ export default function CoordinatorLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: 'profile',
+            title: 'Profile',
             tabBarIcon: ({ color }) => <User size={24} color={color} />,
           }}
         />
         <Tabs.Screen
           name="propose"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="settings/personal"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="settings/notifications"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="settings/security"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="settings/preferences"
           options={{
             href: null,
           }}

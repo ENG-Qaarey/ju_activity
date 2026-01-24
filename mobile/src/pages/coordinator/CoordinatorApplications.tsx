@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { Check, X, Clock, User, FileText, ChevronRight, Filter, ArrowLeft, Search, Zap } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
@@ -39,6 +39,21 @@ export default function CoordinatorApplications() {
             <StatCard icon={Clock} label="Pending" value="28" color="#F59E0B" theme={theme} />
             <StatCard icon={Check} label="Approved" value="142" color="#22C55E" theme={theme} />
             <StatCard icon={Zap} label="Growth" value="+12%" color="#0EA5E9" theme={theme} />
+        </View>
+
+        {/* Search & Filter Bar */}
+        <View style={styles.searchRow}>
+            <View style={[styles.searchContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <Search size={18} color={theme.textSecondary} style={styles.searchIcon} />
+                <TextInput 
+                    placeholder="Search applicant names or IDs..." 
+                    style={[styles.searchInput, { color: theme.text }]}
+                    placeholderTextColor={theme.textSecondary}
+                />
+            </View>
+            <TouchableOpacity style={[styles.quickFilterBtn, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                <Filter size={18} color={theme.primary} />
+            </TouchableOpacity>
         </View>
 
         {/* Section Header */}
@@ -130,7 +145,7 @@ function ApplicationItem({ student, id, activity, time, status, avatar, theme }:
             <Text style={[styles.statusText, { color: statusColor }]}>{status}</Text>
         </View>
       </View>
-
+ 
       <View style={[styles.activityDetails, { backgroundColor: theme.background, borderColor: theme.border }]}>
           <View style={[styles.activityIconBox, { backgroundColor: theme.primary + '15' }]}>
                 <FileText size={16} color={theme.primary} />
@@ -171,7 +186,7 @@ function ApplicationItem({ student, id, activity, time, status, avatar, theme }:
 
 const styles = StyleSheet.create({
   scrollView: { flex: 1 },
-  contentContainer: { paddingHorizontal: 20, paddingBottom: 60 },
+  contentContainer: { paddingHorizontal: 20, paddingBottom: 60, paddingTop: 60 },
   navBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -193,7 +208,7 @@ const styles = StyleSheet.create({
     opacity: 0.9,
     letterSpacing: 0.5,
   },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, marginTop: 10 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
   headerTitle: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5 },
   headerSubtitle: { fontSize: 13, marginTop: 2 },
   filterBtn: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
@@ -202,6 +217,11 @@ const styles = StyleSheet.create({
   statIconContainer: { width: 38, height: 38, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
   statValue: { fontSize: 20, fontWeight: '900' },
   statLabel: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase', marginTop: 4 },
+  searchRow: { flexDirection: 'row', gap: 10, marginBottom: 25, alignItems: 'center' },
+  searchContainer: { flex: 1, flexDirection: 'row', alignItems: 'center', borderRadius: 16, paddingHorizontal: 16, height: 52, borderWidth: 1.5 },
+  searchIcon: { marginRight: 10 },
+  searchInput: { flex: 1, height: '100%', fontSize: 14, fontWeight: '600' },
+  quickFilterBtn: { width: 52, height: 52, borderRadius: 16, justifyContent: 'center', alignItems: 'center', borderWidth: 1.5 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingHorizontal: 4 },
   sectionTitle: { fontSize: 16, fontWeight: '800' },
   viewAllText: { fontSize: 13, fontWeight: '700' },

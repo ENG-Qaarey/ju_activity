@@ -2,7 +2,8 @@ import React from 'react';
 import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from 'react-native';
 import { 
   User, Mail, Shield, Bell, CircleHelp, LogOut, 
-  ChevronRight, Settings, Users, BookOpen, Calendar
+  ChevronRight, Settings, LayoutDashboard, Database, Lock,
+  Calendar, Users, BookOpen
 } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { ThemedText } from '@/src/components/themed-text';
@@ -38,12 +39,12 @@ export default function CoordinatorProfile() {
           </View>
         </View>
 
-        {/* Activity & Management */}
+        {/* Activity Oversight */}
         <View style={styles.section}>
           <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>Activity Oversight</ThemedText>
           <GlassCard style={[styles.card, { backgroundColor: theme.card }]}>
-            <ProfileItem icon={Calendar} label="Managed Activities" color="#8B5CF6" theme={theme} />
-            <ProfileItem icon={Users} label="Faculty Directory" color="#0EA5E9" theme={theme} />
+            <ProfileItem icon={Calendar} label="Managed Activities" color="#0EA5E9" theme={theme} />
+            <ProfileItem icon={Users} label="Student Directory" color="#8B5CF6" theme={theme} />
             <ProfileItem icon={BookOpen} label="Coordination Logs" color="#F59E0B" theme={theme} />
           </GlassCard>
         </View>
@@ -52,9 +53,30 @@ export default function CoordinatorProfile() {
         <View style={styles.section}>
           <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>Account Details</ThemedText>
           <GlassCard style={[styles.card, { backgroundColor: theme.card }]}>
-            <ProfileItem icon={User} label="Personal Information" theme={theme} />
-            <ProfileItem icon={Bell} label="Duty Notifications" theme={theme} />
-            <ProfileItem icon={Settings} label="App Settings" theme={theme} />
+            <ProfileItem 
+                icon={User} 
+                label="Personal Information" 
+                onPress={() => router.push('/(coordinator)/settings/personal')}
+                theme={theme}
+            />
+            <ProfileItem 
+                icon={Bell} 
+                label="Duty Notifications" 
+                onPress={() => router.push('/(coordinator)/settings/notifications')}
+                theme={theme}
+            />
+             <ProfileItem 
+                icon={Lock} 
+                label="Security & Password" 
+                onPress={() => router.push('/(coordinator)/settings/security')}
+                theme={theme}
+            />
+            <ProfileItem 
+                icon={Settings} 
+                label="App Preferences" 
+                onPress={() => router.push('/(coordinator)/settings/preferences')}
+                theme={theme}
+            />
           </GlassCard>
         </View>
 
@@ -62,13 +84,13 @@ export default function CoordinatorProfile() {
         <View style={styles.section}>
           <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>Coordinator Support</ThemedText>
           <GlassCard style={[styles.card, { backgroundColor: theme.card }]}>
-            <ProfileItem icon={CircleHelp} label="Coordinator Guide" theme={theme} />
-            <ProfileItem icon={LogOut} label="Log Out" color="#EF4444" onPress={() => router.push('/login')} theme={theme} />
+            <ProfileItem icon={CircleHelp} label="Coordinator Documentation" theme={theme} />
+            <ProfileItem icon={LogOut} label="Logout" color="#EF4444" onPress={() => router.push('/login')} theme={theme} />
           </GlassCard>
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.versionText, { color: theme.textSecondary }]}>Coordinator Hub v2.0 • JU-AMS</Text>
+          <Text style={[styles.versionText, { color: theme.textSecondary }]}>Coordinator Portal v2.0.4 • Stable</Text>
         </View>
       </ScrollView>
     </GradientBackground>
@@ -92,11 +114,11 @@ function ProfileItem({ icon: Icon, label, color, onPress, theme }: any) {
 
 const styles = StyleSheet.create({
   scrollView: { flex: 1 },
-  contentContainer: { padding: 20, paddingTop: 40 },
-  header: { alignItems: 'center', marginBottom: 32 },
+  contentContainer: { padding: 20, paddingTop: 60 },
+  header: { alignItems: 'center', marginBottom: 20 },
   avatarContainer: { position: 'relative', marginBottom: 16 },
   avatar: { width: 100, height: 100, borderRadius: 50, borderWidth: 4 },
-  coordBadge: { position: 'absolute', right: 4, bottom: 4, backgroundColor: '#8B5CF6', padding: 6, borderRadius: 12, borderWidth: 2 },
+  coordBadge: { position: 'absolute', right: 4, bottom: 4, backgroundColor: '#3B82F6', padding: 6, borderRadius: 12, borderWidth: 2 },
   userName: { fontSize: 26, fontWeight: '900', letterSpacing: -0.5 },
   roleLabel: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 20, marginTop: 8 },
   roleText: { fontSize: 10, fontWeight: '800', letterSpacing: 1 },
