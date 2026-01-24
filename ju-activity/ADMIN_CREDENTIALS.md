@@ -17,12 +17,6 @@ cd backend
 npm run create-clerk-user
 ```
 
-This will:
-- Create the admin user in Clerk
-- Set the password
-- Remove MFA methods if they exist
-- Set admin role in metadata
-
 ### 2. Create Admin User in Prisma Database
 
 Run this command to create/update the admin user in your database:
