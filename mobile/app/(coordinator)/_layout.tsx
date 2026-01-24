@@ -2,7 +2,7 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, ScrollView } from 'react-native';
 import { usePathname, Tabs, useRouter } from 'expo-router';
 import { Drawer } from 'react-native-drawer-layout';
-import { LayoutDashboard, Calendar, FileText, Bell, User, Search, Menu, CheckCircle, Plus, Activity, BarChart3, Clock } from 'lucide-react-native';
+import { LayoutDashboard, Calendar, FileText, Bell, User, MessageCircle, Menu, CheckCircle, Plus, Activity, BarChart3, Clock } from 'lucide-react-native';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { Image } from 'expo-image';
@@ -125,7 +125,7 @@ export default function CoordinatorLayout() {
           headerRight: () => (
             <View style={styles.headerIcons}>
               <TouchableOpacity style={[styles.headerIconBtn, { backgroundColor: theme.background }]}>
-                <Search size={20} color={theme.icon} />
+                <MessageCircle size={20} color={theme.icon} />
               </TouchableOpacity>
               <Image 
                 source={{ uri: 'https://github.com/shadcn.png' }} 

@@ -5,7 +5,7 @@ import { Drawer } from 'react-native-drawer-layout';
 import { 
   LayoutGrid, FilePlus, Calendar, Activity, Bell, 
   Inbox, Users, UserCog, BarChart3, Terminal,
-  Menu, Search, User
+  Menu, MessageCircle, User
 } from 'lucide-react-native';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
@@ -153,7 +153,7 @@ export default function AdminLayout() {
           headerRight: () => (
             <View style={styles.headerIcons}>
               <TouchableOpacity style={[styles.headerIconBtn, { backgroundColor: theme.background }]}>
-                <Search size={20} color={theme.icon} />
+                <MessageCircle size={20} color={theme.icon} />
               </TouchableOpacity>
               <Image 
                 source={{ uri: 'https://github.com/shadcn.png' }} 
