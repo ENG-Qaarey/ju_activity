@@ -95,7 +95,7 @@ export default function StudentTabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Me',
+          title: 'profile',
           tabBarIcon: ({ color }) => <User size={24} color={color} />,
         }}
       />
