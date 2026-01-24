@@ -11,9 +11,11 @@ import {
   Animated,
   Easing,
 } from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
+import { useTheme } from "@/src/context/ThemeContext";
 
 const { width, height } = Dimensions.get('window');
 
@@ -58,6 +60,7 @@ function FloatingOrb({ size, x, y, duration, delay }: any) {
 }
 
 export default function Login() {
+  const { refreshTheme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -84,16 +87,22 @@ export default function Login() {
   }, []);
 
   /* ---------------- LOGIN LOGIC ---------------- */
-  const handleLogin = () => {
+  const handleLogin = async () => {
     setSubmitted(true);
     setError('');
 
+    const loginSuccess = async (target: string, userEmail: string) => {
+      await AsyncStorage.setItem('current-user', userEmail);
+      await refreshTheme();
+      router.push(target as any);
+    };
+
     if (email === 'admin@gmail.com' && password === '1234') {
-      router.push('/(admin)/dashboard');
+      await loginSuccess('/(admin)/dashboard', email);
     } else if (email === 'coordi@gmail.com' && password === '1234') {
-      router.push('/(coordinator)/dashboard');
+      await loginSuccess('/(coordinator)/dashboard', email);
     } else if (email === 'Student@gmail.com' && password === '1234') {
-      router.push('/(student)/home');
+      await loginSuccess('/(student)/home', email);
     } else {
       setError('Invalid email or password');
     }

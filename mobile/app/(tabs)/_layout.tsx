@@ -30,17 +30,17 @@ export default function HybridLayout() {
           <DrawerLink 
             icon={Folders} 
             label="Create Activity" 
-            onPress={() => { router.push('/(admin)/dashboard'); setOpen(false); }} 
+            onPress={() => { router.push('/(admin)/create'); setOpen(false); }} 
           />
           <DrawerLink 
             icon={Calendar} 
             label="Admin Activities" 
-            onPress={() => { router.push('/(admin)/activities/index'); setOpen(false); }} 
+            onPress={() => { router.push('/(admin)/activities'); setOpen(false); }} 
           />
           <DrawerLink 
             icon={Monitor} 
             label="Monitor Activities" 
-            onPress={() => { router.push('/(admin)/dashboard'); setOpen(false); }} 
+            onPress={() => { router.push('/(admin)/monitor'); setOpen(false); }} 
           />
           <DrawerLink 
             icon={Bell} 
