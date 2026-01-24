@@ -1,153 +1,341 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, TextInput, Alert } from 'react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { ThemedText } from '@/src/components/themed-text';
-import { GlassCard } from '@/src/components/GlassCard';
-import { FileText, Clock, CheckCircle2, XCircle, ChevronRight, MapPin, Calendar } from 'lucide-react-native';
+import { 
+  Clock, CheckCircle2, XCircle, 
+  ChevronRight, MapPin, Calendar, LayoutGrid,
+  Filter, Trash2, ArrowRight, Search, 
+  History, BookmarkCheck
+} from 'lucide-react-native';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
+import { useRouter } from 'expo-router';
+
+const { width } = Dimensions.get('window');
 
 const MOCK_APPLICATIONS = [
   {
     id: '1',
-    activityTitle: 'Quantum Computing Workshop',
+    activityTitle: 'Leadership Mastery',
+    category: 'Seminar',
     status: 'Approved',
-    appliedDate: 'Jan 20, 2026',
-    location: 'Lab 12, Science Wing',
-    schedule: 'Feb 05, 10:00 AM'
+    appliedDate: 'Jan 20',
+    location: 'Main Hall',
+    schedule: 'Feb 05, 10:00 AM',
+    isHistorical: false
   },
   {
     id: '2',
-    activityTitle: 'AI Startup Pitch Night',
+    activityTitle: 'Full-Stuck Development',
+    category: 'Workshop',
     status: 'Pending',
-    appliedDate: 'Jan 22, 2026',
-    location: 'Innovation Hub',
-    schedule: 'Feb 15, 06:00 PM'
+    appliedDate: 'Jan 22',
+    location: 'Lab 1',
+    schedule: 'Feb 15, 06:00 PM',
+    isHistorical: false
   },
   {
     id: '3',
-    activityTitle: 'Leadership Seminar Series',
-    status: 'Completed',
-    appliedDate: 'Jan 05, 2026',
-    location: 'Online / Zoom',
-    schedule: 'Jan 15, 02:00 PM'
+    activityTitle: 'Cybersecurity Guard',
+    category: 'Workshop',
+    status: 'Pending',
+    appliedDate: 'Jan 24',
+    location: 'IT Wing',
+    schedule: 'Feb 20, 09:00 AM',
+    isHistorical: false
+  },
+  {
+    id: '4',
+    activityTitle: 'Graphic Design Basics',
+    category: 'Training',
+    status: 'Rejected',
+    appliedDate: 'Jan 05',
+    location: 'Media Lab',
+    schedule: 'Jan 15, 02:00 PM',
+    isHistorical: true
+  },
+  {
+    id: '5',
+    activityTitle: 'Public Speaking BootCamp',
+    category: 'Training',
+    status: 'Approved',
+    appliedDate: 'Dec 15',
+    location: 'Auditorium',
+    schedule: 'Jan 02, 02:00 PM',
+    isHistorical: true
   }
 ];
 
 export default function StudentApplications() {
+  const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+  const [searchQuery, setSearchQuery] = useState('');
+  const [applications, setApplications] = useState(MOCK_APPLICATIONS);
+
+  const filteredApps = applications.filter(app => 
+    app.activityTitle.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const currentApps = filteredApps.filter(app => !app.isHistorical);
+  const pastApps = filteredApps.filter(app => app.isHistorical);
+
+  const handleDelete = (id: string, title: string) => {
+    Alert.alert(
+      "Delete Application",
+      `Are you sure you want to delete your application for "${title}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive", 
+          onPress: () => {
+            setApplications(prev => prev.filter(app => app.id !== id));
+          } 
+        }
+      ]
+    );
+  };
 
   return (
     <GradientBackground>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.contentContainer} 
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
-            <View style={styles.iconCircle}>
-                <FileText size={24} color="#FFFFFF" />
-            </View>
-            <View>
-                <ThemedText style={styles.title}>My Applications</ThemedText>
-                <ThemedText style={[styles.subtitle, { color: theme.textSecondary }]}>
-                    Track the status of your joined activities.
-                </ThemedText>
-            </View>
+            <ThemedText style={styles.title}>My Applications</ThemedText>
+            <ThemedText style={[styles.subtitle, { color: theme.textSecondary }]}>
+                Track and manage your activity participation requests.
+            </ThemedText>
         </View>
 
-        <View style={styles.list}>
-            {MOCK_APPLICATIONS.map(app => (
-                <ApplicationItem key={app.id} application={app} theme={theme} />
-            ))}
+        {/* Search Bar */}
+        <View style={[styles.searchContainer, { backgroundColor: '#FFFFFF' }]}>
+            <Search size={20} color="#94A3B8" />
+            <TextInput 
+                placeholder="Search your applications.." 
+                placeholderTextColor="#94A3B8"
+                style={styles.searchInput}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+            />
         </View>
 
-        <View style={styles.statsRow}>
-            <StatCard label="Total Apps" value="3" theme={theme} />
-            <StatCard label="Approved" value="1" theme={theme} color="#22C55E" />
-            <StatCard label="Pending" value="1" theme={theme} color="#F59E0B" />
+        {/* Stats Summary - More Premium Grid */}
+        <View style={styles.statsGrid}>
+            <StatCard label="Active" value={currentApps.length} theme={theme} icon={BookmarkCheck} color="#4FA3F7" />
+            <StatCard label="Pending" value={currentApps.filter(a => a.status === 'Pending').length} theme={theme} icon={Clock} color="#F59E0B" />
+            <StatCard label="Passed" value={pastApps.length} theme={theme} icon={History} color="#10B981" />
         </View>
+
+        {/* Section: Current Applications */}
+        {currentApps.length > 0 && (
+            <>
+                <View style={styles.listHeader}>
+                    <ThemedText style={styles.listTitle}>Current Applications</ThemedText>
+                </View>
+                <View style={styles.list}>
+                    {currentApps.map(app => (
+                        <ApplicationCard 
+                            key={app.id} 
+                            application={app} 
+                            theme={theme} 
+                            onDelete={() => handleDelete(app.id, app.activityTitle)}
+                            onPress={() => router.push({
+                                pathname: '/(student)/details' as any,
+                                params: { ...app, isHistorical: String(app.isHistorical) }
+                            })}
+                        />
+                    ))}
+                </View>
+            </>
+        )}
+
+        {/* Section: Past Activities */}
+        {pastApps.length > 0 && (
+            <>
+                <View style={[styles.listHeader, { marginTop: 32 }]}>
+                    <ThemedText style={styles.listTitle}>Activity History</ThemedText>
+                </View>
+                <View style={styles.list}>
+                    {pastApps.map(app => (
+                        <ApplicationCard 
+                            key={app.id} 
+                            application={app} 
+                            theme={theme} 
+                            isPast
+                        />
+                    ))}
+                </View>
+            </>
+        )}
+
+        {filteredApps.length === 0 && (
+            <View style={styles.emptyState}>
+                <LayoutGrid size={48} color="#94A3B8" strokeWidth={1} />
+                <ThemedText style={styles.emptyText}>No applications found.</ThemedText>
+            </View>
+        )}
       </ScrollView>
     </GradientBackground>
   );
 }
 
-function ApplicationItem({ application, theme }: any) {
-    const getStatusStyle = () => {
+function ApplicationCard({ application, theme, onDelete, onPress, isPast }: any) {
+    const getStatusColor = () => {
         switch (application.status) {
-            case 'Approved': return { bg: '#DCFCE7', text: '#15803D', icon: CheckCircle2 };
-            case 'Pending': return { bg: '#FEF3C7', text: '#B45309', icon: Clock };
-            case 'Completed': return { bg: '#E0F2FE', text: '#0369A1', icon: CheckCircle2 };
-            default: return { bg: '#F1F5F9', text: '#475569', icon: Clock };
+            case 'Approved': return '#10B981';
+            case 'Pending': return '#F59E0B';
+            case 'Rejected': return '#EF4444';
+            default: return '#64748B';
         }
     };
-    
-    const statusStyle = getStatusStyle();
-    const StatusIcon = statusStyle.icon;
+
+    const color = getStatusColor();
 
     return (
-        <GlassCard style={styles.appCard}>
-            <View style={styles.appHeader}>
-                <View>
-                    <ThemedText style={styles.appTitle}>{application.activityTitle}</ThemedText>
-                    <ThemedText style={[styles.appliedOn, { color: theme.textSecondary }]}>Applied on {application.appliedDate}</ThemedText>
-                </View>
-                <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
-                    <StatusIcon size={12} color={statusStyle.text} />
-                    <ThemedText style={[styles.statusText, { color: statusStyle.text }]}>{application.status}</ThemedText>
-                </View>
-            </View>
+        <TouchableOpacity activeOpacity={0.8} onPress={onPress}>
+            <View style={[styles.card, isPast && { opacity: 0.8 }]}>
+                <View style={styles.cardContent}>
+                    <View style={styles.cardMainRow}>
+                        <View style={styles.titleArea}>
+                            <View style={[styles.typeBadge, { backgroundColor: isPast ? '#F1F5F9' : '#F0F9FF' }]}>
+                                <ThemedText style={[styles.typeText, { color: isPast ? '#64748B' : '#0EA5E9' }]}>{application.category}</ThemedText>
+                            </View>
+                            <ThemedText style={styles.appTitle} numberOfLines={1}>{application.activityTitle}</ThemedText>
+                        </View>
+                        <View style={[styles.statusTag, { backgroundColor: color + '10' }]}>
+                            <View style={[styles.statusDot, { backgroundColor: color }]} />
+                        </View>
+                    </View>
 
-            <View style={styles.detailsRow}>
-                <View style={styles.detailItem}>
-                    <MapPin size={14} color={theme.textSecondary} />
-                    <ThemedText style={styles.detailText}>{application.location}</ThemedText>
+                    <View style={styles.cardMetaRow}>
+                        <View style={styles.metaItem}>
+                            <Calendar size={12} color="#94A3B8" />
+                            <ThemedText style={styles.metaText}>{application.schedule}</ThemedText>
+                        </View>
+                        <View style={styles.metaItem}>
+                            <MapPin size={12} color="#94A3B8" />
+                            <ThemedText style={styles.metaText}>{application.location}</ThemedText>
+                        </View>
+                    </View>
+                    
+                    <View style={styles.cardFooterCompact}>
+                        <ThemedText style={[styles.footerDate, { color: theme.textSecondary }]}>
+                            Applied: <ThemedText style={{ fontWeight: '800' }}>{application.appliedDate}</ThemedText>
+                        </ThemedText>
+                        <ThemedText style={[styles.statusLabelSmall, { color }]}>{application.status}</ThemedText>
+                    </View>
                 </View>
-                <View style={styles.detailItem}>
-                    <Calendar size={14} color={theme.textSecondary} />
-                    <ThemedText style={styles.detailText}>{application.schedule}</ThemedText>
-                </View>
-            </View>
 
-            <TouchableOpacity style={styles.viewBtn}>
-                <ThemedText style={[styles.viewBtnText, { color: theme.primary }]}>View Details</ThemedText>
-                <ChevronRight size={16} color={theme.primary} />
-            </TouchableOpacity>
-        </GlassCard>
+                {application.status === 'Pending' && !isPast && (
+                    <TouchableOpacity style={styles.miniDeleteBtn} onPress={(e) => { e.stopPropagation(); onDelete(); }}>
+                        <Trash2 size={15} color="#EF4444" />
+                    </TouchableOpacity>
+                )}
+            </View>
+        </TouchableOpacity>
     )
 }
 
-function StatCard({ label, value, theme, color }: any) {
+function StatCard({ label, value, theme, icon: Icon, color }: any) {
     return (
-        <GlassCard style={styles.statCard}>
-            <ThemedText style={[styles.statValue, color && { color }]}>{value}</ThemedText>
-            <ThemedText style={[styles.statLabel, { color: theme.textSecondary }]}>{label}</ThemedText>
-        </GlassCard>
+        <View style={styles.statBox}>
+            <View style={[styles.statIcon, { backgroundColor: color + '10' }]}>
+                <Icon size={18} color={color} />
+            </View>
+            <View style={{ alignItems: 'center' }}>
+                <ThemedText style={styles.statValue}>{value}</ThemedText>
+                <ThemedText style={[styles.statLabel, { color: theme.textSecondary }]}>{label}</ThemedText>
+            </View>
+        </View>
     )
 }
 
 const styles = StyleSheet.create({
   scrollView: { flex: 1 },
-  contentContainer: { padding: 20, paddingTop: 60, paddingBottom: 100 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 32 },
-  iconCircle: { width: 48, height: 48, borderRadius: 16, backgroundColor: '#3B82F6', justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 26, fontWeight: '900', letterSpacing: -0.5 },
-  subtitle: { fontSize: 14, marginTop: 2 },
+  contentContainer: { padding: 20, paddingTop: 40, paddingBottom: 140 },
+  header: { marginBottom: 28 },
+  title: { fontSize: 28, fontWeight: '900', color: '#1E293B', letterSpacing: -0.5 },
+  subtitle: { fontSize: 14, marginTop: 4, lineHeight: 20 },
+
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    height: 52,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+  },
+  searchInput: { flex: 1, fontSize: 14, marginLeft: 12, color: '#1E293B', fontWeight: '500' },
   
-  list: { gap: 16, marginBottom: 32 },
-  appCard: { padding: 16, borderRadius: 24 },
-  appHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
-  appTitle: { fontSize: 17, fontWeight: '800', maxWidth: '70%'},
-  appliedOn: { fontSize: 12, marginTop: 4 },
-  statusBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10 },
-  statusText: { fontSize: 11, fontWeight: '800', textTransform: 'uppercase' },
+  statsGrid: { flexDirection: 'row', gap: 12, marginBottom: 36 },
+  statBox: { 
+    flex: 1,
+    padding: 16, 
+    borderRadius: 24, 
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1, 
+    borderColor: '#F1F5F9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 2,
+    alignItems: 'center',
+    gap: 8
+  },
+  statIcon: { width: 38, height: 38, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
+  statValue: { fontSize: 20, fontWeight: '900', color: '#1E293B' },
+  statLabel: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 },
+
+  listHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  listTitle: { fontSize: 18, fontWeight: '900', color: '#1E293B' },
+
+  list: { gap: 12 },
+  card: { 
+    backgroundColor: '#FFFFFF', 
+    borderRadius: 18, 
+    padding: 12, 
+    borderWidth: 1, 
+    borderColor: '#F1F5F9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cardContent: { flex: 1 },
+  cardMainRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  titleArea: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  typeBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+  typeText: { fontSize: 9, fontWeight: '900', textTransform: 'uppercase' },
+  appTitle: { fontSize: 14.5, fontWeight: '800', color: '#1E293B', flex: 1 },
   
-  detailsRow: { gap: 10, marginBottom: 16, borderLeftWidth: 2, borderLeftColor: 'rgba(0,0,0,0.05)', paddingLeft: 12 },
-  detailItem: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  detailText: { fontSize: 13, fontWeight: '600' },
-  
-  viewBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4 },
-  viewBtnText: { fontSize: 13, fontWeight: '700' },
-  
-  statsRow: { flexDirection: 'row', gap: 12 },
-  statCard: { flex: 1, alignItems: 'center', padding: 12, borderRadius: 20 },
-  statValue: { fontSize: 20, fontWeight: '900' },
-  statLabel: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', marginTop: 4 },
+  statusTag: { width: 10, height: 10, borderRadius: 5, justifyContent: 'center', alignItems: 'center' },
+  statusDot: { width: 6, height: 6, borderRadius: 3 },
+
+  cardMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 8 },
+  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  metaText: { fontSize: 11.5, fontWeight: '700', color: '#64748B' },
+
+  cardFooterCompact: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#F8FAFC', paddingTop: 8 },
+  footerDate: { fontSize: 11, fontWeight: '600' },
+  statusLabelSmall: { fontSize: 10.5, fontWeight: '900', textTransform: 'uppercase' },
+
+  miniDeleteBtn: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#FEE2E2', justifyContent: 'center', alignItems: 'center', marginLeft: 12 },
+
+  emptyState: { alignItems: 'center', paddingVertical: 60, gap: 12 },
+  emptyText: { color: '#94A3B8', fontSize: 15, fontWeight: '600' },
 });
