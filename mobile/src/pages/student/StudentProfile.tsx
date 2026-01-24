@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
   User, Mail, Shield, Bell, CircleHelp, LogOut, 
   ChevronRight, Settings, Calendar, Award, Star
@@ -12,11 +13,19 @@ import { useRouter } from 'expo-router';
 
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
+import { useTheme } from '@/src/context/ThemeContext';
 
 export default function StudentProfile() {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+  const { refreshTheme } = useTheme();
+
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('current-user');
+    await refreshTheme();
+    router.replace('/login');
+  };
 
   return (
     <GradientBackground>
@@ -63,7 +72,7 @@ export default function StudentProfile() {
           <GlassCard style={[styles.card, { backgroundColor: theme.card }]}>
             <ProfileItem icon={CircleHelp} label="Help Center" theme={theme} />
             <ProfileItem icon={Settings} label="App Settings" theme={theme} />
-            <ProfileItem icon={LogOut} label="Log Out" color="#EF4444" onPress={() => router.push('/login')} theme={theme} />
+            <ProfileItem icon={LogOut} label="Log Out" color="#EF4444" onPress={handleLogout} theme={theme} />
           </GlassCard>
         </View>
 
