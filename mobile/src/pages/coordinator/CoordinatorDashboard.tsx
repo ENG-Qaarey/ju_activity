@@ -1,11 +1,15 @@
 import React from 'react';
 import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from 'react-native';
-import { Activity, Users, FileText, Bell, BarChart3, Clock, CheckCircle, ChevronRight, Plus } from 'lucide-react-native';
+import { 
+  Activity, Users, FileText, Bell, BarChart3, Clock, 
+  CheckCircle, ChevronRight, Plus, Rocket, Target, Zap 
+} from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
 import { ThemedText } from '@/src/components/themed-text';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function CoordinatorDashboard() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -13,126 +17,162 @@ export default function CoordinatorDashboard() {
 
   return (
     <GradientBackground>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
-        {/* Welcome Header */}
-        <View style={styles.header}>
-          <ThemedText style={styles.title}>Coordinator Hub</ThemedText>
-          <ThemedText style={styles.subtitle}>Manage your activities and track participants</ThemedText>
+      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+        {/* Premium Coordinator Banner */}
+        <View style={[styles.headerBanner, { backgroundColor: theme.primary }]}>
+            <View style={{ flex: 1 }}>
+                <View style={styles.bannerTopRow}>
+                    <View style={styles.rocketIconBox}>
+                        <Rocket size={20} color="#FFFFFF" />
+                    </View>
+                    <View style={styles.statusPill}>
+                        <View style={styles.statusDot} />
+                        <Text style={styles.statusText}>Active Portal</Text>
+                    </View>
+                </View>
+                <Text style={styles.bannerTitle}>Coordinator Command</Text>
+                <Text style={styles.bannerSubtitle}>Orchestrate excellence and track student engagement live.</Text>
+            </View>
         </View>
 
-        {/* Quick Stats */}
-        <View style={styles.statsRow}>
-          <StatBox label="Managed" value="12" icon={Activity} color="#0EA5E9" />
-          <StatBox label="Active" value="4" icon={CheckCircle} color="#22C55E" />
-          <StatBox label="Reviews" value="28" icon={FileText} color="#F59E0B" />
+        {/* Dynamic Stats Row */}
+        <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Real-time Metrics</Text>
+            <Zap size={14} color={theme.primary} />
         </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsScroll} contentContainerStyle={styles.statsScrollContent}>
+          <StatBox label="Activities" value="12" icon={Activity} color="#0EA5E9" theme={theme} />
+          <StatBox label="Active Now" value="4" icon={CheckCircle} color="#22C55E" theme={theme} />
+          <StatBox label="Reviews" value="28" icon={FileText} color="#F59E0B" theme={theme} />
+          <StatBox label="Students" value="1.2K" icon={Users} color="#8B5CF6" theme={theme} />
+        </ScrollView>
 
-        {/* Action Center */}
-        <ThemedText style={styles.sectionTitle}>Quick Actions</ThemedText>
+        {/* Action Center Grid */}
+        <View style={[styles.sectionHeader, { marginTop: 24 }]}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Terminal Actions</Text>
+        </View>
         <View style={styles.actionGrid}>
-          <ActionButton icon={Plus} label="Create Activity" color="#8B5CF6" />
-          <ActionButton icon={Users} label="Check Attendance" color="#EC4899" />
-          <ActionButton icon={FileText} label="Review Apps" color="#F97316" />
-          <ActionButton icon={Bell} label="Notify Students" color="#06B6D4" />
+          <ActionButton icon={Plus} label="New Activity" color="#0EA5E9" theme={theme} />
+          <ActionButton icon={Users} label="Attendance" color="#8B5CF6" theme={theme} />
+          <ActionButton icon={FileText} label="Review Apps" color="#F59E0B" theme={theme} />
+          <ActionButton icon={Bell} label="Broadcast" color="#22C55E" theme={theme} />
         </View>
 
-        {/* Engagement Chart Summary */}
-        <GlassCard style={styles.chartCard}>
-           <View style={styles.chartHeader}>
-               <BarChart3 size={20} color="#0EA5E9" />
-               <Text style={styles.chartTitle}>Recent Engagement</Text>
-           </View>
-           <View style={styles.vizPlaceholder}>
-               <View style={[styles.bar, { height: '30%' }]} />
-               <View style={[styles.bar, { height: '50%' }]} />
-               <View style={[styles.bar, { height: '80%', backgroundColor: '#0EA5E9' }]} />
-               <View style={[styles.bar, { height: '60%' }]} />
-               <View style={[styles.bar, { height: '40%' }]} />
-           </View>
-        </GlassCard>
-
-        {/* Active Activities Queue */}
+        {/* Upcoming Sessions Section */}
         <View style={styles.queueHeader}>
-            <ThemedText style={styles.sectionTitle}>Upcoming Sessions</ThemedText>
-            <TouchableOpacity><Text style={styles.viewAll}>View All</Text></TouchableOpacity>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Upcoming Sessions</Text>
+            <TouchableOpacity><Text style={[styles.viewAll, { color: theme.primary }]}>View All</Text></TouchableOpacity>
         </View>
         
-        <GlassCard style={styles.activityItem}>
-            <View style={styles.aLeft}>
-                <View style={styles.aIconBg}>
-                    <Clock size={20} color="#64748B" />
-                </View>
-                <View>
-                    <ThemedText style={styles.aTitle}>UI/UX Workshop</ThemedText>
-                    <Text style={styles.aMeta}>Today • 02:00 PM • Lab 04</Text>
-                </View>
-            </View>
-            <ChevronRight size={18} color="#CBD5E1" />
-        </GlassCard>
-
-        <GlassCard style={styles.activityItem}>
-            <View style={styles.aLeft}>
-                <View style={[styles.aIconBg, { backgroundColor: '#DEF7EC' }]}>
-                    <Activity size={20} color="#059669" />
-                </View>
-                <View>
-                    <ThemedText style={styles.aTitle}>Open Day Planning</ThemedText>
-                    <Text style={styles.aMeta}>Tomorrow • 10:00 AM • Hall B</Text>
-                </View>
-            </View>
-            <ChevronRight size={18} color="#CBD5E1" />
-        </GlassCard>
+        <View style={styles.sessionList}>
+            <SessionItem 
+                title="UI/UX Workshop" 
+                meta="Today • 02:00 PM • Lab 04" 
+                icon={Target}
+                color="#0EA5E9"
+                theme={theme}
+            />
+            <SessionItem 
+                title="Open Day Planning" 
+                meta="Tomorrow • 10:00 AM • Hall B" 
+                icon={Activity}
+                color="#8B5CF6"
+                theme={theme}
+            />
+            <SessionItem 
+                title="Tech Talk" 
+                meta="Jan 25 • 11:30 AM • Remote" 
+                icon={Zap}
+                color="#22C55E"
+                theme={theme}
+            />
+        </View>
       </ScrollView>
     </GradientBackground>
   );
 }
 
-function StatBox({ label, value, icon: Icon, color }: any) {
+function StatBox({ label, value, icon: Icon, color, theme }: any) {
   return (
-    <GlassCard style={styles.statBox}>
-      <Icon size={20} color={color} />
-      <Text style={styles.statVal}>{value}</Text>
-      <Text style={styles.statLab}>{label}</Text>
+    <GlassCard style={[styles.statBox, { backgroundColor: theme.card }]}>
+      <View style={[styles.statIconBox, { backgroundColor: color + '15' }]}>
+        <Icon size={18} color={color} />
+      </View>
+      <Text style={[styles.statVal, { color: theme.text }]}>{value}</Text>
+      <Text style={[styles.statLab, { color: theme.textSecondary }]}>{label}</Text>
     </GlassCard>
   );
 }
 
-function ActionButton({ icon: Icon, label, color }: any) {
+function ActionButton({ icon: Icon, label, color, theme }: any) {
   return (
     <TouchableOpacity style={styles.actionBtn}>
-      <View style={[styles.actionIconBg, { backgroundColor: color + '15' }]}>
-        <Icon size={24} color={color} />
-      </View>
-      <Text style={styles.actionLabel}>{label}</Text>
+      <GlassCard style={[styles.actionCard, { backgroundColor: theme.card }]}>
+        <View style={[styles.actionIconBg, { backgroundColor: color + '10' }]}>
+            <Icon size={24} color={color} />
+        </View>
+        <Text style={[styles.actionLabel, { color: theme.text }]}>{label}</Text>
+      </GlassCard>
     </TouchableOpacity>
   );
 }
 
+function SessionItem({ title, meta, icon: Icon, color, theme }: any) {
+    return (
+        <GlassCard style={[styles.sessionItem, { backgroundColor: theme.card }]}>
+            <View style={styles.sLeft}>
+                <View style={[styles.sIconBg, { backgroundColor: color + '10' }]}>
+                    <Icon size={20} color={color} />
+                </View>
+                <View>
+                    <Text style={[styles.sTitle, { color: theme.text }]}>{title}</Text>
+                    <Text style={[styles.sMeta, { color: theme.textSecondary }]}>{meta}</Text>
+                </View>
+            </View>
+            <ChevronRight size={18} color={theme.icon} />
+        </GlassCard>
+    )
+}
+
 const styles = StyleSheet.create({
   scrollView: { flex: 1 },
-  contentContainer: { padding: 20, paddingTop: 60, paddingBottom: 40 },
-  header: { marginBottom: 32 },
-  title: { fontSize: 28, fontWeight: '900', color: '#1E293B' },
-  subtitle: { fontSize: 13, color: '#64748B', marginTop: 4 },
-  statsRow: { flexDirection: 'row', gap: 12, marginBottom: 32 },
-  statBox: { flex: 1, padding: 16, alignItems: 'center' },
-  statVal: { fontSize: 20, fontWeight: '800', color: '#1E293B', marginTop: 8 },
-  statLab: { fontSize: 11, color: '#94A3B8', fontWeight: '700', marginTop: 2, textTransform: 'uppercase' },
-  sectionTitle: { fontSize: 15, fontWeight: '800', color: '#64748B', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 },
-  actionGrid: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 32 },
-  actionBtn: { alignItems: 'center', gap: 8, width: '22%' },
-  actionIconBg: { width: 56, height: 56, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
-  actionLabel: { fontSize: 10, fontWeight: '700', color: '#475569', textAlign: 'center' },
-  chartCard: { padding: 16, marginBottom: 32 },
-  chartHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 20 },
-  chartTitle: { fontSize: 14, fontWeight: '700', color: '#1E293B' },
-  vizPlaceholder: { height: 60, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', paddingHorizontal: 20 },
-  bar: { width: 12, backgroundColor: '#E2E8F0', borderRadius: 6 },
-  queueHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  viewAll: { fontSize: 13, color: '#0EA5E9', fontWeight: '600' },
-  activityItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, marginTop: 12 },
-  aLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  aIconBg: { width: 40, height: 40, borderRadius: 10, backgroundColor: '#F1F5F9', justifyContent: 'center', alignItems: 'center' },
-  aTitle: { fontSize: 15, fontWeight: '700', color: '#1E293B' },
-  aMeta: { fontSize: 12, color: '#94A3B8', marginTop: 2 },
+  contentContainer: { padding: 16, paddingTop: 14, paddingBottom: 60 },
+  headerBanner: { 
+    padding: 24, 
+    borderRadius: 28, 
+    marginBottom: 24, 
+    shadowColor: '#0EA5E9', 
+    shadowOffset: { width: 0, height: 10 }, 
+    shadowOpacity: 0.3, 
+    shadowRadius: 15, 
+    elevation: 8 
+  },
+  bannerTopRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  rocketIconBox: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255, 255, 255, 0.2)', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.3)' },
+  statusPill: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255, 255, 255, 0.2)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.3)' },
+  statusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FFFFFF', marginRight: 6 },
+  statusText: { fontSize: 10, fontWeight: '800', color: '#FFFFFF', textTransform: 'uppercase' },
+  bannerTitle: { fontSize: 30, fontWeight: '900', color: '#FFFFFF', letterSpacing: -0.5 },
+  bannerSubtitle: { fontSize: 13, color: '#FFFFFF', opacity: 0.8, marginTop: 6, lineHeight: 18, maxWidth: '85%' },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, paddingHorizontal: 4 },
+  sectionTitle: { fontSize: 14, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
+  statsScroll: { flexGrow: 0, marginBottom: 24 },
+  statsScrollContent: { paddingRight: 16 },
+  statBox: { width: 120, padding: 16, marginRight: 12, borderRadius: 20, alignItems: 'center' },
+  statIconBox: { width: 34, height: 34, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+  statVal: { fontSize: 20, fontWeight: '900' },
+  statLab: { fontSize: 10, fontWeight: '700', marginTop: 4, textAlign: 'center' },
+  actionGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
+  actionBtn: { width: '48%' },
+  actionCard: { padding: 16, borderRadius: 20, alignItems: 'center' },
+  actionIconBg: { width: 48, height: 48, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+  actionLabel: { fontSize: 13, fontWeight: '800' },
+  queueHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingHorizontal: 4 },
+  viewAll: { fontSize: 13, fontWeight: '700' },
+  sessionList: { gap: 10 },
+  sessionItem: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderRadius: 20 },
+  sLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  sIconBg: { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  sTitle: { fontSize: 15, fontWeight: '700' },
+  sMeta: { fontSize: 12, marginTop: 2 },
 });
