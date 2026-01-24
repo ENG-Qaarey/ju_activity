@@ -5,7 +5,7 @@ import { Drawer } from 'react-native-drawer-layout';
 import { 
   LayoutGrid, FilePlus, Calendar, Activity, Bell, 
   Inbox, Users, UserCog, BarChart3, Terminal,
-  Menu, Search, User
+  Menu, MessageCircle, User
 } from 'lucide-react-native';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
@@ -19,12 +19,13 @@ export default function AdminLayout() {
   const colorScheme = useColorScheme() ?? 'light';
   
   const isActive = (path: string) => pathname === path;
+  const theme = Colors[colorScheme];
 
   const renderDrawerContent = () => (
-    <View style={styles.drawerContainer}>
+    <View style={[styles.drawerContainer, { backgroundColor: theme.card }]}>
       <View style={styles.drawerHeader}>
         <Text style={styles.brandTitle}>JU-AMS</Text>
-        <Text style={styles.roleLabel}>ADMIN CONSOLE</Text>
+        <Text style={[styles.roleLabel, { color: theme.textSecondary }]}>ADMIN CONSOLE</Text>
       </View>
       
       <View style={styles.drawerLinks}>
@@ -34,73 +35,83 @@ export default function AdminLayout() {
             label="Dashboard" 
             onPress={() => { router.push('/(admin)/dashboard'); setOpen(false); }}
             active={isActive('/dashboard')} 
+            theme={theme}
           />
           <DrawerLink 
             icon={FilePlus} 
             label="Create Activity" 
             onPress={() => { router.push('/(admin)/create'); setOpen(false); }} 
             active={isActive('/create')}
+            theme={theme}
           />
-          <DrawerLink 
+           <DrawerLink 
             icon={Calendar} 
             label="Admin Activities" 
             onPress={() => { router.push('/(admin)/activities'); setOpen(false); }}
             active={isActive('/activities') || pathname.includes('/activities')}
+            theme={theme}
           />
           <DrawerLink 
             icon={Activity} 
             label="Monitor Activities" 
             onPress={() => { router.push('/(admin)/monitor'); setOpen(false); }}
             active={isActive('/monitor')}
+            theme={theme}
           />
           <DrawerLink 
             icon={Bell} 
             label="Notifications" 
             onPress={() => { router.push('/(admin)/notifications'); setOpen(false); }}
             active={isActive('/notifications')}
+            theme={theme}
           />
           <DrawerLink 
             icon={Inbox} 
             label="Applications" 
             onPress={() => { router.push('/(admin)/applications'); setOpen(false); }}
             active={isActive('/applications') || pathname.includes('/applications')}
+            theme={theme}
           />
           <DrawerLink 
             icon={Users} 
             label="Directory" 
             onPress={() => { router.push('/(admin)/users'); setOpen(false); }}
             active={isActive('/users') || pathname.includes('/users')}
+            theme={theme}
           />
           <DrawerLink 
             icon={UserCog} 
             label="Manage Users" 
             onPress={() => { router.push('/(admin)/manage-users'); setOpen(false); }}
             active={isActive('/manage-users')}
+            theme={theme}
           />
           <DrawerLink 
             icon={BarChart3} 
             label="Advanced Reports" 
             onPress={() => { router.push('/(admin)/reports'); setOpen(false); }}
             active={isActive('/reports')}
+            theme={theme}
           />
           <DrawerLink 
             icon={Terminal} 
             label="Audit Logs" 
             onPress={() => { router.push('/(admin)/audit-logs'); setOpen(false); }}
             active={isActive('/audit-logs')}
+            theme={theme}
           />
         </ScrollView>
       </View>
 
-      <View style={styles.drawerFooter}>
-        <View style={styles.profileBox}>
+      <View style={[styles.drawerFooter, { borderTopColor: theme.border }]}>
+        <View style={[styles.profileBox, { backgroundColor: theme.background }]}>
           <Image 
             source={{ uri: 'https://github.com/shadcn.png' }} 
             style={styles.avatar} 
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>Admin User</Text>
-            <Text style={styles.profileEmail}>admin@gmail.com</Text>
+            <Text style={[styles.profileName, { color: theme.text }]}>Admin User</Text>
+            <Text style={[styles.profileEmail, { color: theme.textSecondary }]}>admin@gmail.com</Text>
           </View>
         </View>
       </View>
@@ -114,25 +125,25 @@ export default function AdminLayout() {
       onClose={() => setOpen(false)}
       renderDrawerContent={renderDrawerContent}
       drawerType="front"
-      drawerStyle={{ width: 280 }}
+      drawerStyle={{ width: 280, backgroundColor: theme.card }}
     >
       <Tabs
         screenOptions={{
           headerShown: true,
           headerLeft: () => (
             <TouchableOpacity 
-              style={styles.menuBtn}
+              style={[styles.menuBtn, { backgroundColor: theme.background }]}
               onPress={() => setOpen(true)}
             >
-              <Menu size={24} color="#4FA3F7" />
+              <Menu size={24} color={theme.text} />
             </TouchableOpacity>
           ),
           headerTitle: () => (
             <View style={styles.headerTitleContainer}>
               <View>
-                <Text style={styles.headerHub}>JU ACTIVITY HUB</Text>
+                <Text style={[styles.headerHub, { color: theme.textSecondary }]}>JU ACTIVITY HUB</Text>
                 <View style={styles.onlineStatus}>
-                  <Text style={styles.userName}>Admin User</Text>
+                  <Text style={[styles.userName, { color: theme.text }]}>Admin User</Text>
                   <View style={styles.statusDot} />
                   <Text style={styles.statusText}>Admin</Text>
                 </View>
@@ -141,28 +152,29 @@ export default function AdminLayout() {
           ),
           headerRight: () => (
             <View style={styles.headerIcons}>
-              <TouchableOpacity style={styles.headerIconBtn}>
-                <Search size={20} color="#64748B" />
+              <TouchableOpacity style={[styles.headerIconBtn, { backgroundColor: theme.background }]}>
+                <MessageCircle size={20} color={theme.icon} />
               </TouchableOpacity>
               <Image 
                 source={{ uri: 'https://github.com/shadcn.png' }} 
-                style={styles.headerAvatar} 
+                style={[styles.headerAvatar, { borderColor: theme.border }]} 
               />
             </View>
           ),
           headerStyle: {
-            backgroundColor: '#FFFFFF',
+            backgroundColor: theme.card,
             elevation: 0,
             shadowOpacity: 0,
             borderBottomWidth: 1,
-            borderBottomColor: '#F1F5F9',
+            borderBottomColor: theme.border,
             height: 90,
           },
-          tabBarActiveTintColor: '#0369A1',
-          tabBarInactiveTintColor: '#94A3B8',
+          tabBarActiveTintColor: theme.primary,
+          tabBarInactiveTintColor: theme.tabIconDefault,
           tabBarStyle: {
+            backgroundColor: theme.card,
             borderTopWidth: 1,
-            borderTopColor: '#F1F5F9',
+            borderTopColor: theme.border,
             height: 85,
             paddingBottom: 10,
             paddingTop: 10,
@@ -232,47 +244,78 @@ export default function AdminLayout() {
           name="audit-logs" 
           options={{ href: null, headerTitle: "Audit Logs" }} 
         />
+        <Tabs.Screen 
+          name="settings/personal" 
+          options={{ 
+            href: null, 
+            headerTitle: "Personal Info",
+            tabBarStyle: { display: 'none' }
+          }} 
+        />
+        <Tabs.Screen 
+          name="settings/notifications" 
+          options={{ 
+            href: null, 
+            headerTitle: "Notifications",
+            tabBarStyle: { display: 'none' }
+          }} 
+        />
+        <Tabs.Screen 
+          name="settings/security" 
+          options={{ 
+            href: null, 
+            headerTitle: "Security",
+            tabBarStyle: { display: 'none' }
+          }} 
+        />
+        <Tabs.Screen 
+          name="settings/preferences" 
+          options={{ 
+            href: null, 
+            headerTitle: "Preferences",
+            tabBarStyle: { display: 'none' }
+          }} 
+        />
       </Tabs>
     </Drawer>
   );
 }
 
-function DrawerLink({ icon: Icon, label, active, onPress }: any) {
+function DrawerLink({ icon: Icon, label, active, onPress, theme }: any) {
   return (
     <TouchableOpacity 
-      style={[styles.drawerLink, active && styles.drawerLinkActive]}
+      style={[styles.drawerLink, active && { backgroundColor: theme.primary }]}
       onPress={onPress}
     >
-      <Icon size={20} color={active ? '#FFFFFF' : '#64748B'} strokeWidth={active ? 2.5 : 2} />
-      <Text style={[styles.drawerLinkLabel, active && styles.drawerLinkLabelActive]}>{label}</Text>
+      <Icon size={20} color={active ? '#FFFFFF' : theme.icon} strokeWidth={active ? 2.5 : 2} />
+      <Text style={[styles.drawerLinkLabel, { color: active ? '#FFFFFF' : theme.textSecondary }, active && styles.drawerLinkLabelActive]}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  drawerContainer: { flex: 1, backgroundColor: '#FFFFFF' },
+  drawerContainer: { flex: 1 },
   drawerHeader: { padding: 24, paddingTop: 60, marginBottom: 10 },
   brandTitle: { fontSize: 24, fontWeight: '900', color: '#0EA5E9', letterSpacing: -1 },
-  roleLabel: { fontSize: 10, fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginTop: 4 },
+  roleLabel: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2, marginTop: 4 },
   drawerLinks: { flex: 1, paddingHorizontal: 16 },
   drawerLink: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16, borderRadius: 12, marginBottom: 4 },
-  drawerLinkActive: { backgroundColor: '#3B82F6' },
-  drawerLinkLabel: { fontSize: 16, fontWeight: '500', color: '#64748B', marginLeft: 16 },
-  drawerLinkLabelActive: { color: '#FFFFFF', fontWeight: '700' },
-  drawerFooter: { padding: 16, borderTopWidth: 1, borderTopColor: '#F1F5F9', marginBottom: 20 },
-  profileBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 12, borderRadius: 12 },
+  drawerLinkLabel: { fontSize: 16, fontWeight: '500', marginLeft: 16 },
+  drawerLinkLabelActive: { fontWeight: '700' },
+  drawerFooter: { padding: 16, borderTopWidth: 1, marginBottom: 20 },
+  profileBox: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 12 },
   avatar: { width: 36, height: 36, borderRadius: 18, marginRight: 10 },
   profileInfo: { flex: 1 },
-  profileName: { fontSize: 13, fontWeight: '700', color: '#1E293B' },
-  profileEmail: { fontSize: 11, color: '#64748B' },
-  menuBtn: { marginLeft: 16, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 10 },
+  profileName: { fontSize: 13, fontWeight: '700' },
+  profileEmail: { fontSize: 11 },
+  menuBtn: { marginLeft: 16, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', borderRadius: 10 },
   headerTitleContainer: { flexDirection: 'row', alignItems: 'center' },
-  headerHub: { fontSize: 10, fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1 },
+  headerHub: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
   onlineStatus: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
-  userName: { fontSize: 14, fontWeight: '700', color: '#1E293B', marginRight: 6 },
+  userName: { fontSize: 14, fontWeight: '700', marginRight: 6 },
   statusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#22C55E', marginRight: 4 },
   statusText: { fontSize: 12, color: '#22C55E', fontWeight: '600' },
   headerIcons: { flexDirection: 'row', alignItems: 'center', marginRight: 16, gap: 12 },
-  headerIconBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
-  headerAvatar: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: '#E2E8F0' },
+  headerIconBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+  headerAvatar: { width: 34, height: 34, borderRadius: 17, borderWidth: 2 },
 });

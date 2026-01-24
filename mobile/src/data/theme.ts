@@ -10,36 +10,40 @@ const tintColorDark = '#4FA3F7';
 
 export const Colors = {
   light: {
-    text: '#1A212B',
-    background: '#F4F9FF',
+    text: '#0F172A',
+    textSecondary: '#64748B',
+    background: '#F8FAFC',
     tint: tintColorLight,
     icon: '#64748B',
     tabIconDefault: '#94A3B8',
     tabIconSelected: tintColorLight,
     card: '#FFFFFF',
+    cardBorder: '#E2E8F0',
     border: '#E2E8F0',
-    primary: '#4FA3F7',
-    secondary: '#A9D6FF',
-    accent: '#E0F2FE',
+    primary: '#0EA5E9',
+    secondary: '#BAE6FD',
+    accent: '#F0F9FF',
     success: '#22C55E',
     warning: '#F59E0B',
     error: '#EF4444',
   },
   dark: {
     text: '#F8FAFC',
-    background: '#0F172A',
+    textSecondary: '#94A3B8',
+    background: '#020617', // Slate 950
     tint: tintColorDark,
     icon: '#94A3B8',
     tabIconDefault: '#64748B',
     tabIconSelected: tintColorDark,
-    card: '#1E293B',
+    card: '#1E293B', // Slate 800
+    cardBorder: '#334155',
     border: '#334155',
-    primary: '#4FA3F7',
-    secondary: '#334155',
-    accent: '#1E293B',
-    success: '#22C55E',
-    warning: '#F59E0B',
-    error: '#EF4444',
+    primary: '#38BDF8', // Sky 400
+    secondary: '#1E293B',
+    accent: '#0F172A',
+    success: '#4ADE80',
+    warning: '#FBBF24',
+    error: '#F87171',
   },
 };
 

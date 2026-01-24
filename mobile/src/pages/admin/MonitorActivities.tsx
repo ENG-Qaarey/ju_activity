@@ -7,7 +7,13 @@ import {
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
 
+import { useColorScheme } from '@/src/hooks/use-color-scheme';
+import { Colors } from '@/src/data/theme';
+
 export default function MonitorActivities() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const theme = Colors[colorScheme];
+
   return (
     <GradientBackground>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
@@ -32,30 +38,30 @@ export default function MonitorActivities() {
 
         {/* Dynamic Pulse Metrics */}
         <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Global Pulse</Text>
+            <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Global Pulse</Text>
             <View style={styles.liveIndicatorPill}>
                 <View style={styles.pulseDot} />
                 <Text style={styles.liveIndicatorText}>Live Feed</Text>
             </View>
         </View>
-        <GlassCard style={styles.pulseCard}>
+        <GlassCard style={[styles.pulseCard, { backgroundColor: theme.card }]}>
             <View style={styles.pulseRow}>
-                 <MonitorStat icon={Users} label="Active Users" value="842" color="#0EA5E9" />
-                 <View style={styles.vDivider} />
-                 <MonitorStat icon={Zap} label="Peak Time" value="12:45" color="#8B5CF6" />
-                 <View style={styles.vDivider} />
-                 <MonitorStat icon={Activity} label="Status" value="Optimal" color="#22C55E" />
+                 <MonitorStat icon={Users} label="Active Users" value="842" color="#0EA5E9" theme={theme} />
+                 <View style={[styles.vDivider, { backgroundColor: theme.border }]} />
+                 <MonitorStat icon={Zap} label="Peak Time" value="12:45" color="#8B5CF6" theme={theme} />
+                 <View style={[styles.vDivider, { backgroundColor: theme.border }]} />
+                 <MonitorStat icon={Activity} label="Status" value="Optimal" color="#22C55E" theme={theme} />
             </View>
         </GlassCard>
 
         {/* Directory Header */}
         <View style={styles.directoryHeader}>
             <View>
-                <Text style={styles.mainSectionTitle}>All Activities</Text>
-                <Text style={styles.mainSectionSubtitle}>Upcoming and ongoing sessions across faculties</Text>
+                <Text style={[styles.mainSectionTitle, { color: theme.text }]}>All Activities</Text>
+                <Text style={[styles.mainSectionSubtitle, { color: theme.textSecondary }]}>Upcoming and ongoing sessions across faculties</Text>
             </View>
-            <TouchableOpacity style={styles.filterBtn}>
-                <Filter size={18} color="#64748B" />
+            <TouchableOpacity style={[styles.filterBtn, { backgroundColor: theme.card, shadowColor: '#000' }]}>
+                <Filter size={18} color={theme.textSecondary} />
             </TouchableOpacity>
         </View>
 
@@ -68,6 +74,7 @@ export default function MonitorActivities() {
                 attendees="240/300"
                 status="Active"
                 time="Ends in 45m"
+                theme={theme}
             />
            <LiveItem 
                 title="Football Inter-Dept" 
@@ -76,6 +83,7 @@ export default function MonitorActivities() {
                 attendees="480/500"
                 status="Active"
                 time="Ends in 20m"
+                theme={theme}
             />
            <LiveItem 
                 title="Web Design Workshop" 
@@ -84,6 +92,7 @@ export default function MonitorActivities() {
                 attendees="25/30"
                 status="Starting"
                 time="Starts now"
+                theme={theme}
             />
         </View>
       </ScrollView>
@@ -91,30 +100,30 @@ export default function MonitorActivities() {
   );
 }
 
-function MonitorStat({ icon: Icon, label, value, color }: any) {
+function MonitorStat({ icon: Icon, label, value, color, theme }: any) {
     return (
         <View style={styles.mStat}>
             <View style={[styles.mStatIconBox, { backgroundColor: color + '10' }]}>
                 <Icon size={16} color={color} />
             </View>
-            <Text style={styles.mStatVal}>{value}</Text>
-            <Text style={styles.mStatLabel}>{label}</Text>
+            <Text style={[styles.mStatVal, { color: theme.text }]}>{value}</Text>
+            <Text style={[styles.mStatLabel, { color: theme.textSecondary }]}>{label}</Text>
         </View>
     )
 }
 
-function LiveItem({ title, location, progress, attendees, status, time }: any) {
+function LiveItem({ title, location, progress, attendees, status, time, theme }: any) {
   const isStarting = status === 'Starting';
   const statusColor = isStarting ? '#0EA5E9' : '#22C55E';
   
   return (
-    <GlassCard style={styles.card}>
+    <GlassCard style={[styles.card, { backgroundColor: theme.card }]}>
       <View style={styles.cardTop}>
         <View style={{ flex: 1 }}>
-            <Text style={styles.cardTitle}>{title}</Text>
+            <Text style={[styles.cardTitle, { color: theme.text }]}>{title}</Text>
             <View style={styles.locRow}>
-                <MapPin size={12} color="#94A3B8" />
-                <Text style={styles.locText}>{location}</Text>
+                <MapPin size={12} color={theme.textSecondary} />
+                <Text style={[styles.locText, { color: theme.textSecondary }]}>{location}</Text>
             </View>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: statusColor + '15' }]}>
@@ -126,20 +135,20 @@ function LiveItem({ title, location, progress, attendees, status, time }: any) {
       <View style={styles.progressContainer}>
           <View style={styles.labels}>
               <View style={styles.progLabelGroup}>
-                <Users size={12} color="#64748B" />
-                <Text style={styles.progLabel}>Attendance</Text>
+                <Users size={12} color={theme.textSecondary} />
+                <Text style={[styles.progLabel, { color: theme.textSecondary }]}>Attendance</Text>
               </View>
-              <Text style={styles.progVal}>{attendees}</Text>
+              <Text style={[styles.progVal, { color: theme.text }]}>{attendees}</Text>
           </View>
-          <View style={styles.barBg}>
+          <View style={[styles.barBg, { backgroundColor: theme.border }]}>
               <View style={[styles.barFill, { width: `${progress}%`, backgroundColor: statusColor }]} />
           </View>
       </View>
 
-      <View style={styles.cardFooter}>
+      <View style={[styles.cardFooter, { borderTopColor: theme.border }]}>
           <View style={styles.timeTag}>
-              <Clock size={12} color="#94A3B8" />
-              <Text style={styles.timeText}>{time}</Text>
+              <Clock size={12} color={theme.textSecondary} />
+              <Text style={[styles.timeText, { color: theme.textSecondary }]}>{time}</Text>
           </View>
           <TouchableOpacity style={styles.manageBtn}>
               <Text style={styles.manageText}>View Feed</Text>
@@ -200,7 +209,7 @@ const styles = StyleSheet.create({
   directoryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20, paddingHorizontal: 4 },
   mainSectionTitle: { fontSize: 20, fontWeight: '900', color: '#1E293B' },
   mainSectionSubtitle: { fontSize: 13, color: '#64748B', marginTop: 2 },
-  filterBtn: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 5, elevation: 2 },
+  filterBtn: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 5, elevation: 2 },
   list: { gap: 16 },
   card: { padding: 16, borderRadius: 24 },
   cardTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },

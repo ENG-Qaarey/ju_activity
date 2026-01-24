@@ -2,7 +2,11 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text, ScrollView } from 'react-native';
 import { usePathname, Tabs, useRouter } from 'expo-router';
 import { Drawer } from 'react-native-drawer-layout';
-import { LayoutDashboard, Calendar, FileText, Bell, User, Search, Menu, CheckCircle, Plus, Activity, BarChart3, Clock } from 'lucide-react-native';
+import { 
+  LayoutDashboard, Calendar, FileText, Bell, User, MessageCircle, 
+  Menu, CheckCircle, Plus, Activity, BarChart3, Clock,
+  CalendarPlus, ClipboardList, CheckSquare
+} from 'lucide-react-native';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { Image } from 'expo-image';
@@ -15,10 +19,10 @@ export default function CoordinatorLayout() {
   const theme = Colors[colorScheme];
 
   const renderDrawerContent = () => (
-    <View style={styles.drawerContainer}>
+    <View style={[styles.drawerContainer, { backgroundColor: theme.card }]}>
       <View style={styles.drawerHeader}>
         <Text style={styles.brandTitle}>JU-AMS</Text>
-        <Text style={styles.roleLabel}>COORDINATOR PORTAL</Text>
+        <Text style={[styles.roleLabel, { color: theme.textSecondary }]}>COORDINATOR PORTAL</Text>
       </View>
       
       <View style={styles.drawerLinks}>
@@ -27,56 +31,56 @@ export default function CoordinatorLayout() {
             icon={LayoutDashboard} 
             label="Dashboard" 
             onPress={() => { router.push('/(coordinator)/dashboard'); setOpen(false); }}
-            active={pathname === '/dashboard'} 
+            active={pathname.includes('/dashboard')} 
+            theme={theme}
           />
           <DrawerLink 
-            icon={Plus} 
-            label="Propose Activity" 
-            onPress={() => { router.push('/(coordinator)/activities'); setOpen(false); }}
-            active={pathname.includes('/activities')}
+            icon={CalendarPlus} 
+            label="Create Activity" 
+            onPress={() => { router.push('/(coordinator)/propose'); setOpen(false); }}
+            active={pathname.includes('/propose')}
+            theme={theme}
           />
           <DrawerLink 
-            icon={Calendar} 
-            label="My Activities" 
+            icon={ClipboardList} 
+            label="Manage Activities" 
             onPress={() => { router.push('/(coordinator)/activities'); setOpen(false); }}
             active={pathname.includes('/activities')}
+            theme={theme}
           />
           <DrawerLink 
             icon={FileText} 
-            label="Review Applications" 
+            label="Applications" 
             onPress={() => { router.push('/(coordinator)/applications'); setOpen(false); }}
             active={pathname.includes('/applications')}
-          />
-          <DrawerLink 
-            icon={CheckCircle} 
-            label="Check Attendance" 
-            onPress={() => { router.push('/(coordinator)/attendance'); setOpen(false); }}
-            active={pathname.includes('/attendance')}
+            theme={theme}
           />
           <DrawerLink 
             icon={Bell} 
             label="Notifications" 
             onPress={() => { router.push('/(coordinator)/notifications'); setOpen(false); }}
-            active={pathname === '/notifications'}
+            active={pathname.includes('/notifications')}
+            theme={theme}
           />
           <DrawerLink 
-            icon={User} 
-            label="Profile" 
-            onPress={() => { router.push('/(coordinator)/profile'); setOpen(false); }}
-            active={pathname === '/profile'}
+            icon={CheckSquare} 
+            label="Attendance" 
+            onPress={() => { router.push('/(coordinator)/attendance'); setOpen(false); }}
+            active={pathname.includes('/attendance')}
+            theme={theme}
           />
         </ScrollView>
       </View>
 
-      <View style={styles.drawerFooter}>
-        <View style={styles.profileBox}>
+      <View style={[styles.drawerFooter, { borderTopColor: theme.border }]}>
+        <View style={[styles.profileBox, { backgroundColor: theme.background }]}>
           <Image 
             source={{ uri: 'https://github.com/shadcn.png' }} 
             style={styles.avatar} 
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>Coordinator</Text>
-            <Text style={styles.profileEmail}>coordi@gmail.com</Text>
+            <Text style={[styles.profileName, { color: theme.text }]}>Coordinator</Text>
+            <Text style={[styles.profileEmail, { color: theme.textSecondary }]}>coordi@gmail.com</Text>
           </View>
         </View>
       </View>
@@ -90,25 +94,25 @@ export default function CoordinatorLayout() {
       onClose={() => setOpen(false)}
       renderDrawerContent={renderDrawerContent}
       drawerType="front"
-      drawerStyle={{ width: 280 }}
+      drawerStyle={{ width: 280, backgroundColor: theme.card }}
     >
       <Tabs
         screenOptions={{
           headerShown: true,
           headerLeft: () => (
             <TouchableOpacity 
-              style={styles.menuBtn}
+              style={[styles.menuBtn, { backgroundColor: theme.background }]}
               onPress={() => setOpen(true)}
             >
-              <Menu size={24} color="#1E293B" />
+              <Menu size={24} color={theme.text} />
             </TouchableOpacity>
           ),
           headerTitle: () => (
             <View style={styles.headerTitleContainer}>
               <View>
-                <Text style={styles.headerHub}>JU ACTIVITY HUB</Text>
+                <Text style={[styles.headerHub, { color: theme.textSecondary }]}>JU ACTIVITY HUB</Text>
                 <View style={styles.onlineStatus}>
-                  <Text style={styles.userName}>Coordinator</Text>
+                  <Text style={[styles.userName, { color: theme.text }]}>Coordinator</Text>
                   <View style={styles.statusDot} />
                   <Text style={styles.statusText}>Active</Text>
                 </View>
@@ -117,29 +121,30 @@ export default function CoordinatorLayout() {
           ),
           headerRight: () => (
             <View style={styles.headerIcons}>
-              <TouchableOpacity style={styles.headerIconBtn}>
-                <Search size={20} color="#64748B" />
+              <TouchableOpacity style={[styles.headerIconBtn, { backgroundColor: theme.background }]}>
+                <MessageCircle size={20} color={theme.icon} />
               </TouchableOpacity>
               <Image 
                 source={{ uri: 'https://github.com/shadcn.png' }} 
-                style={styles.headerAvatar} 
+                style={[styles.headerAvatar, { borderColor: theme.border }]} 
               />
             </View>
           ),
           headerStyle: {
-            backgroundColor: '#FFFFFF',
+            backgroundColor: theme.card,
             elevation: 0,
             shadowOpacity: 0,
             borderBottomWidth: 1,
-            borderBottomColor: '#F1F5F9',
+            borderBottomColor: theme.border,
             height: 90,
           },
-          tabBarActiveTintColor: '#0369A1',
-          tabBarInactiveTintColor: '#94A3B8',
+          tabBarActiveTintColor: theme.primary,
+          tabBarInactiveTintColor: theme.tabIconDefault,
           tabBarStyle: {
+            backgroundColor: theme.card,
             borderTopWidth: 1,
-            borderTopColor: '#F1F5F9',
-            height: 65,
+            borderTopColor: theme.border,
+            height: 85,
             paddingBottom: 10,
             paddingTop: 10,
           },
@@ -159,8 +164,7 @@ export default function CoordinatorLayout() {
         <Tabs.Screen
           name="activities"
           options={{
-            title: 'Activities',
-            tabBarIcon: ({ color }) => <Calendar size={24} color={color} />,
+            href: null,
           }}
         />
         <Tabs.Screen
@@ -173,8 +177,14 @@ export default function CoordinatorLayout() {
         <Tabs.Screen
           name="attendance"
           options={{
-            title: 'Attendance',
-            tabBarIcon: ({ color }) => <CheckCircle size={24} color={color} />,
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="notifications"
+          options={{
+            title: 'Alerts',
+            tabBarIcon: ({ color }) => <Bell size={24} color={color} />,
           }}
         />
         <Tabs.Screen
@@ -184,47 +194,90 @@ export default function CoordinatorLayout() {
             tabBarIcon: ({ color }) => <User size={24} color={color} />,
           }}
         />
+        <Tabs.Screen
+          name="propose"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="settings/personal"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="settings/notifications"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="settings/security"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="settings/preferences"
+          options={{
+            href: null,
+          }}
+        />
       </Tabs>
     </Drawer>
   );
 }
 
-function DrawerLink({ icon: Icon, label, active, onPress }: any) {
+function DrawerLink({ icon: Icon, label, active, onPress, theme }: any) {
   return (
     <TouchableOpacity 
-      style={[styles.drawerLink, active && styles.drawerLinkActive]}
+      activeOpacity={0.7}
+      style={[
+        styles.drawerLink, 
+        active && { backgroundColor: theme.primary, shadowColor: theme.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 }
+      ]}
       onPress={onPress}
     >
-      <Icon size={22} color={active ? '#FFFFFF' : '#64748B'} />
-      <Text style={[styles.drawerLinkLabel, active && styles.drawerLinkLabelActive]}>{label}</Text>
+      <Icon size={24} color={active ? '#FFFFFF' : '#64748B'} strokeWidth={active ? 2.5 : 2} />
+      <Text style={[
+        styles.drawerLinkLabel, 
+        { color: active ? '#FFFFFF' : '#475569' }, 
+        active && { fontWeight: '800' }
+      ]}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  drawerContainer: { flex: 1, backgroundColor: '#FFFFFF' },
-  drawerHeader: { padding: 24, paddingTop: 60, marginBottom: 20 },
-  brandTitle: { fontSize: 28, fontWeight: '900', color: '#4FA3F7', letterSpacing: -1 },
-  roleLabel: { fontSize: 10, fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginTop: 4 },
-  drawerLinks: { flex: 1, paddingHorizontal: 16 },
-  drawerLink: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 12, marginBottom: 4 },
-  drawerLinkActive: { backgroundColor: '#4FA3F7' },
-  drawerLinkLabel: { fontSize: 15, fontWeight: '600', color: '#64748B', marginLeft: 12 },
-  drawerLinkLabelActive: { color: '#FFFFFF' },
-  drawerFooter: { padding: 16, borderTopWidth: 1, borderTopColor: '#F1F5F9', marginBottom: 20 },
-  profileBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8FAFC', padding: 12, borderRadius: 12 },
+  drawerContainer: { flex: 1 },
+  drawerHeader: { padding: 24, paddingTop: 60, marginBottom: 10 },
+  brandTitle: { fontSize: 28, fontWeight: '900', color: '#0EA5E9', letterSpacing: -1 },
+  roleLabel: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 2, marginTop: 4 },
+  drawerLinks: { flex: 1, paddingHorizontal: 16, paddingTop: 10 },
+  drawerLink: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingVertical: 15, 
+    paddingHorizontal: 20, 
+    borderRadius: 16, 
+    marginBottom: 8 
+  },
+  drawerLinkLabel: { fontSize: 17, fontWeight: '600', marginLeft: 16, letterSpacing: 0.2 },
+  drawerFooter: { padding: 16, borderTopWidth: 1, marginBottom: 20 },
+  profileBox: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 12 },
   avatar: { width: 36, height: 36, borderRadius: 18, marginRight: 10 },
   profileInfo: { flex: 1 },
-  profileName: { fontSize: 13, fontWeight: '700', color: '#1E293B' },
-  profileEmail: { fontSize: 11, color: '#64748B' },
-  menuBtn: { marginLeft: 16, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F8FAFC', borderRadius: 10 },
+  profileName: { fontSize: 13, fontWeight: '700' },
+  profileEmail: { fontSize: 11 },
+  menuBtn: { marginLeft: 16, width: 40, height: 40, justifyContent: 'center', alignItems: 'center', borderRadius: 10 },
   headerTitleContainer: { flexDirection: 'row', alignItems: 'center' },
-  headerHub: { fontSize: 10, fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1 },
+  headerHub: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
   onlineStatus: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
-  userName: { fontSize: 14, fontWeight: '700', color: '#1E293B', marginRight: 6 },
+  userName: { fontSize: 14, fontWeight: '700', marginRight: 6 },
   statusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#22C55E', marginRight: 4 },
   statusText: { fontSize: 12, color: '#22C55E', fontWeight: '600' },
   headerIcons: { flexDirection: 'row', alignItems: 'center', marginRight: 16, gap: 12 },
-  headerIconBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#F8FAFC', justifyContent: 'center', alignItems: 'center' },
-  headerAvatar: { width: 34, height: 34, borderRadius: 17, borderWidth: 2, borderColor: '#E2E8F0' },
+  headerIconBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+  headerAvatar: { width: 34, height: 34, borderRadius: 17, borderWidth: 2 },
 });

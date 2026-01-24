@@ -4,98 +4,111 @@ import { Search, UserPlus, Filter, User, Users, Shield, MoreVertical, ChevronRig
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
 
+import { useColorScheme } from '@/src/hooks/use-color-scheme';
+import { Colors } from '@/src/data/theme';
+
 export default function AdminUsers() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const theme = Colors[colorScheme];
+
   return (
     <GradientBackground>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
         {/* Modern Search & Add Header */}
         <View style={styles.header}>
-          <View style={styles.searchContainer}>
-            <Search size={18} color="#94A3B8" style={styles.searchIcon} />
+          <View style={[styles.searchContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Search size={18} color={theme.textSecondary} style={styles.searchIcon} />
             <TextInput 
               placeholder="Search by name, ID or role..." 
-              style={styles.searchInput}
-              placeholderTextColor="#94A3B8"
+              style={[styles.searchInput, { color: theme.text }]}
+              placeholderTextColor={theme.textSecondary}
             />
           </View>
-          <TouchableOpacity style={styles.addBtn}>
+          <TouchableOpacity style={[styles.addBtn, { backgroundColor: theme.primary, shadowColor: theme.primary }]}>
             <UserPlus size={20} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
 
         {/* Premium User Stats Summary */}
         <View style={styles.statsRow}>
-            <StatCard label="Students" count="1,120" color="#0EA5E9" icon={Users} />
-            <StatCard label="Staff" count="18" color="#8B5CF6" icon={Shield} />
-            <StatCard label="Admins" count="5" color="#EF4444" icon={User} />
+            <StatCard label="Students" count="1,120" color="#0EA5E9" icon={Users} theme={theme} />
+            <StatCard label="Staff" count="18" color="#8B5CF6" icon={Shield} theme={theme} />
+            <StatCard label="Admins" count="5" color="#EF4444" icon={User} theme={theme} />
         </View>
 
         {/* Section Header */}
         <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>User Directory</Text>
-            <TouchableOpacity style={styles.filterBtn}>
-                <Filter size={14} color="#64748B" />
-                <Text style={styles.filterText}>Filter</Text>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>User Directory</Text>
+            <TouchableOpacity style={[styles.filterBtn, { backgroundColor: theme.card }]}>
+                <Filter size={14} color={theme.textSecondary} />
+                <Text style={[styles.filterText, { color: theme.textSecondary }]}>Filter</Text>
             </TouchableOpacity>
         </View>
 
         {/* User List */}
         <View style={styles.list}>
-           <UserListItem name="muscab axmed" id="ST-2024-001" role="Student" status="Active" isOnline={true}/>
-           <UserListItem name="axmed qaarey" id="CO-2024-005" role="Coordinator" status="Active" isOnline={false}/>
-           <UserListItem name="fatuma farah" id="ST-2024-042" role="Student" status="Inactive" isOnline={false}/>
-           <UserListItem name="hassan ali" id="AD-2024-001" role="Admin" status="Active" isOnline={true}/>
-           <UserListItem name="deeqa warsame" id="ST-2024-098" role="Student" status="Active" isOnline={false}/>
+           <UserListItem name="muscab axmed" id="ST-2024-001" role="Student" status="Active" isOnline={true} theme={theme} />
+           <UserListItem name="axmed qaarey" id="CO-2024-005" role="Coordinator" status="Active" isOnline={false} theme={theme} />
+           <UserListItem name="fatuma farah" id="ST-2024-042" role="Student" status="Inactive" isOnline={false} theme={theme} />
+           <UserListItem name="hassan ali" id="AD-2024-001" role="Admin" status="Active" isOnline={true} theme={theme} />
+           <UserListItem name="deeqa warsame" id="ST-2024-098" role="Student" status="Active" isOnline={false} theme={theme} />
         </View>
       </ScrollView>
     </GradientBackground>
   );
 }
 
-function StatCard({ label, count, color, icon: Icon }: any) {
+function StatCard({ label, count, color, icon: Icon, theme }: any) {
     return (
-        <GlassCard style={styles.statBox}>
+        <GlassCard style={[styles.statBox, { backgroundColor: theme.card }]}>
             <View style={[styles.statIconBox, { backgroundColor: color + '15' }]}>
                 <Icon size={16} color={color} />
             </View>
-            <Text style={[styles.statVal, { color: '#1E293B' }]}>{count}</Text>
-            <Text style={styles.statLabel}>{label}</Text>
+            <Text style={[styles.statVal, { color: theme.text }]}>{count}</Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>{label}</Text>
         </GlassCard>
     );
 }
 
-function UserListItem({ name, id, role, status, isOnline }: any) {
+function UserListItem({ name, id, role, status, isOnline, theme }: any) {
   const isStudent = role === 'Student';
   const isCoordinator = role === 'Coordinator';
   const roleColor = role === 'Admin' ? '#EF4444' : isCoordinator ? '#8B5CF6' : '#0EA5E9';
   const roleBg = role === 'Admin' ? '#FEF2F2' : isCoordinator ? '#F5F3FF' : '#F0F9FF';
   
+  // Dynamic role badge background for dark mode
+  const badgeBg = theme.background === '#0F172A' 
+    ? roleColor + '15' 
+    : roleBg;
+
+  const onlineColor = status === 'Active' ? '#22C55E' : theme.textSecondary;
+
   return (
-    <GlassCard style={styles.card}>
+    <GlassCard style={[styles.card, { backgroundColor: theme.card }]}>
       <View style={styles.cardInner}>
         <View style={styles.userInfo}>
             <View style={styles.avatarWrapper}>
                 <View style={[styles.avatar, { backgroundColor: roleColor + '10' }]}>
                     <User size={20} color={roleColor} />
                 </View>
-                {isOnline && <View style={styles.onlineStatus} />}
+                {isOnline && <View style={[styles.onlineStatus, { borderColor: theme.card }]} />}
             </View>
             <View>
-                <Text style={styles.userName}>{name}</Text>
+                <Text style={[styles.userName, { color: theme.text }]}>{name}</Text>
                 <View style={styles.roleRow}>
-                    <View style={[styles.roleBadge, { backgroundColor: roleBg }]}>
+                    <View style={[styles.roleBadge, { backgroundColor: badgeBg }]}>
                         <Shield size={10} color={roleColor} />
                         <Text style={[styles.roleText, { color: roleColor }]}>{role}</Text>
                     </View>
-                    <Text style={styles.userId}>ID: {id}</Text>
+                    <Text style={[styles.userId, { color: theme.textSecondary }]}>ID: {id}</Text>
                 </View>
             </View>
         </View>
         
         <View style={styles.rightActions}>
-            <View style={[styles.statusIndicator, { backgroundColor: status === 'Active' ? '#22C55E' : '#94A3B8' }]} />
+            <View style={[styles.statusIndicator, { backgroundColor: onlineColor }]} />
             <TouchableOpacity style={styles.actionBtn}>
-                <ChevronRight size={18} color="#CBD5E1" />
+                <ChevronRight size={18} color={theme.textSecondary} />
             </TouchableOpacity>
         </View>
       </View>
@@ -111,26 +124,20 @@ const styles = StyleSheet.create({
     flex: 1, 
     flexDirection: 'row', 
     alignItems: 'center', 
-    backgroundColor: '#FFFFFF', 
     borderRadius: 14, 
     paddingHorizontal: 12, 
     height: 48, 
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 2 }, 
-    shadowOpacity: 0.05, 
-    shadowRadius: 5, 
-    elevation: 2 
+    borderWidth: 1,
+    borderColor: 'transparent'
   },
   searchIcon: { marginRight: 8 },
-  searchInput: { flex: 1, height: '100%', fontSize: 14, color: '#1E293B', fontWeight: '500' },
+  searchInput: { flex: 1, height: '100%', fontSize: 14, fontWeight: '500' },
   addBtn: { 
     width: 48, 
     height: 48, 
     borderRadius: 14, 
-    backgroundColor: '#0EA5E9', 
     justifyContent: 'center', 
     alignItems: 'center', 
-    shadowColor: '#0EA5E9', 
     shadowOffset: { width: 0, height: 6 }, 
     shadowOpacity: 0.3, 
     shadowRadius: 10, 
@@ -140,23 +147,23 @@ const styles = StyleSheet.create({
   statBox: { flex: 1, padding: 12, borderRadius: 20, alignItems: 'center' },
   statIconBox: { width: 32, height: 32, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
   statVal: { fontSize: 18, fontWeight: '900' },
-  statLabel: { fontSize: 10, color: '#64748B', fontWeight: '700', textTransform: 'uppercase', marginTop: 2 },
+  statLabel: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', marginTop: 2 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingHorizontal: 4 },
-  sectionTitle: { fontSize: 16, fontWeight: '800', color: '#1E293B' },
-  filterBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#F1F5F9', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8 },
-  filterText: { fontSize: 12, color: '#64748B', fontWeight: '700' },
+  sectionTitle: { fontSize: 16, fontWeight: '800' },
+  filterBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 6, paddingHorizontal: 12, borderRadius: 8 },
+  filterText: { fontSize: 12, fontWeight: '700' },
   list: { gap: 10 },
   card: { padding: 12, borderRadius: 18 },
   cardInner: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   userInfo: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   avatarWrapper: { position: 'relative' },
   avatar: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
-  onlineStatus: { position: 'absolute', bottom: -1, right: -1, width: 10, height: 10, borderRadius: 5, backgroundColor: '#22C55E', borderWidth: 2, borderColor: '#FFFFFF' },
-  userName: { fontSize: 15, fontWeight: '800', color: '#1E293B' },
+  onlineStatus: { position: 'absolute', bottom: -1, right: -1, width: 10, height: 10, borderRadius: 5, backgroundColor: '#22C55E', borderWidth: 2 },
+  userName: { fontSize: 15, fontWeight: '800' },
   roleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 4 },
   roleBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 },
   roleText: { fontSize: 10, fontWeight: '800' },
-  userId: { fontSize: 10, color: '#94A3B8', fontWeight: '600' },
+  userId: { fontSize: 10, fontWeight: '600' },
   rightActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   statusIndicator: { width: 6, height: 6, borderRadius: 3 },
   actionBtn: { padding: 4 },

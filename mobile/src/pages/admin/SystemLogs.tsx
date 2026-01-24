@@ -5,7 +5,13 @@ import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
 import { ThemedText } from '@/src/components/themed-text';
 
+import { useColorScheme } from '@/src/hooks/use-color-scheme';
+import { Colors } from '@/src/data/theme';
+
 export default function SystemLogs() {
+  const colorScheme = useColorScheme() ?? 'light';
+  const theme = Colors[colorScheme];
+
   return (
     <GradientBackground>
       <View style={styles.container}>
@@ -18,8 +24,8 @@ export default function SystemLogs() {
                 </View>
                 <ThemedText style={styles.subtitle}>Raw environment and server output</ThemedText>
             </View>
-            <TouchableOpacity style={styles.refreshBtn}>
-                <RefreshCw size={20} color="#64748B" />
+            <TouchableOpacity style={[styles.refreshBtn, { backgroundColor: theme.card }]}>
+                <RefreshCw size={20} color={theme.textSecondary} />
             </TouchableOpacity>
         </View>
 
@@ -47,19 +53,19 @@ export default function SystemLogs() {
         {/* Quick Diagnostics */}
         <ThemedText style={styles.sectionTitle}>Quick Pulse</ThemedText>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsRow}>
-            <PulseCard icon={Cpu} label="CPU Load" value="24%" color="#0EA5E9" />
-            <PulseCard icon={Database} label="DB Reads" value="1.2k/s" color="#8B5CF6" />
-            <PulseCard icon={Globe} label="API Latency" value="142ms" color="#F59E0B" />
+            <PulseCard icon={Cpu} label="CPU Load" value="24%" color="#0EA5E9" theme={theme} />
+            <PulseCard icon={Database} label="DB Reads" value="1.2k/s" color="#8B5CF6" theme={theme} />
+            <PulseCard icon={Globe} label="API Latency" value="142ms" color="#F59E0B" theme={theme} />
         </ScrollView>
 
         <View style={styles.events}>
             <ThemedText style={styles.sectionTitle}>Critical Events</ThemedText>
-            <GlassCard style={styles.eventCard}>
+            <GlassCard style={[styles.eventCard, { backgroundColor: theme.card }]}>
                 <View style={styles.eventLeft}>
                     <XCircle size={18} color="#EF4444" />
-                    <Text style={styles.eventText}>Node_Worker_Process_Exit (Code 1)</Text>
+                    <Text style={[styles.eventText, { color: theme.text }]}>Node_Worker_Process_Exit (Code 1)</Text>
                 </View>
-                <Text style={styles.eventTime}>12m ago</Text>
+                <Text style={[styles.eventTime, { color: theme.textSecondary }]}>12m ago</Text>
             </GlassCard>
         </View>
       </View>
@@ -67,12 +73,12 @@ export default function SystemLogs() {
   );
 }
 
-function PulseCard({ icon: Icon, label, value, color }: any) {
+function PulseCard({ icon: Icon, label, value, color, theme }: any) {
     return (
-        <GlassCard style={styles.pulseCard}>
+        <GlassCard style={[styles.pulseCard, { backgroundColor: theme.card }]}>
             <Icon size={20} color={color} />
-            <Text style={styles.pulseVal}>{value}</Text>
-            <Text style={styles.pulseLabel}>{label}</Text>
+            <Text style={[styles.pulseVal, { color: theme.text }]}>{value}</Text>
+            <Text style={[styles.pulseLabel, { color: theme.textSecondary }]}>{label}</Text>
         </GlassCard>
     )
 }
@@ -81,9 +87,9 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, paddingTop: 60 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  title: { fontSize: 24, fontWeight: '900', color: '#1E293B' },
-  subtitle: { fontSize: 13, color: '#64748B', marginTop: 4 },
-  refreshBtn: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' },
+  title: { fontSize: 24, fontWeight: '900' },
+  subtitle: { fontSize: 13, marginTop: 4 },
+  refreshBtn: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   terminalContainer: { height: 220, backgroundColor: '#0F172A', borderRadius: 16, overflow: 'hidden', marginBottom: 32, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 15, elevation: 8 },
   terminalHeader: { height: 32, backgroundColor: '#1E293B', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12 },
   dots: { flexDirection: 'row', gap: 6 },
@@ -96,14 +102,14 @@ const styles = StyleSheet.create({
   termYellow: { color: '#F59E0B', fontWeight: '700' },
   termRed: { color: '#EF4444', fontWeight: '700' },
   termBlue: { color: '#0EA5E9', fontWeight: '700' },
-  sectionTitle: { fontSize: 14, fontWeight: '800', color: '#64748B', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 },
+  sectionTitle: { fontSize: 14, fontWeight: '800', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 1 },
   statsRow: { flexGrow: 0, marginBottom: 24 },
   pulseCard: { width: 120, height: 100, padding: 12, marginRight: 12, justifyContent: 'center' },
-  pulseVal: { fontSize: 18, fontWeight: '800', color: '#1E293B', marginTop: 8 },
-  pulseLabel: { fontSize: 10, color: '#94A3B8', fontWeight: '700', textTransform: 'uppercase', marginTop: 2 },
+  pulseVal: { fontSize: 18, fontWeight: '800', marginTop: 8 },
+  pulseLabel: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase', marginTop: 2 },
   events: { gap: 0 },
   eventCard: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12 },
   eventLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  eventText: { fontSize: 13, fontWeight: '600', color: '#1E293B' },
-  eventTime: { fontSize: 11, color: '#94A3B8' },
+  eventText: { fontSize: 13, fontWeight: '600' },
+  eventTime: { fontSize: 11 },
 });

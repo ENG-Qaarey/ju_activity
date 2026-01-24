@@ -1,19 +1,91 @@
-import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { ArrowLeft } from 'lucide-react-native';
-import { GradientBackground } from '@/src/components/GradientBackground';
-import { GlassCard } from '@/src/components/GlassCard';
-import { JuButton } from '@/src/components/JuButton';
-import { JuInput } from '@/src/components/JuInput';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  Dimensions,
+  Animated,
+  Easing,
+} from 'react-native';
+import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 
-export default function LoginScreen() {
-  const router = useRouter();
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [error, setError] = React.useState('');
+const { width, height } = Dimensions.get('window');
 
+/* ---------------- Floating Orb ---------------- */
+function FloatingOrb({ size, x, y, duration, delay }: any) {
+  const translate = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(translate, {
+          toValue: -25,
+          duration,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+          delay,
+        }),
+        Animated.timing(translate, {
+          toValue: 0,
+          duration,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={[
+        styles.orb,
+        {
+          width: size,
+          height: size,
+          top: y,
+          left: x,
+          transform: [{ translateY: translate }],
+        },
+      ]}
+    />
+  );
+}
+
+export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [focused, setFocused] = useState<string | null>(null);
+
+  const fade = useRef(new Animated.Value(0)).current;
+  const slide = useRef(new Animated.Value(40)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fade, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slide, {
+        toValue: 0,
+        duration: 700,
+        easing: Easing.out(Easing.exp),
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  /* ---------------- LOGIN LOGIC ---------------- */
   const handleLogin = () => {
+    setSubmitted(true);
     setError('');
 
     if (email === 'admin@gmail.com' && password === '1234') {
@@ -21,135 +93,238 @@ export default function LoginScreen() {
     } else if (email === 'coordi@gmail.com' && password === '1234') {
       router.push('/(coordinator)/dashboard');
     } else if (email === 'Student@gmail.com' && password === '1234') {
-      router.push('/(student)/home/index');
+      router.push('/(student)/home');
     } else {
       setError('Invalid email or password');
     }
   };
 
   return (
-    <GradientBackground>
-      <View style={styles.container}>
-        {/* Back Button */}
-        <TouchableOpacity 
-          style={styles.backBtn} 
-          onPress={() => router.back()}
-        >
-          <ArrowLeft size={20} color="#334155" />
-          <Text style={styles.backText}>Back</Text>
-        </TouchableOpacity>
+    <View style={{ flex: 1 }}>
+      {/* BACKGROUND */}
+      <LinearGradient
+        colors={['#F0F9FF', '#E0F2FE', '#BAE6FD', '#7DD3FC']}
+        style={StyleSheet.absoluteFill}
+      />
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <GlassCard style={styles.card}>
-            <Text style={styles.title}>Welcome Back</Text>
-            <Text style={styles.subtitle}>Sign in to your JU-AMS account</Text>
-
-            <JuInput 
-              label="Email Address" 
-              placeholder="Enter your email" 
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-              error={error ? ' ' : undefined}
-            />
-
-            <JuInput 
-              label="Password" 
-              placeholder="Enter your password" 
-              isPassword
-              value={password}
-              onChangeText={setPassword}
-              error={error}
-            />
-
-            <TouchableOpacity style={styles.forgotBtn}>
-              <Text style={styles.forgotText}>Forgot Password?</Text>
-            </TouchableOpacity>
-
-            <JuButton 
-              title="Sign In" 
-              onPress={handleLogin} 
-              style={styles.btn}
-            />
-
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Don't have an account? </Text>
-              <TouchableOpacity onPress={() => router.push('/register')}>
-                <Text style={styles.linkText}>Register here</Text>
-              </TouchableOpacity>
-            </View>
-          </GlassCard>
-        </ScrollView>
+      {/* FLOATING ORBS */}
+      <View style={StyleSheet.absoluteFill}>
+        <FloatingOrb size={300} x={-120} y={-120} duration={6000} delay={0} />
+        <FloatingOrb size={260} x={width - 140} y={height / 3} duration={7000} delay={600} />
+        <FloatingOrb size={360} x={-80} y={height - 260} duration={8000} delay={1200} />
       </View>
-    </GradientBackground>
+
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <Animated.ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.container}
+          showsVerticalScrollIndicator={false}
+        >
+          <Animated.View
+            style={{
+              opacity: fade,
+              transform: [{ translateY: slide }],
+            }}
+          >
+            {/* HEADER */}
+            <View style={styles.header}>
+              <Text style={styles.title}>JU-AMS</Text>
+              <Text style={styles.subtitle}>
+                Jazeera University Activity Management System
+              </Text>
+            </View>
+
+            {/* GLASS CARD */}
+            <BlurView intensity={80} tint="light" style={styles.glass}>
+              <View style={styles.glassBorder} />
+
+              <Label text="Email Address" />
+              <Input
+                placeholder="Enter your email"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={(t: string) => {
+                  setEmail(t);
+                  if (submitted) setError('');
+                }}
+                focused={focused === 'email'}
+                onFocus={() => setFocused('email')}
+                onBlur={() => setFocused(null)}
+              />
+
+              <Label text="Password" />
+              <Input
+                placeholder="Enter your password"
+                secureTextEntry
+                value={password}
+                onChangeText={(t: string) => {
+                  setPassword(t);
+                  if (submitted) setError('');
+                }}
+                focused={focused === 'password'}
+                onFocus={() => setFocused('password')}
+                onBlur={() => setFocused(null)}
+              />
+
+              {submitted && error ? (
+                <View style={styles.errorBox}>
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              ) : null}
+
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleLogin}
+                activeOpacity={0.9}
+              >
+                <LinearGradient
+                  colors={['#0284C7', '#0EA5E9']}
+                  style={styles.buttonGrad}
+                >
+                  <Text style={styles.buttonText}>Sign In</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+
+              <View style={styles.footer}>
+                <Text style={styles.footerText}>New Student? </Text>
+                <TouchableOpacity onPress={() => router.push('/register')}>
+                  <Text style={styles.linkText}>Register Now</Text>
+                </TouchableOpacity>
+              </View>
+            </BlurView>
+          </Animated.View>
+        </Animated.ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
+/* ---------------- SMALL COMPONENTS ---------------- */
+
+function Label({ text }: { text: string }) {
+  return <Text style={styles.label}>{text}</Text>;
+}
+
+function Input({ focused, ...props }: any) {
+  return (
+    <View style={[styles.inputContainer, focused && styles.inputFocused]}>
+      <TextInput
+        {...props}
+        style={styles.input}
+        placeholderTextColor="#94A3B8"
+      />
+    </View>
+  );
+}
+
+/* ---------------- STYLES ---------------- */
+
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    paddingTop: 60,
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 24,
   },
-  backBtn: {
-    flexDirection: 'row',
+  header: {
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 40,
-    gap: 8,
-  },
-  backText: {
-    fontSize: 16,
-    color: '#334155',
-    fontWeight: '500',
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-  },
-  card: {
-    padding: 20,
-    paddingVertical: 32,
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.75)',
+    marginBottom: 48,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#0F172A',
-    marginBottom: 8,
-    letterSpacing: -0.5,
+    fontSize: 48,
+    fontWeight: '900',
+    color: '#0C4A6E',
+    marginBottom: 6,
   },
   subtitle: {
-    fontSize: 14,
-    color: '#475569',
-    marginBottom: 32,
+    fontSize: 15,
+    color: '#0369A1',
     textAlign: 'center',
-  },
-  forgotBtn: {
-    alignSelf: 'flex-end',
-    marginBottom: 32,
-  },
-  forgotText: {
-    color: '#3B82F6',
-    fontSize: 13,
     fontWeight: '600',
   },
-  btn: {
-    width: '100%',
-    marginBottom: 24,
+  glass: {
+    borderRadius: 28,
+    padding: 22,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+  },
+  glassBorder: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 28,
+    borderWidth: 1.5,
+    padding: 22,
+    borderColor: 'rgba(255,255,255,0.6)',
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0C4A6E',
+    marginTop: 16,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+  },
+  inputContainer: {
+    backgroundColor: 'rgba(255,255,255,0.4)',
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: 'rgba(148,163,184,0.3)',
+  },
+  inputFocused: {
+    borderColor: '#0EA5E9',
+    backgroundColor: '#FFFFFF',
+  },
+  input: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    fontSize: 15,
+    color: '#0F172A',
+    fontWeight: '500',
+  },
+  errorBox: {
+    marginTop: 14,
+    backgroundColor: '#FEE2E2',
+    padding: 12,
+    borderRadius: 12,
+  },
+  errorText: {
+    color: '#DC2626',
+    fontWeight: '700',
+    textAlign: 'center',
+  },
+  button: {
+    marginTop: 28,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  buttonGrad: {
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '800',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
+    marginTop: 22,
   },
   footerText: {
     color: '#64748B',
-    fontSize: 14,
   },
   linkText: {
-    color: '#3B82F6',
-    fontSize: 14,
-    fontWeight: '600',
+    color: '#0284C7',
+    fontWeight: '800',
+  },
+  orb: {
+    position: 'absolute',
+    borderRadius: 999,
+    backgroundColor: '#FFFFFF',
+    opacity: 0.8,
   },
 });
