@@ -29,50 +29,50 @@ export default function StudentDashboard() {
         {/* Welcome Header */}
         <View style={styles.header}>
             <View>
-                <ThemedText style={styles.welcomeText}>Morning,</ThemedText>
-                <ThemedText style={styles.userName}>Muscab Axmed 👋</ThemedText>
+                <ThemedText style={[styles.welcomeText, { color: theme.textSecondary }]}>Morning,</ThemedText>
+                <ThemedText style={[styles.userName, { color: theme.text }]}>Muscab Axmed 👋</ThemedText>
             </View>
             <TouchableOpacity 
-                style={[styles.notifBtn, { backgroundColor: '#FFFFFF' }]}
+                style={[styles.notifBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
                 onPress={() => router.push('/(student)/(tabs)/notifications')}
             >
-                <View style={styles.notifDot} />
+                <View style={[styles.notifDot, { borderColor: theme.card }]} />
                 <Bell size={22} color={theme.text} />
             </TouchableOpacity>
         </View>
 
         {/* Search Bar */}
-        <View style={[styles.searchBar, { backgroundColor: '#FFFFFF' }]}>
-            <Search size={18} color="#94A3B8" />
+        <View style={[styles.searchBar, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Search size={18} color={theme.textSecondary} />
             <TextInput 
                 placeholder="Find workshops, seminars..." 
-                placeholderTextColor="#94A3B8"
-                style={styles.searchInput}
+                placeholderTextColor={theme.textSecondary}
+                style={[styles.searchInput, { color: theme.text }]}
             />
         </View>
 
         {/* Performance Stats */}
-        <View style={styles.statsSummaryRow}>
-            <SummaryStat icon={Flame} label="Points" value="1,240" color="#F59E0B" />
-            <View style={styles.statDivider} />
-            <SummaryStat icon={Target} label="Events" value="12" color="#10B981" />
-            <View style={styles.statDivider} />
-            <SummaryStat icon={BookmarkCheck} label="Saved" value="4" color="#3B82F6" />
+        <View style={[styles.statsSummaryRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <SummaryStat icon={Flame} label="Points" value="1,240" color="#F59E0B" theme={theme} />
+            <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
+            <SummaryStat icon={Target} label="Events" value="12" color="#10B981" theme={theme} />
+            <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
+            <SummaryStat icon={BookmarkCheck} label="Saved" value="4" color="#3B82F6" theme={theme} />
         </View>
 
         {/* Categories Grid */}
         <View style={styles.sectionContainer}>
             <View style={styles.sectionHeader}>
-                <ThemedText style={styles.sectionTitle}>Explore Categories</ThemedText>
+                <ThemedText style={[styles.sectionTitle, { color: theme.text }]}>Explore Categories</ThemedText>
                 <TouchableOpacity onPress={() => router.navigate('/(student)/(tabs)/activities')}>
                     <ThemedText style={[styles.seeAll, { color: theme.primary }]}>View All</ThemedText>
                 </TouchableOpacity>
             </View>
             <View style={styles.categoryGrid}>
-                <CategoryBox icon={Zap} label="Technical" color="#3B82F6" count="15" />
-                <CategoryBox icon={Users} label="Social" color="#8B5CF6" count="24" />
-                <CategoryBox icon={Star} label="Academic" color="#F59E0B" count="08" />
-                <CategoryBox icon={ShieldCheck} label="Sports" color="#10B981" count="12" />
+                <CategoryBox icon={Zap} label="Technical" color="#3B82F6" count="15" theme={theme} />
+                <CategoryBox icon={Users} label="Social" color="#8B5CF6" count="24" theme={theme} />
+                <CategoryBox icon={Star} label="Academic" color="#F59E0B" count="08" theme={theme} />
+                <CategoryBox icon={ShieldCheck} label="Sports" color="#10B981" count="12" theme={theme} />
             </View>
         </View>
 
@@ -83,6 +83,7 @@ export default function StudentDashboard() {
                 label="My Applications" 
                 desc="Track your status" 
                 color="#6366F1"
+                theme={theme}
                 onPress={() => router.push('/(student)/(tabs)/applications')}
             />
             <QuickActionCard 
@@ -90,6 +91,7 @@ export default function StudentDashboard() {
                 label="Available Now" 
                 desc="Join new activities" 
                 color="#EC4899"
+                theme={theme}
                 onPress={() => router.push('/(student)/(tabs)/activities')}
             />
         </View>
@@ -97,7 +99,7 @@ export default function StudentDashboard() {
         {/* Recent Activities Section */}
         <View style={styles.sectionContainer}>
             <View style={styles.sectionHeader}>
-                <ThemedText style={styles.sectionTitle}>Recently Added Activities</ThemedText>
+                <ThemedText style={[styles.sectionTitle, { color: theme.text }]}>Recently Added Activities</ThemedText>
             </View>
             <View style={styles.activityList}>
                 <ActivityCompactItem 
@@ -106,6 +108,7 @@ export default function StudentDashboard() {
                     time="Added 2h ago"
                     location="Lab 4"
                     color="#0EA5E9"
+                    theme={theme}
                 />
                 <ActivityCompactItem 
                     title="Annual Chess Masters"
@@ -113,6 +116,7 @@ export default function StudentDashboard() {
                     time="Added 5h ago"
                     location="Cafeteria"
                     color="#10B981"
+                    theme={theme}
                 />
                 <ActivityCompactItem 
                     title="Blockchain Fundamentals"
@@ -120,6 +124,7 @@ export default function StudentDashboard() {
                     time="Added Yesterday"
                     location="Main Hall"
                     color="#8B5CF6"
+                    theme={theme}
                 />
             </View>
         </View>
@@ -128,64 +133,64 @@ export default function StudentDashboard() {
   );
 }
 
-function SummaryStat({ icon: Icon, label, value, color }: any) {
+function SummaryStat({ icon: Icon, label, value, color, theme }: any) {
     return (
         <View style={styles.summaryStatItem}>
             <View style={[styles.summaryIcon, { backgroundColor: color + '10' }]}>
                 <Icon size={16} color={color} />
             </View>
             <View>
-                <ThemedText style={styles.summaryValue}>{value}</ThemedText>
-                <ThemedText style={styles.summaryLabel}>{label}</ThemedText>
+                <ThemedText style={[styles.summaryValue, { color: theme.text }]}>{value}</ThemedText>
+                <ThemedText style={[styles.summaryLabel, { color: theme.textSecondary }]}>{label}</ThemedText>
             </View>
         </View>
     );
 }
 
-function CategoryBox({ icon: Icon, label, color, count }: any) {
+function CategoryBox({ icon: Icon, label, color, count, theme }: any) {
     return (
         <TouchableOpacity style={styles.categoryBox}>
-            <View style={[styles.categoryIcon, { backgroundColor: color + '10' }]}>
+            <View style={[styles.categoryIcon, { backgroundColor: theme.card, borderColor: theme.border, borderWidth: 1 }]}>
                 <Icon size={22} color={color} />
             </View>
-            <ThemedText style={styles.categoryLabel}>{label}</ThemedText>
-            <ThemedText style={styles.categoryCount}>{count}+ Labs</ThemedText>
+            <ThemedText style={[styles.categoryLabel, { color: theme.text }]}>{label}</ThemedText>
+            <ThemedText style={[styles.categoryCount, { color: theme.textSecondary }]}>{count}+ Labs</ThemedText>
         </TouchableOpacity>
     );
 }
 
-function QuickActionCard({ icon: Icon, label, desc, color, onPress }: any) {
+function QuickActionCard({ icon: Icon, label, desc, color, onPress, theme }: any) {
     return (
         <TouchableOpacity 
-            style={[styles.quickCard, { backgroundColor: '#FFFFFF' }]} 
+            style={[styles.quickCard, { backgroundColor: theme.card, borderColor: theme.border }]} 
             onPress={onPress}
             activeOpacity={0.8}
         >
             <View style={[styles.quickIcon, { backgroundColor: color + '15' }]}>
                 <Icon size={24} color={color} />
             </View>
-            <ThemedText style={styles.quickLabel}>{label}</ThemedText>
-            <ThemedText style={styles.quickDesc}>{desc}</ThemedText>
+            <ThemedText style={[styles.quickLabel, { color: theme.text }]}>{label}</ThemedText>
+            <ThemedText style={[styles.quickDesc, { color: theme.textSecondary }]}>{desc}</ThemedText>
         </TouchableOpacity>
     );
 }
 
-function ActivityCompactItem({ title, category, time, location, color }: any) {
+function ActivityCompactItem({ title, category, time, location, color, theme }: any) {
     return (
-        <TouchableOpacity style={styles.activityCard} activeOpacity={0.7}>
+        <TouchableOpacity style={[styles.activityCard, { backgroundColor: theme.card, borderColor: theme.border }]} activeOpacity={0.7}>
             <View style={[styles.activitySideLine, { backgroundColor: color }]} />
             <View style={styles.activityInfo}>
                 <View style={styles.activityTop}>
-                    <ThemedText style={styles.activityTag}>{category}</ThemedText>
-                    <ThemedText style={styles.activityTime}>{time}</ThemedText>
+                    <ThemedText style={[styles.activityTag, { color: theme.textSecondary }]}>{category}</ThemedText>
+                    <ThemedText style={[styles.activityTime, { color: theme.textSecondary }]}>{time}</ThemedText>
                 </View>
-                <ThemedText style={styles.activityTitle} numberOfLines={1}>{title}</ThemedText>
+                <ThemedText style={[styles.activityTitle, { color: theme.text }]} numberOfLines={1}>{title}</ThemedText>
                 <View style={styles.activityMeta}>
-                    <MapPin size={12} color="#94A3B8" />
-                    <ThemedText style={styles.activityLoc}>{location}</ThemedText>
+                    <MapPin size={12} color={theme.textSecondary} />
+                    <ThemedText style={[styles.activityLoc, { color: theme.textSecondary }]}>{location}</ThemedText>
                 </View>
             </View>
-            <ChevronRight size={18} color="#CBD5E1" />
+            <ChevronRight size={18} color={theme.textSecondary} />
         </TouchableOpacity>
     );
 }
@@ -202,7 +207,7 @@ const styles = StyleSheet.create({
     marginTop: 40,
     marginBottom: 24 
   },
-  welcomeText: { fontSize: 14, color: '#64748B', fontWeight: '600' },
+  welcomeText: { fontSize: 14, fontWeight: '600' },
   userName: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5, marginTop: 2 },
   notifBtn: { 
     width: 46, 
@@ -210,13 +215,14 @@ const styles = StyleSheet.create({
     borderRadius: 14, 
     justifyContent: 'center', 
     alignItems: 'center',
+    borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2
   },
-  notifDot: { position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444', zIndex: 1, borderWidth: 2, borderColor: '#FFFFFF' },
+  notifDot: { position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444', zIndex: 1, borderWidth: 2 },
   
   searchBar: { 
     flexDirection: 'row', 
@@ -228,26 +234,18 @@ const styles = StyleSheet.create({
     gap: 12,
     marginBottom: 28,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.02,
-    shadowRadius: 10,
   },
-  searchInput: { flex: 1, fontSize: 14, color: '#1E293B', fontWeight: '500' },
+  searchInput: { flex: 1, fontSize: 14, fontWeight: '500' },
 
   statsSummaryRow: { 
     flexDirection: 'row', 
     alignItems: 'center', 
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
     marginHorizontal: 20,
     padding: 16,
     borderRadius: 24,
     marginBottom: 32,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.04,
     shadowRadius: 15,
@@ -255,9 +253,9 @@ const styles = StyleSheet.create({
   },
   summaryStatItem: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
   summaryIcon: { width: 32, height: 32, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
-  summaryValue: { fontSize: 16, fontWeight: '900', color: '#1E293B' },
-  summaryLabel: { fontSize: 10, fontWeight: '700', color: '#94A3B8', textTransform: 'uppercase' },
-  statDivider: { width: 1, height: 24, backgroundColor: '#F1F5F9', marginHorizontal: 8 },
+  summaryValue: { fontSize: 16, fontWeight: '900' },
+  summaryLabel: { fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },
+  statDivider: { width: 1, height: 24, marginHorizontal: 8 },
 
   sectionContainer: { marginBottom: 32 },
   sectionHeader: { 
@@ -267,7 +265,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 16 
   },
-  sectionTitle: { fontSize: 18, fontWeight: '800', color: '#1E293B' },
+  sectionTitle: { fontSize: 18, fontWeight: '800' },
   seeAll: { fontSize: 12, fontWeight: '700' },
 
   categoryGrid: { 
@@ -291,8 +289,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.03,
     shadowRadius: 8
   },
-  categoryLabel: { fontSize: 12, fontWeight: '800', color: '#1E293B' },
-  categoryCount: { fontSize: 10, color: '#94A3B8', fontWeight: '600', marginTop: 2 },
+  categoryLabel: { fontSize: 12, fontWeight: '800' },
+  categoryCount: { fontSize: 10, fontWeight: '600', marginTop: 2 },
 
   quickAccessRow: { flexDirection: 'row', gap: 14, paddingHorizontal: 20, marginBottom: 36 },
   quickCard: { 
@@ -300,7 +298,6 @@ const styles = StyleSheet.create({
     padding: 18, 
     borderRadius: 24, 
     borderWidth: 1, 
-    borderColor: '#F1F5F9',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.05,
@@ -308,18 +305,16 @@ const styles = StyleSheet.create({
     elevation: 3
   },
   quickIcon: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 14 },
-  quickLabel: { fontSize: 15, fontWeight: '900', color: '#1E293B', marginBottom: 4 },
-  quickDesc: { fontSize: 11, color: '#94A3B8', fontWeight: '500' },
+  quickLabel: { fontSize: 15, fontWeight: '900', marginBottom: 4 },
+  quickDesc: { fontSize: 11, fontWeight: '500' },
 
   activityList: { paddingHorizontal: 20, gap: 12 },
   activityCard: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    backgroundColor: '#FFFFFF', 
     borderRadius: 20, 
     padding: 14, 
     borderWidth: 1, 
-    borderColor: '#F1F5F9',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.03,
@@ -330,9 +325,9 @@ const styles = StyleSheet.create({
   activitySideLine: { width: 4, height: '60%', borderRadius: 2, position: 'absolute', left: 0 },
   activityInfo: { flex: 1, marginLeft: 6 },
   activityTop: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  activityTag: { fontSize: 10, fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase' },
-  activityTime: { fontSize: 10, color: '#CBD5E1', fontWeight: '600' },
-  activityTitle: { fontSize: 16, fontWeight: '800', color: '#1E293B', marginBottom: 6 },
+  activityTag: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
+  activityTime: { fontSize: 10, fontWeight: '600' },
+  activityTitle: { fontSize: 16, fontWeight: '800', marginBottom: 6 },
   activityMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  activityLoc: { fontSize: 12, color: '#64748B', fontWeight: '600' },
+  activityLoc: { fontSize: 12, fontWeight: '600' },
 });

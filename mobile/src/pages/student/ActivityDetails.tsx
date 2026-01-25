@@ -8,9 +8,14 @@ import { ThemedText } from '@/src/components/themed-text';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+import { useColorScheme } from '@/src/hooks/use-color-scheme';
+import { Colors } from '@/src/data/theme';
+
 export default function ActivityDetails() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const colorScheme = useColorScheme() ?? 'light';
+  const theme = Colors[colorScheme];
   const [applied, setApplied] = React.useState(false);
   const [isApplying, setIsApplying] = React.useState(false);
 
@@ -23,7 +28,6 @@ export default function ActivityDetails() {
     location = 'To Be Announced',
     enrolled = '0',
     capacity = '0',
-    from 
   } = params;
 
   const onShare = async () => {
@@ -59,17 +63,17 @@ export default function ActivityDetails() {
         {/* Header Image & Actions */}
         <View style={styles.topActions}>
             <TouchableOpacity 
-              style={styles.actionCircle} 
+              style={[styles.actionCircle, { backgroundColor: theme.card }]} 
               onPress={handleBack}
             >
-                <ArrowLeft size={22} color="#1E293B" />
+                <ArrowLeft size={22} color={theme.text} />
             </TouchableOpacity>
             <View style={styles.rightActions}>
-                <TouchableOpacity style={styles.actionCircle} onPress={onShare}>
-                    <Share2 size={22} color="#1E293B" />
+                <TouchableOpacity style={[styles.actionCircle, { backgroundColor: theme.card }]} onPress={onShare}>
+                    <Share2 size={22} color={theme.text} />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.actionCircle}>
-                    <Bookmark size={22} color="#1E293B" />
+                <TouchableOpacity style={[styles.actionCircle, { backgroundColor: theme.card }]}>
+                    <Bookmark size={22} color={theme.text} />
                 </TouchableOpacity>
             </View>
         </View>
@@ -80,56 +84,56 @@ export default function ActivityDetails() {
         />
 
         {/* Content */}
-        <View style={styles.content}>
+        <View style={[styles.content, { backgroundColor: theme.background }]}>
             {applied && (
-                <View style={styles.successPanel}>
-                    <CheckCircle2 size={20} color="#22C55E" />
-                    <ThemedText style={styles.successText}>Application Submitted Successfully!</ThemedText>
+                <View style={[styles.successPanel, { backgroundColor: colorScheme === 'dark' ? '#064e3b' : '#DCFCE7', borderColor: colorScheme === 'dark' ? '#065f46' : '#86EFAC' }]}>
+                    <CheckCircle2 size={20} color={colorScheme === 'dark' ? '#34d399' : '#22C55E'} />
+                    <ThemedText style={[styles.successText, { color: colorScheme === 'dark' ? '#34d399' : '#166534' }]}>Application Submitted Successfully!</ThemedText>
                 </View>
             )}
 
-            <View style={styles.categoryBadge}>
-                <ThemedText style={styles.categoryText}>{category}</ThemedText>
+            <View style={[styles.categoryBadge, { backgroundColor: theme.primary + '15' }]}>
+                <ThemedText style={[styles.categoryText, { color: theme.primary }]}>{category}</ThemedText>
             </View>
-            <ThemedText style={styles.title}>{title}</ThemedText>
+            <ThemedText style={[styles.title, { color: theme.text }]}>{title}</ThemedText>
             
             <View style={styles.metaGrid}>
-                <MetaItem icon={Calendar} label="Date" value={date as string} />
-                <MetaItem icon={Clock} label="Time" value={time as string} />
-                <MetaItem icon={MapPin} label="Location" value={location as string} />
-                <MetaItem icon={Users} label="Participants" value={`${enrolled}/${capacity} Joined`} />
+                <MetaItem icon={Calendar} label="Date" value={date as string} theme={theme} />
+                <MetaItem icon={Clock} label="Time" value={time as string} theme={theme} />
+                <MetaItem icon={MapPin} label="Location" value={location as string} theme={theme} />
+                <MetaItem icon={Users} label="Participants" value={`${enrolled}/${capacity} Joined`} theme={theme} />
             </View>
 
             <View style={styles.section}>
-                <ThemedText style={styles.sectionTitle}>About Activity</ThemedText>
-                <ThemedText style={styles.description}>
+                <ThemedText style={[styles.sectionTitle, { color: theme.text }]}>About Activity</ThemedText>
+                <ThemedText style={[styles.description, { color: theme.textSecondary }]}>
                     {description as string}
                 </ThemedText>
             </View>
 
             <View style={styles.section}>
-                <ThemedText style={styles.sectionTitle}>Perks & Benefits</ThemedText>
-                <BenefitItem text="Certificate of Participation" />
-                <BenefitItem text="Professional Networking" />
-                <BenefitItem text="Refreshments Provided" />
+                <ThemedText style={[styles.sectionTitle, { color: theme.text }]}>Perks & Benefits</ThemedText>
+                <BenefitItem text="Certificate of Participation" theme={theme} />
+                <BenefitItem text="Professional Networking" theme={theme} />
+                <BenefitItem text="Refreshments Provided" theme={theme} />
             </View>
         </View>
       </ScrollView>
 
       {/* Sticky Bottom Action */}
-      <View style={styles.footer}>
+      <View style={[styles.footer, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
           <View style={styles.footerInfo}>
-              <ThemedText style={styles.footerLabel}>Registration Status</ThemedText>
+              <ThemedText style={[styles.footerLabel, { color: theme.textSecondary }]}>Registration Status</ThemedText>
               <View style={styles.statusRow}>
                   {applied ? (
                       <>
-                        <CheckCircle2 size={16} color="#22C55E" />
-                        <ThemedText style={[styles.statusVal, { color: '#22C55E' }]}>Applied</ThemedText>
+                        <CheckCircle2 size={16} color={theme.success} />
+                        <ThemedText style={[styles.statusVal, { color: theme.success }]}>Applied</ThemedText>
                       </>
                   ) : (
                       <>
-                        <Clock size={16} color="#0EA5E9" />
-                        <ThemedText style={styles.statusVal}>Open</ThemedText>
+                        <Clock size={16} color={theme.primary} />
+                        <ThemedText style={[styles.statusVal, { color: theme.text }]}>Open</ThemedText>
                       </>
                   )}
               </View>
@@ -147,25 +151,25 @@ export default function ActivityDetails() {
   );
 }
 
-function MetaItem({ icon: Icon, label, value }: any) {
+function MetaItem({ icon: Icon, label, value, theme }: any) {
     return (
         <View style={styles.metaItem}>
-            <View style={styles.metaIconBg}>
-                <Icon size={18} color="#0EA5E9" />
+            <View style={[styles.metaIconBg, { backgroundColor: theme.card, shadowOpacity: theme.theme === 'dark' ? 0.2 : 0.05 }]}>
+                <Icon size={18} color={theme.primary} />
             </View>
             <View>
-                <Text style={styles.metaLabel}>{label}</Text>
-                <Text style={styles.metaValue}>{value}</Text>
+                <Text style={[styles.metaLabel, { color: theme.textSecondary }]}>{label}</Text>
+                <Text style={[styles.metaValue, { color: theme.text }]}>{value}</Text>
             </View>
         </View>
     )
 }
 
-function BenefitItem({ text }: { text: string }) {
+function BenefitItem({ text, theme }: any) {
     return (
         <View style={styles.benefitItem}>
-            <CheckCircle2 size={18} color="#0EA5E9" />
-            <Text style={styles.benefitText}>{text}</Text>
+            <CheckCircle2 size={18} color={theme.primary} />
+            <Text style={[styles.benefitText, { color: theme.textSecondary }]}>{text}</Text>
         </View>
     )
 }
@@ -175,37 +179,35 @@ const styles = StyleSheet.create({
   contentContainer: { paddingBottom: 120 },
   topActions: { position: 'absolute', top: 50, left: 20, right: 20, zIndex: 10, flexDirection: 'row', justifyContent: 'space-between' },
   rightActions: { flexDirection: 'row', gap: 12 },
-  actionCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255, 255, 255, 0.9)', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 5 },
+  actionCircle: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 5 },
   headerImage: { width: '100%', height: 300 },
-  content: { padding: 24, marginTop: -24, backgroundColor: '#F4F9FF', borderTopLeftRadius: 32, borderTopRightRadius: 32 },
-  categoryBadge: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, backgroundColor: '#0EA5E915', marginBottom: 16 },
-  categoryText: { fontSize: 12, fontWeight: '800', color: '#0EA5E9', textTransform: 'uppercase' },
-  title: { fontSize: 26, fontWeight: '900', color: '#1E293B', marginBottom: 24 },
+  content: { padding: 24, marginTop: -24, borderTopLeftRadius: 32, borderTopRightRadius: 32 },
+  categoryBadge: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, marginBottom: 16 },
+  categoryText: { fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
+  title: { fontSize: 26, fontWeight: '900', marginBottom: 24 },
   metaGrid: { gap: 16, marginBottom: 32 },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  metaIconBg: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 5 },
-  metaLabel: { fontSize: 12, color: '#94A3B8', fontWeight: '600' },
-  metaValue: { fontSize: 15, color: '#1E293B', fontWeight: '700', marginTop: 2 },
+  metaIconBg: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowRadius: 5 },
+  metaLabel: { fontSize: 12, fontWeight: '600' },
+  metaValue: { fontSize: 15, fontWeight: '700', marginTop: 2 },
   section: { marginBottom: 32 },
-  sectionTitle: { fontSize: 18, fontWeight: '800', color: '#1E293B', marginBottom: 12 },
-  description: { fontSize: 15, color: '#64748B', lineHeight: 24 },
+  sectionTitle: { fontSize: 18, fontWeight: '800', marginBottom: 12 },
+  description: { fontSize: 15, lineHeight: 24 },
   benefitItem: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
-  benefitText: { fontSize: 15, color: '#475569', fontWeight: '600' },
-  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 24, paddingTop: 16, paddingBottom: 32, backgroundColor: '#FFFFFF', borderTopWidth: 1, borderTopColor: '#F1F5F9', flexDirection: 'row', alignItems: 'center', gap: 20 },
+  benefitText: { fontSize: 15, fontWeight: '600' },
+  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 24, paddingTop: 16, paddingBottom: 32, borderTopWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 20 },
   footerInfo: { flex: 0.8 },
-  footerLabel: { fontSize: 12, color: '#94A3B8', fontWeight: '600', marginBottom: 4 },
+  footerLabel: { fontSize: 12, fontWeight: '600', marginBottom: 4 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  statusVal: { fontSize: 13, fontWeight: '800', color: '#1E293B' },
+  statusVal: { fontSize: 13, fontWeight: '800' },
   successPanel: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    backgroundColor: '#DCFCE7', 
     padding: 16, 
     borderRadius: 16, 
     marginBottom: 24, 
     gap: 12,
     borderWidth: 1,
-    borderColor: '#86EFAC'
   },
-  successText: { color: '#166534', fontSize: 14, fontWeight: '700' },
+  successText: { fontSize: 14, fontWeight: '700' },
 });

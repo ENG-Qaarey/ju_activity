@@ -106,19 +106,19 @@ export default function StudentApplications() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-            <ThemedText style={styles.title}>My Applications</ThemedText>
+            <ThemedText style={[styles.title, { color: theme.text }]}>My Applications</ThemedText>
             <ThemedText style={[styles.subtitle, { color: theme.textSecondary }]}>
                 Track and manage your activity participation requests.
             </ThemedText>
         </View>
 
         {/* Search Bar */}
-        <View style={[styles.searchContainer, { backgroundColor: '#FFFFFF' }]}>
-            <Search size={20} color="#94A3B8" />
+        <View style={[styles.searchContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Search size={20} color={theme.textSecondary} />
             <TextInput 
                 placeholder="Search your applications.." 
-                placeholderTextColor="#94A3B8"
-                style={styles.searchInput}
+                placeholderTextColor={theme.textSecondary}
+                style={[styles.searchInput, { color: theme.text }]}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
             />
@@ -126,16 +126,16 @@ export default function StudentApplications() {
 
         {/* Stats Summary - More Premium Grid */}
         <View style={styles.statsGrid}>
-            <StatCard label="Active" value={currentApps.length} theme={theme} icon={BookmarkCheck} color="#4FA3F7" />
-            <StatCard label="Pending" value={currentApps.filter(a => a.status === 'Pending').length} theme={theme} icon={Clock} color="#F59E0B" />
-            <StatCard label="Passed" value={pastApps.length} theme={theme} icon={History} color="#10B981" />
+            <StatCard label="Active" value={currentApps.length} theme={theme} icon={BookmarkCheck} color={theme.primary} />
+            <StatCard label="Pending" value={currentApps.filter(a => a.status === 'Pending').length} theme={theme} icon={Clock} color={theme.warning} />
+            <StatCard label="Passed" value={pastApps.length} theme={theme} icon={History} color={theme.success} />
         </View>
 
         {/* Section: Current Applications */}
         {currentApps.length > 0 && (
             <>
                 <View style={styles.listHeader}>
-                    <ThemedText style={styles.listTitle}>Current Applications</ThemedText>
+                    <ThemedText style={[styles.listTitle, { color: theme.text }]}>Current Applications</ThemedText>
                 </View>
                 <View style={styles.list}>
                     {currentApps.map(app => (
@@ -158,7 +158,7 @@ export default function StudentApplications() {
         {pastApps.length > 0 && (
             <>
                 <View style={[styles.listHeader, { marginTop: 32 }]}>
-                    <ThemedText style={styles.listTitle}>Activity History</ThemedText>
+                    <ThemedText style={[styles.listTitle, { color: theme.text }]}>Activity History</ThemedText>
                 </View>
                 <View style={styles.list}>
                     {pastApps.map(app => (
@@ -175,8 +175,8 @@ export default function StudentApplications() {
 
         {filteredApps.length === 0 && (
             <View style={styles.emptyState}>
-                <LayoutGrid size={48} color="#94A3B8" strokeWidth={1} />
-                <ThemedText style={styles.emptyText}>No applications found.</ThemedText>
+                <LayoutGrid size={48} color={theme.textSecondary} strokeWidth={1} />
+                <ThemedText style={[styles.emptyText, { color: theme.textSecondary }]}>No applications found.</ThemedText>
             </View>
         )}
       </ScrollView>
@@ -187,10 +187,10 @@ export default function StudentApplications() {
 function ApplicationCard({ application, theme, onDelete, onPress, isPast }: any) {
     const getStatusColor = () => {
         switch (application.status) {
-            case 'Approved': return '#10B981';
-            case 'Pending': return '#F59E0B';
-            case 'Rejected': return '#EF4444';
-            default: return '#64748B';
+            case 'Approved': return theme.success;
+            case 'Pending': return theme.warning;
+            case 'Rejected': return theme.error;
+            default: return theme.textSecondary;
         }
     };
 
@@ -198,14 +198,14 @@ function ApplicationCard({ application, theme, onDelete, onPress, isPast }: any)
 
     return (
         <TouchableOpacity activeOpacity={0.8} onPress={onPress}>
-            <View style={[styles.card, isPast && { opacity: 0.8 }]}>
+            <View style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }, isPast && { opacity: 0.8 }]}>
                 <View style={styles.cardContent}>
                     <View style={styles.cardMainRow}>
                         <View style={styles.titleArea}>
-                            <View style={[styles.typeBadge, { backgroundColor: isPast ? '#F1F5F9' : '#F0F9FF' }]}>
-                                <ThemedText style={[styles.typeText, { color: isPast ? '#64748B' : '#0EA5E9' }]}>{application.category}</ThemedText>
+                            <View style={[styles.typeBadge, { backgroundColor: isPast ? theme.border : theme.primary + '15' }]}>
+                                <ThemedText style={[styles.typeText, { color: isPast ? theme.textSecondary : theme.primary }]}>{application.category}</ThemedText>
                             </View>
-                            <ThemedText style={styles.appTitle} numberOfLines={1}>{application.activityTitle}</ThemedText>
+                            <ThemedText style={[styles.appTitle, { color: theme.text }]} numberOfLines={1}>{application.activityTitle}</ThemedText>
                         </View>
                         <View style={[styles.statusTag, { backgroundColor: color + '10' }]}>
                             <View style={[styles.statusDot, { backgroundColor: color }]} />
@@ -214,16 +214,16 @@ function ApplicationCard({ application, theme, onDelete, onPress, isPast }: any)
 
                     <View style={styles.cardMetaRow}>
                         <View style={styles.metaItem}>
-                            <Calendar size={12} color="#94A3B8" />
-                            <ThemedText style={styles.metaText}>{application.schedule}</ThemedText>
+                            <Calendar size={12} color={theme.primary} />
+                            <ThemedText style={[styles.metaText, { color: theme.textSecondary }]}>{application.schedule}</ThemedText>
                         </View>
                         <View style={styles.metaItem}>
-                            <MapPin size={12} color="#94A3B8" />
-                            <ThemedText style={styles.metaText}>{application.location}</ThemedText>
+                            <MapPin size={12} color={theme.primary} />
+                            <ThemedText style={[styles.metaText, { color: theme.textSecondary }]}>{application.location}</ThemedText>
                         </View>
                     </View>
                     
-                    <View style={styles.cardFooterCompact}>
+                    <View style={[styles.cardFooterCompact, { borderTopColor: theme.border }]}>
                         <ThemedText style={[styles.footerDate, { color: theme.textSecondary }]}>
                             Applied: <ThemedText style={{ fontWeight: '800' }}>{application.appliedDate}</ThemedText>
                         </ThemedText>
@@ -232,8 +232,8 @@ function ApplicationCard({ application, theme, onDelete, onPress, isPast }: any)
                 </View>
 
                 {application.status === 'Pending' && !isPast && (
-                    <TouchableOpacity style={styles.miniDeleteBtn} onPress={(e) => { e.stopPropagation(); onDelete(); }}>
-                        <Trash2 size={15} color="#EF4444" />
+                    <TouchableOpacity style={[styles.miniDeleteBtn, { backgroundColor: theme.error + '15' }]} onPress={(e) => { e.stopPropagation(); onDelete(); }}>
+                        <Trash2 size={15} color={theme.error} />
                     </TouchableOpacity>
                 )}
             </View>
@@ -243,12 +243,12 @@ function ApplicationCard({ application, theme, onDelete, onPress, isPast }: any)
 
 function StatCard({ label, value, theme, icon: Icon, color }: any) {
     return (
-        <View style={styles.statBox}>
+        <View style={[styles.statBox, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <View style={[styles.statIcon, { backgroundColor: color + '10' }]}>
                 <Icon size={18} color={color} />
             </View>
             <View style={{ alignItems: 'center' }}>
-                <ThemedText style={styles.statValue}>{value}</ThemedText>
+                <ThemedText style={[styles.statValue, { color: theme.text }]}>{value}</ThemedText>
                 <ThemedText style={[styles.statLabel, { color: theme.textSecondary }]}>{label}</ThemedText>
             </View>
         </View>
@@ -259,8 +259,8 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   contentContainer: { padding: 20, paddingTop: 40, paddingBottom: 140 },
   header: { marginBottom: 28 },
-  title: { fontSize: 28, fontWeight: '900', color: '#1E293B', letterSpacing: -0.5 },
-  subtitle: { fontSize: 14, marginTop: 4, lineHeight: 20 },
+  title: { fontSize: 28, fontWeight: '900', letterSpacing: -0.5 },
+  subtitle: { fontSize: 14, marginTop: 4, lineHeight: 20, fontWeight: '600' },
 
   searchContainer: {
     flexDirection: 'row',
@@ -269,23 +269,16 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
     marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 5,
   },
-  searchInput: { flex: 1, fontSize: 14, marginLeft: 12, color: '#1E293B', fontWeight: '500' },
+  searchInput: { flex: 1, fontSize: 14, marginLeft: 12, fontWeight: '500' },
   
   statsGrid: { flexDirection: 'row', gap: 12, marginBottom: 36 },
   statBox: { 
     flex: 1,
     padding: 16, 
     borderRadius: 24, 
-    backgroundColor: '#FFFFFF',
     borderWidth: 1, 
-    borderColor: '#F1F5F9',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
@@ -295,19 +288,17 @@ const styles = StyleSheet.create({
     gap: 8
   },
   statIcon: { width: 38, height: 38, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  statValue: { fontSize: 20, fontWeight: '900', color: '#1E293B' },
+  statValue: { fontSize: 20, fontWeight: '900' },
   statLabel: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 },
 
   listHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  listTitle: { fontSize: 18, fontWeight: '900', color: '#1E293B' },
+  listTitle: { fontSize: 18, fontWeight: '900' },
 
   list: { gap: 12 },
   card: { 
-    backgroundColor: '#FFFFFF', 
     borderRadius: 18, 
     padding: 12, 
     borderWidth: 1, 
-    borderColor: '#F1F5F9',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.04,
@@ -321,21 +312,21 @@ const styles = StyleSheet.create({
   titleArea: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
   typeBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
   typeText: { fontSize: 9, fontWeight: '900', textTransform: 'uppercase' },
-  appTitle: { fontSize: 14.5, fontWeight: '800', color: '#1E293B', flex: 1 },
+  appTitle: { fontSize: 14.5, fontWeight: '800', flex: 1 },
   
   statusTag: { width: 10, height: 10, borderRadius: 5, justifyContent: 'center', alignItems: 'center' },
   statusDot: { width: 6, height: 6, borderRadius: 3 },
 
   cardMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 8 },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  metaText: { fontSize: 11.5, fontWeight: '700', color: '#64748B' },
+  metaText: { fontSize: 11.5, fontWeight: '700' },
 
-  cardFooterCompact: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#F8FAFC', paddingTop: 8 },
+  cardFooterCompact: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1, paddingTop: 8 },
   footerDate: { fontSize: 11, fontWeight: '600' },
   statusLabelSmall: { fontSize: 10.5, fontWeight: '900', textTransform: 'uppercase' },
 
-  miniDeleteBtn: { width: 32, height: 32, borderRadius: 10, backgroundColor: '#FEE2E2', justifyContent: 'center', alignItems: 'center', marginLeft: 12 },
+  miniDeleteBtn: { width: 32, height: 32, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginLeft: 12 },
 
   emptyState: { alignItems: 'center', paddingVertical: 60, gap: 12 },
-  emptyText: { color: '#94A3B8', fontSize: 15, fontWeight: '600' },
+  emptyText: { fontSize: 15, fontWeight: '600' },
 });

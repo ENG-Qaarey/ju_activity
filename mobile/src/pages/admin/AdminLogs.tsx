@@ -120,7 +120,7 @@ function LogEntry({ admin, action, target, time, type, theme }: any) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, paddingTop: 60 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: -52 },
   title: { fontSize: 26, fontWeight: '900' },
   subtitle: { fontSize: 13, marginTop: 2 },
   filterBtn: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 5, elevation: 2 },

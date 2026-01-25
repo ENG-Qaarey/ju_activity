@@ -8,7 +8,7 @@ import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { ThemeProvider } from '@/src/context/ThemeContext';
 
-export default function RootLayout() {
+function RootLayoutNav() {
   const colorScheme = useColorScheme() ?? 'light';
 
   const CustomDefaultTheme = {
@@ -38,17 +38,26 @@ export default function RootLayout() {
   };
 
   return (
+    <NavThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="login" />
+        <Stack.Screen name="register" />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(student)" />
+        <Stack.Screen name="(coordinator)" />
+        <Stack.Screen name="(admin)" />
+        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+      </Stack>
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+    </NavThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
     <ThemeProvider>
-      <NavThemeProvider value={colorScheme === 'dark' ? CustomDarkTheme : CustomDefaultTheme}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="login" />
-          <Stack.Screen name="register" />
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        </Stack>
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-      </NavThemeProvider>
+      <RootLayoutNav />
     </ThemeProvider>
   );
 }
