@@ -1,19 +1,101 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput, Alert, RefreshControl } from 'react-native';
 import { Eye, Calendar, Clock, MapPin, Users, User, Search, Filter, Edit3, Trash2 } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
+import { useRouter, useFocusEffect } from 'expo-router';
 
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 
+import { client } from '@/src/lib/api';
+import { ENDPOINTS } from '@/src/lib/config';
+
 export default function AdminActivities() {
+  const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+  const [activities, setActivities] = React.useState<any[]>([]);
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const fetchActivities = async () => {
+      try {
+          const data = await client.get(ENDPOINTS.ACTIVITIES);
+          if (Array.isArray(data)) {
+              setActivities(data);
+          }
+      } catch (error) {
+          console.log('Error fetching admin activities:', error);
+      }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchActivities();
+    }, [])
+  );
+
+  const onRefresh = async () => {
+      setRefreshing(true);
+      await fetchActivities();
+      setRefreshing(false);
+  };
+
+  const handleDelete = (id: string) => {
+      Alert.alert(
+          "Delete Activity",
+          "Are you sure you want to delete this activity? This action cannot be undone.",
+          [
+              { text: "Cancel", style: "cancel" },
+              { text: "Delete", style: "destructive", onPress: async () => {
+                  try {
+                      await client.delete(`${ENDPOINTS.ACTIVITIES}/${id}`);
+                      setActivities(prev => prev.filter(a => a.id !== id));
+                      Alert.alert("Success", "Activity deleted successfully");
+                  } catch (e: any) {
+                      if (e.message && e.message.toLowerCase().includes('not found')) {
+                          setActivities(prev => prev.filter(a => a.id !== id));
+                          Alert.alert("Notice", "Activity was not found (already deleted). List updated.");
+                      } else {
+                          Alert.alert("Error", e.message || "Failed to delete activity");
+                      }
+                  }
+              }}
+          ]
+      );
+  };
+
+  const handleEdit = (activity: any) => {
+      // Pass primitive params or stringify object if needed, depending on router
+      // For simplicity sending essential IDs/Mode
+      router.push({
+          pathname: '/(admin)/create' as any,
+          params: { mode: 'edit', activityId: activity.id, ...activity }
+      });
+  };
+
+  const handleView = (activity: any) => {
+      router.push({
+          pathname: '/(student)/details' as any,
+          params: { ...activity }
+      });
+  };
 
   return (
     <GradientBackground>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.contentContainer} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+            <RefreshControl 
+                refreshing={refreshing} 
+                onRefresh={onRefresh} 
+                tintColor={theme.text}
+                colors={[theme.text]} 
+            />
+        }
+      >
         {/* Blue Header Banner - Matching Monitor Style */}
         <View style={styles.headerBanner}>
             <View style={{ flex: 1 }}>
@@ -22,9 +104,9 @@ export default function AdminActivities() {
                     Manage and oversee every event across the university campus.
                 </Text>
             </View>
-            <TouchableOpacity style={styles.calendarBtn}>
+            <TouchableOpacity style={styles.calendarBtn} onPress={() => router.push('/(admin)/create' as any)}>
                 <Calendar size={16} color="#FFFFFF" style={{ marginRight: 8 }} />
-                <Text style={styles.calendarBtnText}>Manage</Text>
+                <Text style={styles.calendarBtnText}>Create New</Text>
             </TouchableOpacity>
         </View>
 
@@ -52,49 +134,39 @@ export default function AdminActivities() {
         </View>
 
         <View style={styles.list}>
-            <AdminActivityCard 
-                month="JAN" 
-                day="20" 
-                category="Workshop" 
-                creator="Amiin Daahir" 
-                title="Full-Stuck Development" 
-                time="15:29" 
-                location="Main Hall" 
-                attendees="1/12"
-                status="Upcoming" 
-                theme={theme}
-            />
-            <AdminActivityCard 
-                month="JAN" 
-                day="22" 
-                category="Seminar" 
-                creator="Sarah Mohamed" 
-                title="Leadership in Tech" 
-                time="10:00" 
-                location="Auditorium" 
-                attendees="45/50"
-                status="Ongoing" 
-                theme={theme}
-            />
-             <AdminActivityCard 
-                month="JAN" 
-                day="25" 
-                category="Workshop" 
-                creator="Dr. Ibrahim" 
-                title="Mobile UI Design" 
-                time="14:00" 
-                location="IT Lab 03" 
-                attendees="12/20"
-                status="Completed" 
-                theme={theme}
-            />
+            {activities.length > 0 ? activities.map((act) => {
+                const d = new Date(act.date);
+                const month = d.toLocaleString('default', { month: 'short' }).toUpperCase();
+                const day = d.getDate();
+
+                return (
+                    <AdminActivityCard 
+                        key={act.id}
+                        month={month} 
+                        day={day.toString()} 
+                        category={act.category} 
+                        creator={act.coordinatorName || "Unknown"}
+                        title={act.title} 
+                        time={act.time} 
+                        location={act.location} 
+                        attendees={`${act.enrolled}/${act.capacity}`}
+                        status="Active" 
+                        theme={theme}
+                        onDelete={() => handleDelete(act.id)}
+                        onEdit={() => handleEdit(act)}
+                        onView={() => handleView(act)}
+                    />
+                );
+            }) : (
+                <Text style={{ textAlign: 'center', color: theme.textSecondary, marginTop: 20 }}>No activities found.</Text>
+            )}
         </View>
       </ScrollView>
     </GradientBackground>
   );
 }
 
-function AdminActivityCard({ month, day, category, creator, title, time, location, attendees, status, theme }: any) {
+function AdminActivityCard({ month, day, category, creator, title, time, location, attendees, status, theme, onDelete, onEdit, onView }: any) {
     const isOngoing = status === 'Ongoing';
     const isCompleted = status === 'Completed';
     const isUpcoming = status === 'Upcoming';
@@ -154,15 +226,15 @@ function AdminActivityCard({ month, day, category, creator, title, time, locatio
 
             {/* Right: Actions Column - Stacked Vertically */}
             <View style={[styles.actionsColumn, { borderLeftColor: theme.border }]}>
-                <TouchableOpacity style={[styles.actionBtn, { backgroundColor: theme.primary + '15', borderColor: theme.primary + '30' }]}>
+                <TouchableOpacity onPress={onView} style={[styles.actionBtn, { backgroundColor: theme.primary + '15', borderColor: theme.primary + '30' }]}>
                     <Eye size={12} color={theme.primary} />
                     <Text style={[styles.actionBtnText, { color: theme.primary }]}>View</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#8B5CF615', borderColor: '#8B5CF630' }]}>
+                <TouchableOpacity onPress={onEdit} style={[styles.actionBtn, { backgroundColor: '#8B5CF615', borderColor: '#8B5CF630' }]}>
                     <Edit3 size={12} color="#8B5CF6" />
                     <Text style={[styles.actionBtnText, { color: '#8B5CF6' }]}>Edit</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#EF444415', borderColor: '#EF444430' }]}>
+                <TouchableOpacity onPress={onDelete} style={[styles.actionBtn, { backgroundColor: '#EF444415', borderColor: '#EF444430' }]}>
                     <Trash2 size={12} color="#EF4444" />
                     <Text style={[styles.actionBtnText, { color: '#EF4444' }]}>Del</Text>
                 </TouchableOpacity>

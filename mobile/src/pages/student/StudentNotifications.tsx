@@ -10,92 +10,104 @@ import { GradientBackground } from '@/src/components/GradientBackground';
 import { ThemedText } from '@/src/components/themed-text';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
+import { client } from '@/src/lib/api';
+import { RefreshControl } from 'react-native';
+
+const timeAgo = (date: Date) => {
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " years ago";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " months ago";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " days ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + " hours ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + " minutes ago";
+  return Math.floor(seconds) + " seconds ago";
+};
 
 const { width } = Dimensions.get('window');
 
 const NOTIF_CATEGORIES = ['All', 'Alerts', 'Activities', 'News'];
 
-const INITIAL_NOTIFICATIONS = [
-  {
-    id: '1',
-    type: 'success',
-    category: 'Activities',
-    title: 'Application Approved',
-    description: "Your registration for the 'Leadership Mastery' seminar has been approved by the coordinator.",
-    time: '2m ago',
-    date: 'Today',
-    unread: true,
-  },
-  {
-    id: '2',
-    type: 'info',
-    category: 'News',
-    title: 'New Activity Posted',
-    description: 'A new cybersecurity workshop just opened for registrations. Secure your spot now!',
-    time: '45m ago',
-    date: 'Today',
-    unread: true,
-  },
-  {
-    id: '3',
-    type: 'warning',
-    category: 'Alerts',
-    title: 'Attendance Pending',
-    description: "Don't forget to confirm your attendance for yesterday's session to claim your certificate.",
-    time: '3h ago',
-    date: 'Today',
-    unread: false,
-  },
-  {
-    id: '4',
-    type: 'error',
-    category: 'Activities',
-    title: 'Session Postponed',
-    description: 'The Full-Stack workshop has been moved to next Friday due to scheduled maintenance.',
-    time: 'Yesterday',
-    date: 'Earlier',
-    unread: false,
-  },
-  {
-    id: '5',
-    type: 'info',
-    category: 'News',
-    title: 'Welcome to JU Hub',
-    description: 'Explore campus activities, track your progress, and connect with faculty coordinators seamlessly.',
-    time: '2 days ago',
-    date: 'Earlier',
-    unread: false,
-  }
-];
+// Removed INITIAL_NOTIFICATIONS to fetch from backend instead.
 
 export default function StudentNotifications() {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
 
-  const unreadCount = notifications.filter(n => n.unread).length;
-
-  const markAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+  const fetchNotifications = async () => {
+    try {
+      const data = await client.get('/notifications');
+      setNotifications(data);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   };
 
-  const deleteNotif = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+  React.useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchNotifications();
   };
 
-  const markRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, unread: false } : n));
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const markAllRead = async () => {
+    try {
+      await client.put('/notifications/read/all', {});
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (error) {
+      Alert.alert('Error', 'Failed to mark all as read');
+    }
+  };
+
+  const deleteNotif = async (id: string) => {
+    try {
+      await client.delete(`/notifications/${id}`);
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    } catch (error) {
+      Alert.alert('Error', 'Failed to delete notification');
+    }
+  };
+
+  const markRead = async (id: string, currentlyRead: boolean) => {
+    if (currentlyRead) return;
+    try {
+      await client.put(`/notifications/${id}/read`, {});
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    } catch (error) {
+      console.error('Error marking read:', error);
+    }
   };
 
   const filteredNotifs = notifications.filter(n => 
-    (activeCategory === 'All' || n.category === activeCategory) &&
+    (activeCategory === 'All' || n.type === activeCategory.toLowerCase()) &&
     n.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const todayNotifs = filteredNotifs.filter(n => n.date === 'Today');
-  const earlierNotifs = filteredNotifs.filter(n => n.date === 'Earlier');
+  const getSection = (item: any) => {
+    const date = new Date(item.createdAt);
+    const today = new Date();
+    if (date.toDateString() === today.toDateString()) return 'Today';
+    return 'Earlier';
+  };
+
+  const todayNotifs = filteredNotifs.filter(n => getSection(n) === 'Today');
+  const earlierNotifs = filteredNotifs.filter(n => getSection(n) === 'Earlier');
 
   return (
     <GradientBackground>
@@ -103,6 +115,9 @@ export default function StudentNotifications() {
         style={styles.scrollView} 
         contentContainerStyle={styles.contentContainer} 
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
+        }
       >
         <View style={styles.header}>
             <View>
@@ -181,7 +196,7 @@ export default function StudentNotifications() {
                             theme={theme} 
                             colorScheme={colorScheme}
                             onDelete={() => deleteNotif(item.id)}
-                            onPress={() => markRead(item.id)}
+                            onPress={() => markRead(item.id, item.read)}
                         />
                     ))}
                 </View>
@@ -200,7 +215,7 @@ export default function StudentNotifications() {
                             theme={theme} 
                             colorScheme={colorScheme}
                             onDelete={() => deleteNotif(item.id)}
-                            onPress={() => markRead(item.id)}
+                            onPress={() => markRead(item.id, item.read)}
                         />
                     ))}
                 </View>
@@ -239,7 +254,7 @@ function NotificationCard({ item, theme, colorScheme, onDelete, onPress }: any) 
             <View style={[
                 styles.card, 
                 { backgroundColor: theme.card, borderColor: theme.border },
-                item.unread && [styles.unreadCard, { borderLeftColor: theme.primary, borderColor: theme.primary + '30' }]
+                !item.read && [styles.unreadCard, { borderLeftColor: theme.primary, borderColor: theme.primary + '30' }]
             ]}>
                 <View style={[styles.iconBox, { backgroundColor: info.bg }]}>
                     <Icon size={18} color={info.color} />
@@ -247,21 +262,23 @@ function NotificationCard({ item, theme, colorScheme, onDelete, onPress }: any) 
                 
                 <View style={styles.cardContent}>
                     <View style={styles.cardMainRow}>
-                        <ThemedText style={[styles.notifTitle, { color: theme.text }, item.unread && { fontWeight: '800' }]} numberOfLines={1}>
+                        <ThemedText style={[styles.notifTitle, { color: theme.text }, !item.read && { fontWeight: '800' }]} numberOfLines={1}>
                             {item.title}
                         </ThemedText>
-                        <ThemedText style={[styles.timeText, { color: theme.textSecondary }]}>{item.time}</ThemedText>
+                        <ThemedText style={[styles.timeText, { color: theme.textSecondary }]}>
+                            {timeAgo(new Date(item.createdAt))}
+                        </ThemedText>
                     </View>
                     
                     <ThemedText style={[styles.notifDesc, { color: theme.textSecondary }]} numberOfLines={1}>
-                        {item.description}
+                        {item.message || item.description}
                     </ThemedText>
                     
                     <View style={styles.cardMetaRow}>
                         <View style={styles.statusTagRow}>
-                            {item.unread && <View style={[styles.unreadDot, { backgroundColor: theme.primary }]} />}
-                            <ThemedText style={[styles.categoryLabel, { color: theme.textSecondary }, item.unread && { color: theme.primary }]}>
-                                {item.unread ? 'NEW' : item.category}
+                            {!item.read && <View style={[styles.unreadDot, { backgroundColor: theme.primary }]} />}
+                            <ThemedText style={[styles.categoryLabel, { color: theme.textSecondary }, !item.read && { color: theme.primary }]}>
+                                {!item.read ? 'NEW' : (item.type || 'Alert').toUpperCase()}
                             </ThemedText>
                         </View>
                     </View>

@@ -14,18 +14,31 @@ import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { useTheme } from '@/src/context/ThemeContext';
+import { useAuth } from '@/src/context/AuthContext';
+import { BASE_URL } from '@/src/lib/config';
 
 export default function AdminProfile() {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   const { refreshTheme } = useTheme();
+  const { user, refreshProfile } = useAuth();
+ 
+  React.useEffect(() => {
+    refreshProfile();
+  }, []);
 
   const handleLogout = async () => {
     await AsyncStorage.removeItem('current-user');
     await refreshTheme();
     router.replace('/login');
   };
+
+  const fullAvatarUrl = user?.avatar?.startsWith('http') 
+    ? user.avatar 
+    : user?.avatar 
+      ? `${BASE_URL.replace('/api', '')}${user.avatar}`
+      : 'https://github.com/shadcn.png';
 
   return (
     <GradientBackground>
@@ -34,14 +47,14 @@ export default function AdminProfile() {
         <View style={styles.header}>
           <View style={styles.avatarContainer}>
             <Image 
-              source={{ uri: 'https://github.com/shadcn.png' }} 
+              source={{ uri: fullAvatarUrl }} 
               style={[styles.avatar, { borderColor: theme.card }]} 
             />
             <View style={[styles.adminBadge, { borderColor: theme.card }]}>
                 <Shield size={12} color="#FFFFFF" strokeWidth={3} />
             </View>
           </View>
-          <ThemedText style={[styles.userName, { color: theme.text }]}>jamiila</ThemedText>
+          <ThemedText style={[styles.userName, { color: theme.text }]}>{user?.name || 'Admin'}</ThemedText>
           <View style={[styles.roleLabel, { backgroundColor: theme.primary + '20' }]}>
               <Text style={[styles.roleText, { color: theme.primary }]}>SYSTEM ADMINISTRATOR</Text>
           </View>

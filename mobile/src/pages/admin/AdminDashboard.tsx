@@ -11,14 +11,69 @@ import { GlassCard } from '@/src/components/GlassCard';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 
+import { client } from '@/src/lib/api';
+import { ENDPOINTS } from '@/src/lib/config';
+
+const timeAgo = (date: Date) => {
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + "y ago";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + "mo ago";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + "d ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + "h ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + "m ago";
+  return Math.floor(seconds) + "s ago";
+};
+
+// ... (existing imports)
+
 export default function AdminDashboard() {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+  
+  const [stats, setStats] = React.useState({
+      users: 0,
+      activities: 0,
+      pendingApps: 0
+  });
+  const [notifications, setNotifications] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+      const fetchData = async () => {
+          try {
+              // Parallel fetching for performance
+              const [usersRes, activitiesRes, appsRes, notifRes] = await Promise.allSettled([
+                  client.get('/users'),
+                  client.get(ENDPOINTS.ACTIVITIES),
+                  client.get('/applications'),
+                  client.get('/notifications')
+              ]);
+ 
+              setStats({
+                  users: usersRes.status === 'fulfilled' && Array.isArray(usersRes.value) ? usersRes.value.length : 0,
+                  activities: activitiesRes.status === 'fulfilled' && Array.isArray(activitiesRes.value) ? activitiesRes.value.length : 0,
+                  pendingApps: appsRes.status === 'fulfilled' && Array.isArray(appsRes.value) ? appsRes.value.length : 0
+              });
+
+              if (notifRes.status === 'fulfilled') {
+                  setNotifications(notifRes.value.slice(0, 3));
+              }
+          } catch (e) {
+              console.log('Failed to fetch dashboard data', e);
+          }
+      };
+      
+      fetchData();
+  }, []);
 
   return (
     <GradientBackground>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
-        {/* Premium Header Banner */}
+        {/* ... (Header Banner) ... */}
         <View style={styles.headerBanner}>
             <View style={{ flex: 1 }}>
                 <View style={styles.bannerTopRow}>
@@ -41,9 +96,9 @@ export default function AdminDashboard() {
             <TrendingUp size={16} color="#22C55E" />
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsScroll} contentContainerStyle={styles.statsScrollContent}>
-            <StatCard label="Total Users" value="1,240" icon={Users} color="#0EA5E9" trend="+12%" theme={theme} />
-            <StatCard label="Activities" value="48" icon={Activity} color="#8B5CF6" trend="+5%" theme={theme} />
-            <StatCard label="Pending Apps" value="32" icon={FileSearch} color="#F59E0B" trend="-2%" theme={theme} />
+            <StatCard label="Total Users" value={stats.users.toString()} icon={Users} color="#0EA5E9" trend="+12%" theme={theme} />
+            <StatCard label="Activities" value={stats.activities.toString()} icon={Activity} color="#8B5CF6" trend="+5%" theme={theme} />
+            <StatCard label="Pending Apps" value={stats.pendingApps.toString()} icon={FileSearch} color="#F59E0B" trend="-2%" theme={theme} />
             <StatCard label="System Load" value="14%" icon={Monitor} color="#22C55E" trend="Stable" theme={theme} />
         </ScrollView>
 
@@ -65,24 +120,17 @@ export default function AdminDashboard() {
             <Text style={[styles.sectionTitle, { color: theme.text }]}>System Intelligence</Text>
         </View>
         <View style={styles.alertsList}>
-            <AlertItem 
-                type="warning" 
-                msg="High registration traffic detected" 
-                time="2 min ago" 
-                theme={theme}
-            />
-            <AlertItem 
-                type="info" 
-                msg="New coordinator account approved" 
-                time="16 min ago" 
-                theme={theme}
-            />
-            <AlertItem 
-                type="success" 
-                msg="Weekly database backup verified" 
-                time="1 hour ago" 
-                theme={theme}
-            />
+            {notifications.length > 0 ? notifications.map((notif: any) => (
+                <AlertItem 
+                    key={notif.id}
+                    type={notif.type || 'info'} 
+                    msg={notif.title} 
+                    time={timeAgo(new Date(notif.createdAt))} 
+                    theme={theme}
+                />
+            )) : (
+                <Text style={{ textAlign: 'center', color: theme.textSecondary, padding: 20 }}>No clinical alerts.</Text>
+            )}
         </View>
       </ScrollView>
     </GradientBackground>

@@ -1,3 +1,5 @@
+import { client } from '@/src/lib/api';
+import { ENDPOINTS } from '@/src/lib/config';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -87,6 +89,8 @@ export default function Login() {
   }, []);
 
   /* ---------------- LOGIN LOGIC ---------------- */
+  /* ---------------- LOGIN LOGIC ---------------- */
+  /* ---------------- LOGIN LOGIC ---------------- */
   const handleLogin = async () => {
     setSubmitted(true);
     setError('');
@@ -97,14 +101,25 @@ export default function Login() {
       router.push(target as any);
     };
 
-    if (email === 'admin@gmail.com' && password === '1234') {
-      await loginSuccess('/(admin)/dashboard', email);
-    } else if (email === 'coordi@gmail.com' && password === '1234') {
-      await loginSuccess('/(coordinator)/dashboard', email);
-    } else if (email === 'student@gmail.com' && password === '1234') {
-      await loginSuccess('/(student)/home', email);
-    } else {
-      setError('Invalid email or password');
+    try {
+      // Real API Call
+      const response = await client.post(ENDPOINTS.AUTH.LOGIN, { email, password }, true);
+      console.log('Login success:', response);
+      
+      if (response && response.token) {
+          await AsyncStorage.setItem('user_token', response.token);
+          
+          const role = response.user?.role || 'student';
+          
+          if (role === 'admin') await loginSuccess('/(admin)/dashboard', email);
+          else if (role === 'coordinator') await loginSuccess('/(coordinator)/dashboard', email);
+          else await loginSuccess('/(student)/home', email);
+      } else {
+          setError('Invalid server response');
+      }
+    } catch (err: any) {
+      console.log('API Login failed:', err.message);
+      setError(err.message || 'Login failed. Please check your connection.');
     }
   };
 

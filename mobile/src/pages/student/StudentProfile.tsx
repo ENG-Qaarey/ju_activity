@@ -25,6 +25,7 @@ export default function StudentProfile() {
 
   const handleLogout = async () => {
     await AsyncStorage.removeItem('current-user');
+    await AsyncStorage.removeItem('user_token');
     await refreshTheme();
     router.replace('/login');
   };

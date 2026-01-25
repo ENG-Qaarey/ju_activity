@@ -7,6 +7,9 @@ import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { useRouter } from 'expo-router';
 
+import { client } from '@/src/lib/api';
+import { ENDPOINTS } from '@/src/lib/config';
+
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = width > 600 ? (width - 60) / 2 : width - 40;
 
@@ -17,7 +20,7 @@ const MOCK_ACTIVITIES = [
     id: '1',
     title: 'Leadership Mastery',
     category: 'Seminar',
-    description: 'Leadership is the ability to guide, inspire, and influence people to work together toward achieving a common goal. A good leader sets a clear...',
+    description: 'Leadership is the ability to guide, inspire, and influence people to work together toward achieving a common goal.',
     date: '2026-01-20',
     time: '20:30',
     location: 'Main Hall',
@@ -28,89 +31,12 @@ const MOCK_ACTIVITIES = [
     id: '2',
     title: 'Full-Stuck Development',
     category: 'Workshop',
-    description: 'A Full-Stack Developer is a software developer who can build both the front-end and the back-end of an application. This means they handle...',
+    description: 'A Full-Stack Developer is a software developer who can build both the front-end and the back-end of an application.',
     date: '2026-01-20',
     time: '15:29',
     location: 'Lab 1',
     enrolled: 1,
     capacity: 12
-  },
-  {
-    id: '3',
-    title: 'Graphic Design Basics',
-    category: 'Training',
-    description: 'Learn the fundamentals of visual communication, color theory, and typography using modern design tools like Figma and Adobe Creative Suite...',
-    date: '2026-01-22',
-    time: '10:00',
-    location: 'Media Lab',
-    enrolled: 8,
-    capacity: 15
-  },
-  {
-    id: '4',
-    title: 'Public Speaking BootCamp',
-    category: 'Training',
-    description: 'Master the art of communication and learn how to deliver impactful presentations that capture and hold your audience’s attention...',
-    date: '2026-01-24',
-    time: '14:00',
-    location: 'Auditorium',
-    enrolled: 30,
-    capacity: 50
-  },
-  {
-    id: '5',
-    title: 'AI Ethics & Society',
-    category: 'Seminar',
-    description: 'Discuss the moral implications, societal impacts, and future directions of artificial intelligence in our modern interconnected world...',
-    date: '2026-01-26',
-    time: '11:30',
-    location: 'Conference Room',
-    enrolled: 12,
-    capacity: 40
-  },
-  {
-    id: '6',
-    title: 'Cybersecurity Guard',
-    category: 'Workshop',
-    description: 'Explore the essentials of network security, ethical hacking basics, and best practices for protecting digital assets in an increasingly connected world...',
-    date: '2026-01-28',
-    time: '09:00',
-    location: 'IT Wing',
-    enrolled: 25,
-    capacity: 30
-  },
-  {
-    id: '7',
-    title: 'Digital Marketing Hub',
-    category: 'Workshop',
-    description: 'Understand the power of SEO, content strategy, and social media advertising to build a strong brand presence and reach a global audience...',
-    date: '2026-01-30',
-    time: '13:00',
-    location: 'Business Hub',
-    enrolled: 15,
-    capacity: 25
-  },
-  {
-    id: '8',
-    title: 'Finance & Investment',
-    category: 'Extracurricular',
-    description: 'Learn the principles of budgeting, saving, and investing to secure your financial future and make informed money management decisions...',
-    date: '2026-02-02',
-    time: '16:00',
-    location: 'Room 204',
-    enrolled: 40,
-    capacity: 100
-  },
-  {
-    id: '9',
-    title: 'Health & Wellness Club',
-    category: 'Extracurricular',
-    description: 'A dedicated session on mental health awareness, stress management techniques, and building healthy daily habits for university success...',
-    date: '2026-02-05',
-    time: '10:30',
-    location: 'Sports Center',
-    enrolled: 20,
-    capacity: 60
   }
 ];
 
@@ -120,8 +46,28 @@ export default function StudentActivities() {
   const theme = Colors[colorScheme];
   const [activeCategory, setActiveCategory] = React.useState('All');
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [activities, setActivities] = React.useState<any[]>(MOCK_ACTIVITIES);
+  const [loading, setLoading] = React.useState(true);
 
-  const filteredActivities = MOCK_ACTIVITIES.filter(act => 
+  React.useEffect(() => {
+    const fetchActivities = async () => {
+        try {
+            setLoading(true);
+            const data = await client.get(ENDPOINTS.ACTIVITIES);
+            if (Array.isArray(data) && data.length > 0) {
+                setActivities(data);
+            }
+        } catch (error) {
+            console.log('Using mock data due to API error:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    fetchActivities();
+  }, []);
+
+  const filteredActivities = activities.filter(act => 
     (activeCategory === 'All' || act.category === activeCategory) &&
     act.title.toLowerCase().includes(searchQuery.toLowerCase())
   );

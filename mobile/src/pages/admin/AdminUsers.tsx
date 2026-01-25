@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput, RefreshControl } from 'react-native';
 import { Search, UserPlus, Filter, User, Users, Shield, MoreVertical, ChevronRight } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
@@ -7,13 +7,60 @@ import { GlassCard } from '@/src/components/GlassCard';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 
+import { client } from '@/src/lib/api';
+import { ENDPOINTS } from '@/src/lib/config';
+
 export default function AdminUsers() {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
 
+  const [users, setUsers] = React.useState<any[]>([]);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [stats, setStats] = React.useState({ students: 0, staff: 0, admins: 0 });
+
+  const fetchUsers = async () => {
+    try {
+      const data = await client.get('/users');
+      if (Array.isArray(data)) {
+        setUsers(data);
+        
+        // Calculate stats
+        const students = data.filter(u => u.role === 'student').length;
+        const coordinators = data.filter(u => u.role === 'coordinator').length;
+        const admins = data.filter(u => u.role === 'admin').length;
+        
+        setStats({ students, staff: coordinators, admins });
+      }
+    } catch (error) {
+      console.log('Error fetching users:', error);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchUsers();
+    setRefreshing(false);
+  };
+
   return (
     <GradientBackground>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.contentContainer} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh}
+            tintColor={theme.text}
+            colors={[theme.text]}
+          />
+        }
+      >
         {/* Modern Search & Add Header */}
         <View style={styles.header}>
           <View style={[styles.searchContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -31,9 +78,9 @@ export default function AdminUsers() {
 
         {/* Premium User Stats Summary */}
         <View style={styles.statsRow}>
-            <StatCard label="Students" count="1,120" color="#0EA5E9" icon={Users} theme={theme} />
-            <StatCard label="Staff" count="18" color="#8B5CF6" icon={Shield} theme={theme} />
-            <StatCard label="Admins" count="5" color="#EF4444" icon={User} theme={theme} />
+            <StatCard label="Students" count={stats.students.toString()} color="#0EA5E9" icon={Users} theme={theme} />
+            <StatCard label="Staff" count={stats.staff.toString()} color="#8B5CF6" icon={Shield} theme={theme} />
+            <StatCard label="Admins" count={stats.admins.toString()} color="#EF4444" icon={User} theme={theme} />
         </View>
 
         {/* Section Header */}
@@ -47,11 +94,19 @@ export default function AdminUsers() {
 
         {/* User List */}
         <View style={styles.list}>
-           <UserListItem name="muscab axmed" id="ST-2024-001" role="Student" status="Active" isOnline={true} theme={theme} />
-           <UserListItem name="axmed qaarey" id="CO-2024-005" role="Coordinator" status="Active" isOnline={false} theme={theme} />
-           <UserListItem name="fatuma farah" id="ST-2024-042" role="Student" status="Inactive" isOnline={false} theme={theme} />
-           <UserListItem name="hassan ali" id="AD-2024-001" role="Admin" status="Active" isOnline={true} theme={theme} />
-           <UserListItem name="deeqa warsame" id="ST-2024-098" role="Student" status="Active" isOnline={false} theme={theme} />
+           {users.length > 0 ? users.map((user) => (
+             <UserListItem 
+               key={user.id}
+               name={user.name || 'Unknown'} 
+               id={user.studentId || user.id.slice(0, 8)} 
+               role={user.role.charAt(0).toUpperCase() + user.role.slice(1)} 
+               status={user.isActive ? 'Active' : 'Inactive'} 
+               isOnline={user.isActive} 
+               theme={theme} 
+             />
+           )) : (
+             <Text style={{ textAlign: 'center', color: theme.textSecondary, marginTop: 20 }}>No users found.</Text>
+           )}
         </View>
       </ScrollView>
     </GradientBackground>

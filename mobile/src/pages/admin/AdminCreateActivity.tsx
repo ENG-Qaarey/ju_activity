@@ -5,29 +5,71 @@ import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
 import { JuInput } from '@/src/components/JuInput';
 import { JuButton } from '@/src/components/JuButton';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 
+// ... imports
+import { client } from '@/src/lib/api';
+import { ENDPOINTS } from '@/src/lib/config';
+
 const CATEGORIES = ['Workshop', 'Seminar', 'Tech Talk', 'Innovation Forum', 'Networking', 'Make-up Session'];
-const COORDINATORS = ['Dr. Ahmed Ali', 'Prof. Sarah Smith', 'Mr. John Doe', 'Dr. Mary Johnson'];
 
 export default function AdminCreateActivity() {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   
+  const isEditMode = params.mode === 'edit';
+  const activityId = params.activityId;
+
+  const [coordinatorsList, setCoordinatorsList] = React.useState<any[]>([]);
+
   // Form State
   const [formData, setFormData] = React.useState({
     title: '',
     description: '',
     category: '',
-    coordinator: '',
+    coordinator: '', // Name
+    coordinatorId: '', // ID
     date: '',
     time: '',
     location: '',
     capacity: ''
   });
+
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    // Fetch coordinators
+    const fetchCoordinators = async () => {
+      try {
+        // Assuming endpoint /users?role=coordinator returns User[]
+        const res = await client.get('/users?role=coordinator');
+        if (Array.isArray(res)) {
+          setCoordinatorsList(res);
+        }
+      } catch (e) {
+        console.log('Failed to fetch coordinators:', e);
+      }
+    };
+    fetchCoordinators();
+
+    if (isEditMode && params.activityId) {
+      setFormData({
+        title: (params.title as string) || '',
+        description: (params.description as string) || '',
+        category: (params.category as string) || '',
+        coordinator: (params.coordinatorName as string) || '',
+        coordinatorId: (params.coordinatorId as string) || '', 
+        date: (params.date as string) || '',
+        time: (params.time as string) || '',
+        location: (params.location as string) || '',
+        capacity: params.capacity ? String(params.capacity) : ''
+      });
+    }
+  }, []); // Run once on mount
 
   // Calendar State
   const [viewingDate, setViewingDate] = React.useState(new Date(2026, 0, 1));
@@ -41,9 +83,63 @@ export default function AdminCreateActivity() {
   };
 
   const handleCapacityChange = (text: string) => {
-    // Only allow numbers
     const cleanText = text.replace(/[^0-9]/g, '');
     updateField('capacity', cleanText);
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.title || !formData.date) {
+      alert('Please fill at least the Title and Date.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const basePayload = {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        date: formData.date,
+        time: formData.time,
+        location: formData.location,
+        capacity: formData.capacity ? parseInt(formData.capacity) : 0,
+      };
+
+      if (isEditMode && activityId) {
+        // For Update: Exclude coordinator fields as backend update DTO doesn't support them
+        await client.put(`${ENDPOINTS.ACTIVITIES}/${activityId}`, basePayload);
+        alert('Activity Updated Successfully!');
+      } else {
+        // For Create: Include coordinator name (mapped to coordinatorName for backend)
+        const createPayload = {
+            ...basePayload,
+            coordinatorName: formData.coordinator, 
+        };
+        await client.post(ENDPOINTS.ACTIVITIES, createPayload);
+        alert('Activity Published Successfully!');
+        
+        // Clear inputs after successful create
+        setFormData({
+            title: '',
+            description: '',
+            category: '',
+            coordinator: '',
+            coordinatorId: '',
+            date: '',
+            time: '',
+            location: '',
+            capacity: ''
+        });
+      }
+      
+      // Navigate back to refresh list (requires list to use useFocusEffect or manual refresh)
+      router.back();
+    } catch (error: any) {
+      console.log('Submission error:', error);
+      alert(`Failed: ${error.message || 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderPickerModal = () => {
@@ -51,9 +147,8 @@ export default function AdminCreateActivity() {
     if (modalType === 'time') return renderTimeModal();
 
     const isCategory = modalType === 'category';
-    const data = isCategory ? CATEGORIES : COORDINATORS;
+    const data = isCategory ? CATEGORIES : coordinatorsList;
     const title = isCategory ? 'Select Category' : 'Assign Coordinator';
-    const field = isCategory ? 'category' : 'coordinator';
 
     if (!modalType) return null;
 
@@ -74,23 +169,32 @@ export default function AdminCreateActivity() {
             </View>
             <FlatList
               data={data}
-              keyExtractor={item => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity 
-                  style={[styles.modalItem, { borderBottomColor: theme.border }]}
-                  onPress={() => {
-                    updateField(field, item);
-                    setModalType(null);
-                  }}
-                >
-                  <Text style={[
-                    styles.modalItemText,
-                    { color: theme.textSecondary },
-                    formData[field] === item && { color: theme.primary, fontWeight: '700' }
-                  ]}>{item}</Text>
-                  {formData[field] === item && <Check size={18} color={theme.primary} />}
-                </TouchableOpacity>
-              )}
+              keyExtractor={item => isCategory ? item : item.id}
+              renderItem={({ item }) => {
+                const label = isCategory ? item : item.name;
+                const isSelected = isCategory ? (formData.category === label) : (formData.coordinatorId === item.id);
+
+                return (
+                  <TouchableOpacity 
+                    style={[styles.modalItem, { borderBottomColor: theme.border }]}
+                    onPress={() => {
+                      if (isCategory) {
+                          updateField('category', label);
+                      } else {
+                          setFormData(prev => ({ ...prev, coordinator: item.name, coordinatorId: item.id }));
+                      }
+                      setModalType(null);
+                    }}
+                  >
+                    <Text style={[
+                      styles.modalItemText,
+                      { color: theme.textSecondary },
+                      isSelected && { color: theme.primary, fontWeight: '700' }
+                    ]}>{label}</Text>
+                    {isSelected && <Check size={18} color={theme.primary} />}
+                  </TouchableOpacity>
+                );
+              }}
             />
           </GlassCard>
         </View>
@@ -358,6 +462,8 @@ export default function AdminCreateActivity() {
     );
   };
 
+
+
   return (
     <GradientBackground>
       <KeyboardAvoidingView 
@@ -377,9 +483,9 @@ export default function AdminCreateActivity() {
                 <ShieldCheck size={14} color={theme.textSecondary} />
                 <Text style={[styles.actionTagText, { color: theme.textSecondary }]}>ADMIN ACTION</Text>
             </View>
-            <Text style={[styles.title, { color: theme.text }]}>Publish Strategic Activity</Text>
+            <Text style={[styles.title, { color: theme.text }]}>{isEditMode ? 'Edit Activity' : 'Publish Strategic Activity'}</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
-                Spin up university-wide workshops, seminars, or urgent make-up sessions without waiting on coordinators.
+                {isEditMode ? 'Modify activity details and update for all students.' : 'Spin up university-wide workshops, seminars, or urgent make-up sessions without waiting on coordinators.'}
             </Text>
         </View>
 
@@ -548,18 +654,13 @@ export default function AdminCreateActivity() {
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={[styles.publishBtn, { backgroundColor: theme.primary }]}
-                  onPress={() => {
-                    if (!formData.title || !formData.date) {
-                      alert('Please fill at least the Title and Date.');
-                      return;
-                    }
-                    console.log('Publishing:', formData);
-                    alert('Activity Published Successfully!');
-                    router.back();
-                  }}
+                  onPress={handleSubmit}
+                  disabled={loading}
                 >
                     <Rocket size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
-                    <Text style={styles.publishText}>Publish Activity</Text>
+                    <Text style={styles.publishText}>
+                        {loading ? 'Processing...' : isEditMode ? 'Update Activity' : 'Publish Activity'}
+                    </Text>
                 </TouchableOpacity>
             </View>
         </GlassCard>

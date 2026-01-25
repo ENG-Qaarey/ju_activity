@@ -10,21 +10,50 @@ import { useRouter } from 'expo-router';
 
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
+import { client } from '@/src/lib/api';
+import { ActivityIndicator } from 'react-native';
 
 export default function AdminSecuritySettings() {
   const router = useRouter();
   const [loading, setLoading] = React.useState(false);
-  const [twoFactor, setTwoFactor] = React.useState(true);
+  const [twoFactor, setTwoFactor] = React.useState(false);
+  const [passwords, setPasswords] = React.useState({
+    old: '',
+    new: '',
+    confirm: ''
+  });
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!passwords.old || !passwords.new || !passwords.confirm) {
+      Alert.alert('Required Fields', 'Please fill in all password fields.');
+      return;
+    }
+
+    if (passwords.new !== passwords.confirm) {
+      Alert.alert('Validation Error', 'New passwords do not match.');
+      return;
+    }
+
+    if (passwords.new.length < 8) {
+      Alert.alert('Security Policy', 'New password must be at least 8 characters long.');
+      return;
+    }
+
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await client.patch('/users/me/password', {
+        oldPassword: passwords.old,
+        newPassword: passwords.new
+      });
+      Alert.alert('Security Updated', 'Your password has been successfully changed.');
+      setPasswords({ old: '', new: '', confirm: '' });
+    } catch (e: any) {
+      Alert.alert('Update Failed', e.message || 'Error updating security settings');
+    } finally {
       setLoading(false);
-      Alert.alert('Success', 'Security settings updated successfully');
-    }, 1000);
+    }
   };
 
   return (
@@ -56,6 +85,8 @@ export default function AdminSecuritySettings() {
               <TextInput 
                 style={[styles.input, { backgroundColor: theme.background, color: theme.text, borderColor: theme.border }]} 
                 secureTextEntry
+                value={passwords.old}
+                onChangeText={(val) => setPasswords(prev => ({ ...prev, old: val }))}
                 placeholder="Enter current password"
                 placeholderTextColor={theme.textSecondary}
               />
@@ -66,6 +97,8 @@ export default function AdminSecuritySettings() {
               <TextInput 
                 style={[styles.input, { backgroundColor: theme.background, color: theme.text, borderColor: theme.border }]} 
                 secureTextEntry
+                value={passwords.new}
+                onChangeText={(val) => setPasswords(prev => ({ ...prev, new: val }))}
                 placeholder="Enter new password"
                 placeholderTextColor={theme.textSecondary}
               />
@@ -76,6 +109,8 @@ export default function AdminSecuritySettings() {
               <TextInput 
                 style={[styles.input, { backgroundColor: theme.background, color: theme.text, borderColor: theme.border }]} 
                 secureTextEntry
+                value={passwords.confirm}
+                onChangeText={(val) => setPasswords(prev => ({ ...prev, confirm: val }))}
                 placeholder="Confirm new password"
                 placeholderTextColor={theme.textSecondary}
               />
