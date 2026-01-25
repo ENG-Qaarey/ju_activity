@@ -9,16 +9,22 @@ interface GradientBackgroundProps {
 
 export function GradientBackground({ children }: GradientBackgroundProps) {
   const colorScheme = useColorScheme() ?? 'light';
+  const theme = Colors[colorScheme];
   
-  if (colorScheme === 'dark') {
-    return <View style={styles.darkBackground}>{children}</View>;
-  }
-
   return (
-    <View style={styles.lightBackground}>
-      <View style={styles.blob1} />
-      <View style={styles.blob2} />
-      <View style={[styles.container, { backgroundColor: 'rgba(244, 249, 255, 0.6)' }]}>
+    <View style={[styles.baseBackground, { backgroundColor: theme.background }]}>
+      {colorScheme === 'light' ? (
+        <>
+          <View style={styles.blob1} />
+          <View style={styles.blob2} />
+        </>
+      ) : (
+        <>
+          <View style={[styles.blob1, styles.darkBlob1]} />
+          <View style={[styles.blob2, styles.darkBlob2]} />
+        </>
+      )}
+      <View style={styles.container}>
         {children}
       </View>
     </View>
@@ -26,13 +32,8 @@ export function GradientBackground({ children }: GradientBackgroundProps) {
 }
 
 const styles = StyleSheet.create({
-  lightBackground: {
+  baseBackground: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  darkBackground: {
-    flex: 1,
-    backgroundColor: '#0F172A',
   },
   container: {
     flex: 1,
@@ -56,5 +57,13 @@ const styles = StyleSheet.create({
     borderRadius: 125,
     backgroundColor: '#A9D6FF',
     opacity: 0.4,
+  },
+  darkBlob1: {
+    backgroundColor: '#0EA5E9',
+    opacity: 0.15,
+  },
+  darkBlob2: {
+    backgroundColor: '#1E40AF',
+    opacity: 0.1,
   },
 });

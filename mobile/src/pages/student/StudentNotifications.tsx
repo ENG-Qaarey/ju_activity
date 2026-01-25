@@ -106,12 +106,12 @@ export default function StudentNotifications() {
       >
         <View style={styles.header}>
             <View>
-                <ThemedText style={styles.title}>All Alerts</ThemedText>
+                <ThemedText style={[styles.title, { color: theme.text }]}>All Alerts</ThemedText>
                 <ThemedText style={[styles.subtitle, { color: theme.textSecondary }]}>
                     System updates & activity alerts
                 </ThemedText>
             </View>
-            <TouchableOpacity style={styles.markReadBtn} onPress={markAllRead}>
+            <TouchableOpacity style={[styles.markReadBtn, { backgroundColor: theme.card, borderColor: theme.border }]} onPress={markAllRead}>
                 <MailOpen size={16} color={theme.primary} />
                 <ThemedText style={[styles.markReadText, { color: theme.primary }]}>Read All</ThemedText>
             </TouchableOpacity>
@@ -120,27 +120,27 @@ export default function StudentNotifications() {
         {/* Stats & Search Area */}
         <View style={styles.summaryArea}>
             <View style={styles.statsSummary}>
-                <ThemedText style={styles.totalBadge}>
+                <ThemedText style={[styles.totalBadge, { color: theme.textSecondary }]}>
                     <ThemedText style={{fontWeight: '900'}}>{notifications.length}</ThemedText> Total
                 </ThemedText>
-                <View style={styles.dotSeparator} />
+                <View style={[styles.dotSeparator, { backgroundColor: theme.border }]} />
                 <ThemedText style={[styles.unreadBadge, { color: theme.primary }]}>
                     <ThemedText style={{fontWeight: '900'}}>{unreadCount}</ThemedText> New Notifications
                 </ThemedText>
             </View>
             
             <View style={styles.interactionRow}>
-                <View style={[styles.searchContainer, { backgroundColor: '#FFFFFF' }]}>
-                    <Search size={18} color="#94A3B8" />
+                <View style={[styles.searchContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                    <Search size={18} color={theme.textSecondary} />
                     <TextInput 
                         placeholder="Search alerts.." 
-                        placeholderTextColor="#94A3B8"
-                        style={styles.searchInput}
+                        placeholderTextColor={theme.textSecondary}
+                        style={[styles.searchInput, { color: theme.text }]}
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                     />
                 </View>
-                <TouchableOpacity style={styles.filterCircle}>
+                <TouchableOpacity style={[styles.filterCircle, { backgroundColor: theme.card, borderColor: theme.border }]}>
                     <SlidersHorizontal size={18} color={theme.textSecondary} />
                 </TouchableOpacity>
             </View>
@@ -155,6 +155,7 @@ export default function StudentNotifications() {
                         onPress={() => setActiveCategory(cat)}
                         style={[
                             styles.chip,
+                            { backgroundColor: theme.card, borderColor: theme.border },
                             activeCategory === cat && { backgroundColor: theme.primary, borderColor: theme.primary }
                         ]}
                     >
@@ -178,6 +179,7 @@ export default function StudentNotifications() {
                             key={item.id} 
                             item={item} 
                             theme={theme} 
+                            colorScheme={colorScheme}
                             onDelete={() => deleteNotif(item.id)}
                             onPress={() => markRead(item.id)}
                         />
@@ -196,6 +198,7 @@ export default function StudentNotifications() {
                             key={item.id} 
                             item={item} 
                             theme={theme} 
+                            colorScheme={colorScheme}
                             onDelete={() => deleteNotif(item.id)}
                             onPress={() => markRead(item.id)}
                         />
@@ -206,11 +209,11 @@ export default function StudentNotifications() {
 
         {filteredNotifs.length === 0 && (
             <View style={styles.emptyState}>
-                <View style={styles.emptyIconCircle}>
-                    <Bell size={40} color="#94A3B8" />
+                <View style={[styles.emptyIconCircle, { backgroundColor: theme.card }]}>
+                    <Bell size={40} color={theme.textSecondary} />
                 </View>
-                <ThemedText style={styles.emptyTitle}>All caught up!</ThemedText>
-                <ThemedText style={styles.emptySubtitle}>No alerts found matching your filters.</ThemedText>
+                <ThemedText style={[styles.emptyTitle, { color: theme.text }]}>All caught up!</ThemedText>
+                <ThemedText style={[styles.emptySubtitle, { color: theme.textSecondary }]}>No alerts found matching your filters.</ThemedText>
             </View>
         )}
       </ScrollView>
@@ -218,13 +221,13 @@ export default function StudentNotifications() {
   );
 }
 
-function NotificationCard({ item, theme, onDelete, onPress }: any) {
+function NotificationCard({ item, theme, colorScheme, onDelete, onPress }: any) {
     const getIconInfo = () => {
         switch (item.type) {
-            case 'success': return { icon: CheckCircle2, color: '#10B981', bg: '#DCFCE7' };
-            case 'error': return { icon: XCircle, color: '#EF4444', bg: '#FEE2E2' };
-            case 'warning': return { icon: Bell, color: '#F59E0B', bg: '#FEF3C7' };
-            default: return { icon: Info, color: '#3B82F6', bg: '#DBEAFE' };
+            case 'success': return { icon: CheckCircle2, color: theme.success, bg: theme.success + '15' };
+            case 'error': return { icon: XCircle, color: theme.error, bg: theme.error + '15' };
+            case 'warning': return { icon: Bell, color: theme.warning, bg: theme.warning + '15' };
+            default: return { icon: Info, color: theme.primary, bg: theme.primary + '15' };
         }
     };
 
@@ -233,17 +236,21 @@ function NotificationCard({ item, theme, onDelete, onPress }: any) {
 
     return (
         <TouchableOpacity activeOpacity={0.8} onPress={onPress}>
-            <View style={[styles.card, item.unread && styles.unreadCard]}>
+            <View style={[
+                styles.card, 
+                { backgroundColor: theme.card, borderColor: theme.border },
+                item.unread && [styles.unreadCard, { borderLeftColor: theme.primary, borderColor: theme.primary + '30' }]
+            ]}>
                 <View style={[styles.iconBox, { backgroundColor: info.bg }]}>
                     <Icon size={18} color={info.color} />
                 </View>
                 
                 <View style={styles.cardContent}>
                     <View style={styles.cardMainRow}>
-                        <ThemedText style={[styles.notifTitle, item.unread && { fontWeight: '800' }]} numberOfLines={1}>
+                        <ThemedText style={[styles.notifTitle, { color: theme.text }, item.unread && { fontWeight: '800' }]} numberOfLines={1}>
                             {item.title}
                         </ThemedText>
-                        <ThemedText style={styles.timeText}>{item.time}</ThemedText>
+                        <ThemedText style={[styles.timeText, { color: theme.textSecondary }]}>{item.time}</ThemedText>
                     </View>
                     
                     <ThemedText style={[styles.notifDesc, { color: theme.textSecondary }]} numberOfLines={1}>
@@ -253,19 +260,19 @@ function NotificationCard({ item, theme, onDelete, onPress }: any) {
                     <View style={styles.cardMetaRow}>
                         <View style={styles.statusTagRow}>
                             {item.unread && <View style={[styles.unreadDot, { backgroundColor: theme.primary }]} />}
-                            <ThemedText style={[styles.categoryLabel, item.unread && { color: theme.primary }]}>
+                            <ThemedText style={[styles.categoryLabel, { color: theme.textSecondary }, item.unread && { color: theme.primary }]}>
                                 {item.unread ? 'NEW' : item.category}
                             </ThemedText>
                         </View>
                     </View>
                 </View>
 
-                <TouchableOpacity style={styles.miniDeleteBtn} onPress={(e) => { e.stopPropagation(); onDelete(); }}>
-                    <Trash2 size={14} color="#EF4444" />
+                <TouchableOpacity style={[styles.miniDeleteBtn, { backgroundColor: theme.error + '15' }]} onPress={(e) => { e.stopPropagation(); onDelete(); }}>
+                    <Trash2 size={14} color={theme.error} />
                 </TouchableOpacity>
             </View>
         </TouchableOpacity>
-    )
+    );
 }
 
 const styles = StyleSheet.create({
@@ -273,16 +280,16 @@ const styles = StyleSheet.create({
   contentContainer: { padding: 20, paddingTop: 40, paddingBottom: 140 },
   
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-  title: { fontSize: 26, fontWeight: '900', color: '#1E293B', letterSpacing: -0.5 },
-  subtitle: { fontSize: 13, marginTop: 2 },
+  title: { fontSize: 26, fontWeight: '900', letterSpacing: -0.5 },
+  subtitle: { fontSize: 13, marginTop: 2, fontWeight: '600' },
   
-  markReadBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#FFFFFF', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: '#E2E8F0' },
+  markReadBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10, borderWidth: 1 },
   markReadText: { fontSize: 12, fontWeight: '800' },
 
   summaryArea: { marginBottom: 24 },
   statsSummary: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  totalBadge: { fontSize: 13, color: '#64748B', fontWeight: '600' },
-  dotSeparator: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#CBD5E1', marginHorizontal: 12 },
+  totalBadge: { fontSize: 13, fontWeight: '600' },
+  dotSeparator: { width: 4, height: 4, borderRadius: 2, marginHorizontal: 12 },
   unreadBadge: { fontSize: 13, fontWeight: '700' },
 
   interactionRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
@@ -294,30 +301,23 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.02,
-    shadowRadius: 5,
   },
-  searchInput: { flex: 1, fontSize: 13, marginLeft: 8, color: '#1E293B', fontWeight: '500' },
-  filterCircle: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0' },
+  searchInput: { flex: 1, fontSize: 13, marginLeft: 8, fontWeight: '500' },
+  filterCircle: { width: 44, height: 44, borderRadius: 12, justifyContent: 'center', alignItems: 'center', borderWidth: 1 },
 
   chipRow: { marginBottom: 20, marginHorizontal: -20 },
   chipScroll: { paddingHorizontal: 20, gap: 8 },
-  chip: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 10, borderWidth: 1, borderColor: '#E2E8F0', backgroundColor: '#FFFFFF' },
+  chip: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: 10, borderWidth: 1 },
   chipText: { fontSize: 11, fontWeight: '700' },
 
   section: { },
-  sectionTitle: { fontSize: 14, fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 },
+  sectionTitle: { fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 12 },
 
   list: { gap: 10 },
   card: { 
-    backgroundColor: '#FFFFFF', 
     borderRadius: 16, 
     padding: 12, 
     borderWidth: 1, 
-    borderColor: '#F1F5F9',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.04,
@@ -327,27 +327,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   unreadCard: {
-    borderColor: 'rgba(59, 130, 246, 0.15)',
     borderLeftWidth: 3,
-    borderLeftColor: '#3B82F6',
   },
   iconBox: { width: 36, height: 36, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
   cardContent: { flex: 1, marginLeft: 12 },
   cardMainRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 },
-  notifTitle: { fontSize: 13.5, fontWeight: '700', color: '#1E293B', flex: 1, marginRight: 8 },
-  timeText: { fontSize: 10, color: '#94A3B8', fontWeight: '600' },
+  notifTitle: { fontSize: 13.5, flex: 1, marginRight: 8 },
+  timeText: { fontSize: 10, fontWeight: '600' },
   notifDesc: { fontSize: 12, lineHeight: 16, fontWeight: '500' },
 
   cardMetaRow: { marginTop: 4 },
   statusTagRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   unreadDot: { width: 5, height: 5, borderRadius: 2.5 },
-  categoryLabel: { fontSize: 10, fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase' },
+  categoryLabel: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
 
-  miniDeleteBtn: { width: 30, height: 30, borderRadius: 8, backgroundColor: '#FEE2E2', justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
+  miniDeleteBtn: { width: 30, height: 30, borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
 
   emptyState: { alignItems: 'center', paddingVertical: 80, gap: 16 },
-  emptyIconCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
-  emptyTitle: { fontSize: 20, fontWeight: '900', color: '#1E293B' },
-  emptySubtitle: { fontSize: 14, color: '#94A3B8', fontWeight: '600', textAlign: 'center' },
+  emptyIconCircle: { width: 80, height: 80, borderRadius: 40, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },
+  emptyTitle: { fontSize: 20, fontWeight: '900' },
+  emptySubtitle: { fontSize: 14, fontWeight: '600', textAlign: 'center' },
 });
 

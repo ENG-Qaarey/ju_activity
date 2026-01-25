@@ -134,19 +134,19 @@ export default function StudentActivities() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-            <ThemedText style={styles.title}>Available Activities</ThemedText>
+            <ThemedText style={[styles.title, { color: theme.text }]}>Available Activities</ThemedText>
             <ThemedText style={[styles.subtitle, { color: theme.textSecondary }]}>
                 Browse and apply for activities that interest you
             </ThemedText>
         </View>
 
         {/* Search Bar */}
-        <View style={[styles.searchContainer, { backgroundColor: '#FFFFFF' }]}>
-            <Search size={18} color="#94A3B8" />
+        <View style={[styles.searchContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Search size={18} color={theme.textSecondary} />
             <TextInput 
                 placeholder="Search activities.." 
-                placeholderTextColor="#94A3B8"
-                style={styles.searchInput}
+                placeholderTextColor={theme.textSecondary}
+                style={[styles.searchInput, { color: theme.text }]}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
             />
@@ -160,13 +160,13 @@ export default function StudentActivities() {
                     onPress={() => setActiveCategory(cat)}
                     style={[
                         styles.chip, 
-                        { backgroundColor: '#FFFFFF' },
-                        activeCategory === cat && { backgroundColor: theme.primary }
+                        { backgroundColor: theme.card, borderColor: theme.border },
+                        activeCategory === cat && { backgroundColor: theme.primary, borderColor: theme.primary }
                     ]}
                 >
                     <ThemedText style={[
                         styles.chipText, 
-                        { color: '#475569' },
+                        { color: theme.textSecondary },
                         activeCategory === cat && { color: '#FFFFFF', fontWeight: '800' }
                     ]}>{cat}</ThemedText>
                 </TouchableOpacity>
@@ -202,12 +202,12 @@ function ActivityCard({ activity, theme, onPress }: any) {
     const progress = (activity.enrolled / activity.capacity) * 100;
 
     return (
-        <View style={styles.card}>
+        <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <View style={styles.cardHeader}>
-                <View style={styles.badge}>
-                    <ThemedText style={styles.badgeText}>{activity.category}</ThemedText>
+                <View style={[styles.badge, { backgroundColor: theme.primary + '15' }]}>
+                    <ThemedText style={[styles.badgeText, { color: theme.primary }]}>{activity.category}</ThemedText>
                 </View>
-                <ThemedText style={styles.cardMainTitle}>{activity.title}</ThemedText>
+                <ThemedText style={[styles.cardMainTitle, { color: theme.text }]}>{activity.title}</ThemedText>
             </View>
             
             <ThemedText style={[styles.cardDesc, { color: theme.textSecondary }]} numberOfLines={2}>
@@ -217,34 +217,34 @@ function ActivityCard({ activity, theme, onPress }: any) {
             <View style={styles.metaList}>
                 <View style={styles.metaItem}>
                     <Calendar size={14} color={theme.primary} />
-                    <ThemedText style={styles.metaText}>{activity.date}</ThemedText>
+                    <ThemedText style={[styles.metaText, { color: theme.textSecondary }]}>{activity.date}</ThemedText>
                 </View>
                 <View style={styles.metaItem}>
                     <Clock size={14} color={theme.primary} />
-                    <ThemedText style={styles.metaText}>{activity.time}</ThemedText>
+                    <ThemedText style={[styles.metaText, { color: theme.textSecondary }]}>{activity.time}</ThemedText>
                 </View>
                 <View style={styles.metaItem}>
                     <MapPin size={14} color={theme.primary} />
-                    <ThemedText style={styles.metaText}>{activity.location}</ThemedText>
+                    <ThemedText style={[styles.metaText, { color: theme.textSecondary }]}>{activity.location}</ThemedText>
                 </View>
             </View>
 
-            <View style={styles.enrollSection}>
+            <View style={[styles.enrollSection, { borderTopColor: theme.border }]}>
                 <View style={styles.enrollInfo}>
-                    <Users size={14} color="#94A3B8" />
-                    <ThemedText style={styles.enrollText}>
+                    <Users size={14} color={theme.textSecondary} />
+                    <ThemedText style={[styles.enrollText, { color: theme.textSecondary }]}>
                         {activity.enrolled}/{activity.capacity} enrolled
                     </ThemedText>
                 </View>
-                <View style={styles.progressBarBg}>
+                <View style={[styles.progressBarBg, { backgroundColor: theme.border }]}>
                     <View style={[styles.progressBarFill, { width: `${progress}%`, backgroundColor: theme.primary }]} />
                 </View>
             </View>
 
-            <TouchableOpacity style={[styles.viewBtn, { backgroundColor: theme.primary }]} onPress={onPress}>
+            <View style={[styles.viewBtn, { backgroundColor: theme.primary }]}>
                 <ThemedText style={styles.viewBtnText}>View Details</ThemedText>
-            </TouchableOpacity>
-        </View>
+            </View>
+        </TouchableOpacity>
     )
 }
 
@@ -252,8 +252,8 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   contentContainer: { padding: 20, paddingTop: 40, paddingBottom: 120 },
   header: { marginBottom: 24 },
-  title: { fontSize: 26, fontWeight: '900', color: '#1E293B' },
-  subtitle: { fontSize: 14, marginTop: 4 },
+  title: { fontSize: 26, fontWeight: '900' },
+  subtitle: { fontSize: 14, marginTop: 4, fontWeight: '600' },
   
   searchContainer: {
     flexDirection: 'row',
@@ -262,14 +262,9 @@ const styles = StyleSheet.create({
     height: 54,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 5,
   },
-  searchInput: { flex: 1, fontSize: 15, marginLeft: 12, color: '#1E293B', fontWeight: '500' },
+  searchInput: { flex: 1, fontSize: 15, marginLeft: 12, fontWeight: '500' },
 
   chipScroll: { marginBottom: 24, marginHorizontal: -20 },
   chipContainer: { paddingHorizontal: 20, gap: 10 },
@@ -278,7 +273,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10, 
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
   },
   chipText: { fontSize: 13, fontWeight: '700' },
 
@@ -290,11 +284,9 @@ const styles = StyleSheet.create({
   },
   card: { 
     width: COLUMN_WIDTH,
-    backgroundColor: '#FFFFFF', 
     borderRadius: 24, 
     padding: 20,
     borderWidth: 1, 
-    borderColor: '#F1F5F9',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.1,
@@ -304,19 +296,18 @@ const styles = StyleSheet.create({
   cardHeader: { marginBottom: 14 },
   badge: { 
     alignSelf: 'flex-start', 
-    backgroundColor: '#F0F9FF', 
     paddingHorizontal: 10, 
     paddingVertical: 4, 
     borderRadius: 8,
     marginBottom: 8,
   },
-  badgeText: { fontSize: 11, fontWeight: '800', color: '#0EA5E9', textTransform: 'uppercase' },
-  cardMainTitle: { fontSize: 18, fontWeight: '900', color: '#1E293B' },
+  badgeText: { fontSize: 11, fontWeight: '800', textTransform: 'uppercase' },
+  cardMainTitle: { fontSize: 18, fontWeight: '900' },
   cardDesc: { fontSize: 13, lineHeight: 18, marginBottom: 16, fontWeight: '500' },
 
   metaList: { gap: 10, marginBottom: 18 },
   metaItem: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  metaText: { fontSize: 13, fontWeight: '700', color: '#64748B' },
+  metaText: { fontSize: 13, fontWeight: '700' },
 
   enrollSection: { 
     flexDirection: 'row', 
@@ -325,11 +316,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#F8FAFC',
   },
   enrollInfo: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  enrollText: { fontSize: 12, fontWeight: '700', color: '#94A3B8' },
-  progressBarBg: { width: 70, height: 5, backgroundColor: '#F1F5F9', borderRadius: 4, overflow: 'hidden' },
+  enrollText: { fontSize: 12, fontWeight: '700' },
+  progressBarBg: { width: 70, height: 5, borderRadius: 4, overflow: 'hidden' },
   progressBarFill: { height: '100%', borderRadius: 4 },
 
   viewBtn: { 
@@ -337,10 +327,6 @@ const styles = StyleSheet.create({
     borderRadius: 14, 
     justifyContent: 'center', 
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
   },
   viewBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800', letterSpacing: 0.5 },
 

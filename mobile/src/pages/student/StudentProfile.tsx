@@ -3,7 +3,9 @@ import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from 'react-nati
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
   User, Mail, Shield, Bell, CircleHelp, LogOut, 
-  ChevronRight, Settings, Calendar, Award, Star
+  ChevronRight, Settings, LayoutDashboard, Database, Lock,
+  Calendar, Users, BookOpen,
+  Award
 } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { ThemedText } from '@/src/components/themed-text';
@@ -41,43 +43,69 @@ export default function StudentProfile() {
                 <Award size={12} color="#FFFFFF" strokeWidth={3} />
             </View>
           </View>
-          <ThemedText style={[styles.userName, { color: theme.text }]}>muscab axmed</ThemedText>
+          <ThemedText style={[styles.userName, { color: theme.text }]}>Muscab Ahmed</ThemedText>
           <View style={[styles.roleLabel, { backgroundColor: theme.primary + '20' }]}>
-              <Text style={[styles.roleText, { color: theme.primary }]}>STUDENT PROFILE</Text>
+              <Text style={[styles.roleText, { color: theme.primary }]}>STUDENT PORTAL</Text>
           </View>
         </View>
 
-        {/* My Activity */}
+        {/* My Engagement */}
         <View style={styles.section}>
           <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>My Engagement</ThemedText>
           <GlassCard style={[styles.card, { backgroundColor: theme.card }]}>
-            <ProfileItem icon={Calendar} label="Activity History" color="#0EA5E9" theme={theme} />
-            <ProfileItem icon={Star} label="Points & Certificates" color="#F59E0B" theme={theme} />
+            <ProfileItem icon={Calendar} label="Activity History" color={theme.primary} theme={theme} />
+            <ProfileItem icon={Users} label="My Activity Groups" color="#8B5CF6" theme={theme} />
+            <ProfileItem icon={BookOpen} label="Coordination Logs" color="#F59E0B" theme={theme} />
           </GlassCard>
         </View>
 
-        {/* Account Settings */}
+        {/* Account Details - Requested Items */}
         <View style={styles.section}>
           <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>Account Settings</ThemedText>
           <GlassCard style={[styles.card, { backgroundColor: theme.card }]}>
-            <ProfileItem icon={User} label="Personal Information" theme={theme} />
-            <ProfileItem icon={Shield} label="Security & Password" theme={theme} />
-            <ProfileItem icon={Bell} label="Notification Settings" theme={theme} />
+            <ProfileItem 
+                icon={User} 
+                label="Personal Information" 
+                onPress={() => router.push('/(student)/settings/personal')}
+                theme={theme}
+            />
+            <ProfileItem 
+                icon={Bell} 
+                label="Duty Notifications" 
+                onPress={() => router.push('/(student)/settings/notifications')}
+                theme={theme}
+            />
+             <ProfileItem 
+                icon={Lock} 
+                label="Security & Password" 
+                onPress={() => router.push('/(student)/settings/security')}
+                theme={theme}
+            />
+            <ProfileItem 
+                icon={Settings} 
+                label="App Preferences" 
+                onPress={() => router.push('/(student)/settings/preferences')}
+                theme={theme}
+            />
           </GlassCard>
         </View>
 
-        {/* Support & More */}
+        {/* Support */}
         <View style={styles.section}>
           <ThemedText style={[styles.sectionTitle, { color: theme.textSecondary }]}>Support & More</ThemedText>
           <GlassCard style={[styles.card, { backgroundColor: theme.card }]}>
-            <ProfileItem icon={CircleHelp} label="Help Center" theme={theme} />
-            <ProfileItem icon={Settings} label="App Settings" theme={theme} />
-            <ProfileItem icon={LogOut} label="Log Out" color="#EF4444" onPress={handleLogout} theme={theme} />
+            <ProfileItem 
+                icon={CircleHelp} 
+                label="Portal FAQ & Help" 
+                onPress={() => router.push('/(student)/support/faq')}
+                theme={theme} 
+            />
+            <ProfileItem icon={LogOut} label="Sign Out Room" color={theme.error} onPress={handleLogout} theme={theme} />
           </GlassCard>
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.versionText, { color: theme.textSecondary }]}>Student Hub v2.0 • JU-AMS</Text>
+          <Text style={[styles.versionText, { color: theme.textSecondary }]}>Student Portal v2.0.4 • JU Activity Hub</Text>
         </View>
       </ScrollView>
     </GradientBackground>
@@ -92,17 +120,17 @@ function ProfileItem({ icon: Icon, label, color, onPress, theme }: any) {
         <View style={[styles.iconBg, { backgroundColor: itemColor + '15' }]}>
           <Icon size={20} color={itemColor} />
         </View>
-        <Text style={[styles.itemLabel, { color: itemColor }]}>{label}</Text>
+        <Text style={[styles.itemLabel, { color: theme.text }]}>{label}</Text>
       </View>
-      <ChevronRight size={18} color={theme.icon} />
+      <ChevronRight size={18} color={theme.textSecondary} />
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   scrollView: { flex: 1 },
-  contentContainer: { padding: 20, paddingTop: 40 },
-  header: { alignItems: 'center', marginBottom: 32 },
+  contentContainer: { padding: 20, paddingTop: 60, paddingBottom: 100 },
+  header: { alignItems: 'center', marginBottom: 20 },
   avatarContainer: { position: 'relative', marginBottom: 16 },
   avatar: { width: 100, height: 100, borderRadius: 50, borderWidth: 4 },
   studentBadge: { position: 'absolute', right: 4, bottom: 4, backgroundColor: '#0EA5E9', padding: 6, borderRadius: 12, borderWidth: 2 },
