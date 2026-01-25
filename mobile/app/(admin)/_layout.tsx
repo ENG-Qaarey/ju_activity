@@ -11,15 +11,24 @@ import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { Image } from 'expo-image';
 import { usePathname } from 'expo-router';
+import { useAuth } from '@/src/context/AuthContext';
+import { BASE_URL } from '@/src/lib/config';
 
 export default function AdminLayout() {
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
   const colorScheme = useColorScheme() ?? 'light';
+  const { user, refreshProfile } = useAuth();
   
   const isActive = (path: string) => pathname === path;
   const theme = Colors[colorScheme];
+
+  const fullAvatarUrl = user?.avatar?.startsWith('http') 
+    ? user.avatar 
+    : user?.avatar 
+      ? `${BASE_URL.replace('/api', '')}${user.avatar}`
+      : 'https://github.com/shadcn.png';
 
   const renderDrawerContent = () => (
     <View style={[styles.drawerContainer, { backgroundColor: theme.card }]}>
@@ -106,12 +115,12 @@ export default function AdminLayout() {
       <View style={[styles.drawerFooter, { borderTopColor: theme.border }]}>
         <View style={[styles.profileBox, { backgroundColor: theme.background }]}>
           <Image 
-            source={{ uri: 'https://github.com/shadcn.png' }} 
+            source={{ uri: fullAvatarUrl }} 
             style={styles.avatar} 
           />
           <View style={styles.profileInfo}>
-            <Text style={[styles.profileName, { color: theme.text }]}>Admin User</Text>
-            <Text style={[styles.profileEmail, { color: theme.textSecondary }]}>admin@gmail.com</Text>
+            <Text style={[styles.profileName, { color: theme.text }]}>{user?.name || 'Admin User'}</Text>
+            <Text style={[styles.profileEmail, { color: theme.textSecondary }]}>{user?.email || 'admin@gmail.com'}</Text>
           </View>
         </View>
       </View>
@@ -143,7 +152,7 @@ export default function AdminLayout() {
               <View>
                 <Text style={[styles.headerHub, { color: theme.textSecondary }]}>JU ACTIVITY HUB</Text>
                 <View style={styles.onlineStatus}>
-                  <Text style={[styles.userName, { color: theme.text }]}>Admin User</Text>
+                  <Text style={[styles.userName, { color: theme.text }]}>{user?.name?.split(' ')[0] || 'Admin'}</Text>
                   <View style={styles.statusDot} />
                   <Text style={styles.statusText}>Admin</Text>
                 </View>
@@ -156,7 +165,7 @@ export default function AdminLayout() {
                 <MessageCircle size={20} color={theme.icon} />
               </TouchableOpacity>
               <Image 
-                source={{ uri: 'https://github.com/shadcn.png' }} 
+                source={{ uri: fullAvatarUrl }} 
                 style={[styles.headerAvatar, { borderColor: theme.border }]} 
               />
             </View>

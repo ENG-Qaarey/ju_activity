@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput, RefreshControl } from 'react-native';
 import { Shield, Clock, User, Filter, Search, ChevronRight, FileText } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
@@ -8,9 +8,55 @@ import { ThemedText } from '@/src/components/themed-text';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 
+import { client } from '@/src/lib/api';
+import { ENDPOINTS } from '@/src/lib/config';
+
 export default function AdminLogs() {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+
+  const [logs, setLogs] = React.useState<any[]>([]);
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const fetchLogs = async () => {
+    try {
+      const data = await client.get('/audit-logs');
+      if (Array.isArray(data)) {
+        setLogs(data);
+      }
+    } catch (error) {
+      console.log('Error fetching audit logs:', error);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchLogs();
+  }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchLogs();
+    setRefreshing(false);
+  };
+
+  const formatTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    
+    return date.toLocaleDateString();
+  };
 
   return (
     <GradientBackground>
@@ -37,47 +83,31 @@ export default function AdminLogs() {
         </View>
 
         {/* Timeline */}
-        <ScrollView style={styles.list} contentContainerStyle={styles.listContent}>
-           <LogEntry 
-                admin="Hassan (Super Admin)" 
-                action="Changed User Role" 
-                target="muscab axmed" 
-                time="2 mins ago" 
-                type="RoleChange"
-                theme={theme}
+        <ScrollView 
+          style={styles.list} 
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={onRefresh}
+              tintColor={theme.text}
+              colors={[theme.text]}
             />
-           <LogEntry 
-                admin="Faduma (Coordinator)" 
-                action="Created New Activity" 
-                target="Python Workshop" 
-                time="15 mins ago" 
-                type="Create"
-                theme={theme}
-            />
-           <LogEntry 
-                admin="System Bot" 
-                action="Auto-closed Applications" 
-                target="Football Tourney" 
-                time="1 hour ago" 
-                type="System"
-                theme={theme}
-            />
-           <LogEntry 
-                admin="Hassan (Super Admin)" 
-                action="Permanently Deleted User" 
-                target="ID-4029" 
-                time="3 hours ago" 
-                type="Delete"
-                theme={theme}
-            />
-           <LogEntry 
-                admin="Deqa (Admin)" 
-                action="Updated System Policy" 
-                target="Mobile App v2" 
-                time="Yesterday" 
-                type="Update"
-                theme={theme}
-            />
+          }
+        >
+           {logs.length > 0 ? logs.map((log) => (
+             <LogEntry 
+               key={log.id}
+               admin={log.actorName || 'System'} 
+               action={log.action} 
+               target={log.targetName || log.targetId || 'N/A'} 
+               time={formatTime(log.timestamp)} 
+               type={log.action.includes('Delete') ? 'Delete' : log.action.includes('Create') ? 'Create' : log.action.includes('Role') ? 'RoleChange' : 'Update'}
+               theme={theme}
+             />
+           )) : (
+             <Text style={{ textAlign: 'center', color: theme.textSecondary, marginTop: 20 }}>No audit logs found.</Text>
+           )}
         </ScrollView>
       </View>
     </GradientBackground>

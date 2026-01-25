@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput, Alert, KeyboardAvoidingView, Platform, Text } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, TextInput, Alert, KeyboardAvoidingView, Platform, Text, ActivityIndicator } from 'react-native';
 import { 
   ArrowLeft, Save, User, Mail, Shield, Phone, MapPin, 
   Camera, CheckCircle2 
@@ -12,21 +12,124 @@ import { useRouter } from 'expo-router';
 
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
+import { client } from '@/src/lib/api';
+import { ENDPOINTS, BASE_URL } from '@/src/lib/config';
+import * as ImagePicker from 'expo-image-picker';
+import { useAuth } from '@/src/context/AuthContext';
 
 export default function AdminPersonalSettings() {
   const router = useRouter();
   const [loading, setLoading] = React.useState(false);
+  const [fetching, setFetching] = React.useState(true);
+  const { user, refreshProfile } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
 
-  const handleSave = () => {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    email: '',
+    role: '',
+    phone: '+252 61 5000000', // Mock as not in schema
+    location: 'Main Campus, Block A', // Mock as not in schema
+    avatar: 'https://github.com/shadcn.png'
+  });
+
+  React.useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await client.get('/users/me');
+        if (data) {
+          setFormData({
+            name: data.name || '',
+            email: data.email || '',
+            role: data.role || 'Admin',
+            avatar: data.avatar || 'https://github.com/shadcn.png',
+            phone: data.phone || '+252 61 5000000',
+            location: data.location || 'Main Campus, Block A'
+          });
+        }
+      } catch (e) {
+        console.error('Failed to fetch admin profile', e);
+      } finally {
+        setFetching(false);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  const handleSave = async () => {
     setLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await client.patch('/users/me', {
+        name: formData.name,
+        email: formData.email,
+        // Backend only supports name, email, department, studentId, avatar
+      });
+      await refreshProfile();
       Alert.alert('Success', 'Profile updated successfully');
-    }, 1000);
+    } catch (e: any) {
+      Alert.alert('Update Failed', e.message || 'Error updating profile');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Sorry, we need camera roll permissions to change your photo.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      uploadImage(result.assets[0].uri);
+    }
+  };
+
+  const uploadImage = async (uri: string) => {
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      const filename = uri.split('/').pop();
+      const match = /\.(\w+)$/.exec(filename || '');
+      const type = match ? `image/${match[1]}` : `image`;
+
+      // @ts-ignore
+      formData.append('file', { uri, name: filename, type });
+
+      const response = await client.post('/users/me/avatar', formData);
+      if (response && response.avatar) {
+          setFormData(prev => ({ ...prev, avatar: response.avatar }));
+          await refreshProfile();
+          Alert.alert('Terminal Sync', 'Profile photo updated successfully.');
+      }
+    } catch (e: any) {
+      console.error('Photo upload failed:', e);
+      Alert.alert('Sync Error', 'Failed to upload photo to terminal.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fullAvatarUrl = formData.avatar?.startsWith('http') 
+    ? formData.avatar 
+    : `${BASE_URL.replace('/api', '')}${formData.avatar}`;
+
+  if (fetching) {
+      return (
+          <View style={[styles.masterContainer, { backgroundColor: theme.background, justifyContent: 'center', alignItems: 'center', flex: 1 }]}>
+              <ActivityIndicator size="large" color={colorScheme === 'dark' ? '#FFF' : theme.primary} />
+          </View>
+      );
+  }
 
   return (
     <GradientBackground>
@@ -46,14 +149,16 @@ export default function AdminPersonalSettings() {
           <View style={styles.avatarSection}>
             <View style={styles.avatarContainer}>
               <Image 
-                source={{ uri: 'https://github.com/shadcn.png' }} 
+                source={{ uri: fullAvatarUrl }} 
                 style={[styles.avatar, { borderColor: theme.card }]} 
               />
-              <TouchableOpacity style={[styles.cameraBtn, { borderColor: theme.card }]}>
+              <TouchableOpacity style={[styles.cameraBtn, { borderColor: theme.card }]} onPress={pickImage}>
                 <Camera size={18} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
-            <Text style={[styles.changePhotoText, { color: theme.primary }]}>Change Profile Photo</Text>
+            <TouchableOpacity onPress={pickImage}>
+                <Text style={[styles.changePhotoText, { color: theme.primary }]}>Change Profile Photo</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Form Section */}
@@ -62,7 +167,8 @@ export default function AdminPersonalSettings() {
               <Label icon={User} label="Full Name" theme={theme} />
               <TextInput 
                 style={[styles.input, { backgroundColor: theme.background, color: theme.text, borderColor: theme.border }]} 
-                defaultValue="Jamiila Xassan" 
+                value={formData.name} 
+                onChangeText={(val) => setFormData(prev => ({ ...prev, name: val }))}
                 placeholder="Enter full name"
                 placeholderTextColor={theme.textSecondary}
               />
@@ -72,7 +178,7 @@ export default function AdminPersonalSettings() {
               <Label icon={Shield} label="Admin Role" theme={theme} />
               <TextInput 
                 style={[styles.input, { backgroundColor: theme.background + '80', color: theme.textSecondary, borderColor: theme.border }]} 
-                defaultValue="System Administrator" 
+                value={formData.role.charAt(0).toUpperCase() + formData.role.slice(1) + ' Administrator'} 
                 editable={false}
               />
             </View>
@@ -81,7 +187,8 @@ export default function AdminPersonalSettings() {
               <Label icon={Mail} label="Email Address" theme={theme} />
               <TextInput 
                 style={[styles.input, { backgroundColor: theme.background, color: theme.text, borderColor: theme.border }]} 
-                defaultValue="jamiila@ju.edu.so" 
+                value={formData.email} 
+                onChangeText={(val) => setFormData(prev => ({ ...prev, email: val }))}
                 keyboardType="email-address"
                 placeholder="Enter email"
                 placeholderTextColor={theme.textSecondary}
@@ -92,7 +199,8 @@ export default function AdminPersonalSettings() {
               <Label icon={Phone} label="Phone Number" theme={theme} />
               <TextInput 
                 style={[styles.input, { backgroundColor: theme.background, color: theme.text, borderColor: theme.border }]} 
-                defaultValue="+252 61 5000000" 
+                value={formData.phone} 
+                onChangeText={(val) => setFormData(prev => ({ ...prev, phone: val }))}
                 keyboardType="phone-pad"
                 placeholder="Enter phone number"
                 placeholderTextColor={theme.textSecondary}
@@ -103,7 +211,8 @@ export default function AdminPersonalSettings() {
               <Label icon={MapPin} label="Office Location" theme={theme} />
               <TextInput 
                 style={[styles.input, { backgroundColor: theme.background, color: theme.text, borderColor: theme.border }]} 
-                defaultValue="Main Campus, Admin Block A" 
+                value={formData.location} 
+                onChangeText={(val) => setFormData(prev => ({ ...prev, location: val }))}
                 placeholder="Enter office location"
                 placeholderTextColor={theme.textSecondary}
               />
@@ -137,6 +246,9 @@ function Label({ icon: Icon, label, theme }: any) {
 }
 
 const styles = StyleSheet.create({
+  masterContainer: {
+    flex: 1,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

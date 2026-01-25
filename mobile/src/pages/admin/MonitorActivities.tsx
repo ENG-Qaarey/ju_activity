@@ -1,8 +1,8 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Modal, ActivityIndicator, Dimensions } from 'react-native';
 import { 
   Activity, Clock, MapPin, Users, Zap, TrendingUp, 
-  AlertCircle, ChevronRight, Calendar, LayoutGrid, Search, Filter 
+  AlertCircle, ChevronRight, Calendar, LayoutGrid, Search, Filter, X 
 } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
@@ -10,9 +10,29 @@ import { GlassCard } from '@/src/components/GlassCard';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 
+import { client } from '@/src/lib/api';
+import { ENDPOINTS } from '@/src/lib/config';
+
 export default function MonitorActivities() {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+  const [activities, setActivities] = React.useState<any[]>([]);
+  const [selectedActivity, setSelectedActivity] = React.useState<any>(null);
+  const [showModal, setShowModal] = React.useState(false);
+
+  React.useEffect(() => {
+    const fetchActivities = async () => {
+        try {
+            const data = await client.get(ENDPOINTS.ACTIVITIES);
+            if (Array.isArray(data)) {
+                setActivities(data);
+            }
+        } catch (error) {
+            console.log('Error fetching activities for monitor:', error);
+        }
+    };
+    fetchActivities();
+  }, []);
 
   return (
     <GradientBackground>
@@ -67,37 +87,113 @@ export default function MonitorActivities() {
 
         {/* Activity Feed */}
         <View style={styles.list}>
-           <LiveItem 
-                title="Annual Tech Symposium" 
-                location="Main Hall, Engineering Block" 
-                progress={65} 
-                attendees="240/300"
-                status="Active"
-                time="Ends in 45m"
-                theme={theme}
-            />
-           <LiveItem 
-                title="Football Inter-Dept" 
-                location="University Stadium" 
-                progress={88} 
-                attendees="480/500"
-                status="Active"
-                time="Ends in 20m"
-                theme={theme}
-            />
-           <LiveItem 
-                title="Web Design Workshop" 
-                location="IT Lab 02" 
-                progress={20} 
-                attendees="25/30"
-                status="Starting"
-                time="Starts now"
-                theme={theme}
-            />
+           {activities.length > 0 ? activities.map((act) => (
+               <LiveItem 
+                    key={act.id}
+                    title={act.title} 
+                    location={act.location} 
+                    progress={(act.enrolled / (act.capacity || 1)) * 100} 
+                    attendees={`${act.enrolled}/${act.capacity}`}
+                    status="Active"
+                    time={`Starts at ${act.time}`}
+                    theme={theme}
+                    onViewFeed={() => {
+                        setSelectedActivity(act);
+                        setShowModal(true);
+                    }}
+                />
+           )) : (
+               <Text style={{ textAlign: 'center', color: theme.textSecondary, marginTop: 20 }}>No activities found.</Text>
+           )}
         </View>
+
+        <FeedModal 
+            visible={showModal} 
+            activity={selectedActivity} 
+            onClose={() => setShowModal(false)} 
+            theme={theme} 
+        />
       </ScrollView>
     </GradientBackground>
   );
+}
+
+function FeedModal({ visible, activity, onClose, theme }: any) {
+    const [feedData, setFeedData] = React.useState<any[]>([]);
+    const [loading, setLoading] = React.useState(false);
+
+    React.useEffect(() => {
+        if (visible && activity?.id) {
+            const fetchFeed = async () => {
+                setLoading(true);
+                try {
+                    // Fetch applications for this activity to show as a feed
+                    const apps = await client.get(`/applications?activityId=${activity.id}`);
+                    setFeedData(Array.isArray(apps) ? apps : []);
+                } catch (e) {
+                    console.error('Error fetching activity feed:', e);
+                } finally {
+                    setLoading(false);
+                }
+            };
+            fetchFeed();
+        }
+    }, [visible, activity]);
+
+    if (!activity) return null;
+
+    return (
+        <Modal
+            animationType="slide"
+            transparent={true}
+            visible={visible}
+            onRequestClose={onClose}
+        >
+            <View style={styles.modalOverlay}>
+                <GlassCard style={[styles.modalContent, { backgroundColor: theme.card }]}>
+                    <View style={[styles.modalHandle, { backgroundColor: theme.border + '66' }]} />
+                    
+                    <View style={styles.modalHeader}>
+                        <View style={styles.modalTitleBox}>
+                            <Activity size={18} color={theme.primary} />
+                            <Text style={[styles.modalTitle, { color: theme.text }]} numberOfLines={1}>
+                                {activity.title} Feed
+                            </Text>
+                        </View>
+                        <TouchableOpacity onPress={onClose} style={[styles.closeIconButton, { backgroundColor: theme.border + '33' }]}>
+                            <X size={18} color={theme.text} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+                        {loading ? (
+                            <ActivityIndicator size="small" color={theme.text} style={{ marginTop: 40 }} />
+                        ) : feedData.length > 0 ? (
+                            feedData.map((item, idx) => (
+                                <View key={item.id || idx} style={[styles.feedItem, { borderLeftColor: theme.primary }]}>
+                                    <View style={styles.feedCircle}>
+                                        <Users size={12} color="#FFFFFF" strokeWidth={3} />
+                                    </View>
+                                    <View style={styles.feedText}>
+                                        <Text style={[styles.feedUser, { color: theme.text }]}>{item.studentName || 'JU Student'}</Text>
+                                        <Text style={[styles.feedAction, { color: theme.textSecondary }]}>
+                                            Applied for enrollment • <Text style={{ color: theme.primary }}>{item.status}</Text>
+                                        </Text>
+                                        <Text style={styles.feedTime}>{new Date(item.appliedAt || item.createdAt).toLocaleDateString()}</Text>
+                                    </View>
+                                </View>
+                            ))
+                        ) : (
+                            <View style={styles.emptyState}>
+                                <AlertCircle size={32} color={theme.border} />
+                                <Text style={[styles.emptyText, { color: theme.textSecondary }]}>No recent activity signals for this event.</Text>
+                            </View>
+                        )}
+                    </ScrollView>
+                </GlassCard>
+            </View>
+        </Modal>
+    );
 }
 
 function MonitorStat({ icon: Icon, label, value, color, theme }: any) {
@@ -112,7 +208,7 @@ function MonitorStat({ icon: Icon, label, value, color, theme }: any) {
     )
 }
 
-function LiveItem({ title, location, progress, attendees, status, time, theme }: any) {
+function LiveItem({ title, location, progress, attendees, status, time, theme, onViewFeed }: any) {
   const isStarting = status === 'Starting';
   const statusColor = isStarting ? '#0EA5E9' : '#22C55E';
   
@@ -127,7 +223,7 @@ function LiveItem({ title, location, progress, attendees, status, time, theme }:
             </View>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: statusColor + '15' }]}>
-            <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+            <View style={[styles.statusDot, { backgroundColor: statusColor } ]} />
             <Text style={[styles.statusText, { color: statusColor }]}>{status}</Text>
         </View>
       </View>
@@ -150,7 +246,7 @@ function LiveItem({ title, location, progress, attendees, status, time, theme }:
               <Clock size={12} color={theme.textSecondary} />
               <Text style={[styles.timeText, { color: theme.textSecondary }]}>{time}</Text>
           </View>
-          <TouchableOpacity style={styles.manageBtn}>
+          <TouchableOpacity style={styles.manageBtn} onPress={onViewFeed}>
               <Text style={styles.manageText}>View Feed</Text>
               <ChevronRight size={14} color="#0EA5E9" />
           </TouchableOpacity>
@@ -231,4 +327,20 @@ const styles = StyleSheet.create({
   timeText: { fontSize: 12, color: '#94A3B8', fontWeight: '600' },
   manageBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   manageText: { fontSize: 13, fontWeight: '700', color: '#0EA5E9' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+  modalContent: { height: Dimensions.get('window').height * 0.7, borderTopLeftRadius: 36, borderTopRightRadius: 36, padding: 24, paddingTop: 12 },
+  modalHandle: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 25 },
+  modalTitleBox: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
+  modalTitle: { fontSize: 18, fontWeight: '900' },
+  closeIconButton: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+  modalScroll: { flex: 1 },
+  feedItem: { flexDirection: 'row', gap: 16, marginBottom: 20, borderLeftWidth: 2, paddingLeft: 16 },
+  feedCircle: { width: 24, height: 24, borderRadius: 12, backgroundColor: '#0EA5E9', justifyContent: 'center', alignItems: 'center' },
+  feedText: { flex: 1 },
+  feedUser: { fontSize: 14, fontWeight: '800' },
+  feedAction: { fontSize: 13, marginTop: 2, fontWeight: '500' },
+  feedTime: { fontSize: 10, color: '#94A3B8', marginTop: 4, fontWeight: '600' },
+  emptyState: { alignItems: 'center', marginTop: 60, gap: 12 },
+  emptyText: { fontSize: 14, fontWeight: '600', textAlign: 'center' },
 });

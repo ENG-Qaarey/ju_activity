@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { Check, X, Clock, User, FileText, ChevronRight, Filter } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
@@ -8,13 +8,112 @@ import { Image } from 'expo-image';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 
+import { client } from '@/src/lib/api';
+import { ENDPOINTS } from '@/src/lib/config';
+
 export default function AdminApplications() {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
 
+  const [applications, setApplications] = React.useState<any[]>([]);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [stats, setStats] = React.useState({ pending: 0, approved: 0, rejected: 0 });
+
+  const fetchApplications = async () => {
+    try {
+      const data = await client.get('/applications');
+      if (Array.isArray(data)) {
+        setApplications(data);
+        
+        // Calculate stats
+        const pending = data.filter(app => app.status === 'pending').length;
+        const approved = data.filter(app => app.status === 'approved').length;
+        const rejected = data.filter(app => app.status === 'rejected').length;
+        
+        setStats({ pending, approved, rejected });
+      }
+    } catch (error) {
+      console.log('Error fetching applications:', error);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchApplications();
+  }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchApplications();
+    setRefreshing(false);
+  };
+
+  const handleApprove = async (id: string) => {
+    try {
+      await client.put(`/applications/${id}/status`, { status: 'approved' });
+      Alert.alert('Success', 'Application approved successfully');
+      await fetchApplications();
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to approve application');
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    Alert.alert(
+      'Reject Application',
+      'Are you sure you want to reject this application?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reject',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await client.put(`/applications/${id}/status`, { status: 'rejected' });
+              Alert.alert('Success', 'Application rejected');
+              await fetchApplications();
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'Failed to reject application');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const formatTime = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+    
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays} days ago`;
+    
+    return date.toLocaleDateString();
+  };
+
   return (
     <GradientBackground>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.contentContainer} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh}
+            tintColor={theme.text}
+            colors={[theme.text]}
+          />
+        }
+      >
         {/* Header Section */}
         <View style={styles.header}>
             <View>
@@ -28,9 +127,9 @@ export default function AdminApplications() {
 
         {/* Premium Stats Grid */}
         <View style={styles.statsGrid}>
-            <StatCard icon={Clock} label="Pending" value="32" color="#F59E0B" theme={theme} />
-            <StatCard icon={Check} label="Approved" value="128" color="#22C55E" theme={theme} />
-            <StatCard icon={X} label="Rejected" value="5" color="#EF4444" theme={theme} />
+            <StatCard icon={Clock} label="Pending" value={stats.pending.toString()} color="#F59E0B" theme={theme} />
+            <StatCard icon={Check} label="Approved" value={stats.approved.toString()} color="#22C55E" theme={theme} />
+            <StatCard icon={X} label="Rejected" value={stats.rejected.toString()} color="#EF4444" theme={theme} />
         </View>
 
         {/* Section Header */}
@@ -42,42 +141,23 @@ export default function AdminApplications() {
         </View>
 
         <View style={styles.list}>
-           <ApplicationItem 
-                student="axmed muscab" 
-                id="ST-2024-001" 
-                activity="Annual Tech Symposium" 
-                time="10 mins ago" 
-                status="Pending" 
-                avatar="https://github.com/shadcn.png"
-                theme={theme}
-            />
-           <ApplicationItem 
-                student="fatuma ali" 
-                id="ST-2024-042" 
-                activity="Beach Cleanup Campaign" 
-                time="2 hours ago" 
-                status="Pending" 
-                avatar="https://ui-avatars.com/api/?name=Fatuma+Ali&background=random"
-                theme={theme}
-            />
-           <ApplicationItem 
-                student="hassan farah" 
-                id="ST-2024-115" 
-                activity="React Native Workshop" 
-                time="Yesterday" 
-                status="Approved" 
-                avatar="https://ui-avatars.com/api/?name=Hassan+Farah&background=random"
-                theme={theme}
-            />
-           <ApplicationItem 
-                student="deeqa warsame" 
-                id="ST-2024-098" 
-                activity="Football Inter-Dept" 
-                time="2 days ago" 
-                status="Rejected" 
-                avatar="https://ui-avatars.com/api/?name=Deeqa+Warsame&background=random"
-                theme={theme}
-            />
+           {applications.length > 0 ? applications.map((app) => (
+             <ApplicationItem 
+               key={app.id}
+               id={app.id}
+               student={app.studentName || 'Unknown'} 
+               studentId={app.studentId?.slice(0, 12) || 'N/A'} 
+               activity={app.activityTitle || 'Unknown Activity'} 
+               time={formatTime(app.createdAt)} 
+               status={app.status.charAt(0).toUpperCase() + app.status.slice(1)} 
+               avatar={`https://ui-avatars.com/api/?name=${encodeURIComponent(app.studentName || 'User')}&background=random`}
+               theme={theme}
+               onApprove={handleApprove}
+               onReject={handleReject}
+             />
+           )) : (
+             <Text style={{ textAlign: 'center', color: theme.textSecondary, marginTop: 20 }}>No applications found.</Text>
+           )}
         </View>
       </ScrollView>
     </GradientBackground>
@@ -96,7 +176,7 @@ function StatCard({ icon: Icon, label, value, color, theme }: any) {
     );
 }
 
-function ApplicationItem({ student, id, activity, time, status, avatar, theme }: any) {
+function ApplicationItem({ id, student, studentId, activity, time, status, avatar, theme, onApprove, onReject }: any) {
   const isPending = status === 'Pending';
   const isApproved = status === 'Approved';
   const isRejected = status === 'Rejected';
@@ -111,7 +191,7 @@ function ApplicationItem({ student, id, activity, time, status, avatar, theme }:
             <Image source={{ uri: avatar }} style={[styles.avatar, { backgroundColor: theme.border }]} />
             <View>
                 <Text style={[styles.studentName, { color: theme.text }]}>{student}</Text>
-                <Text style={[styles.studentId, { color: theme.textSecondary }]}>{id}</Text>
+                <Text style={[styles.studentId, { color: theme.textSecondary }]}>{studentId}</Text>
             </View>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
@@ -138,11 +218,17 @@ function ApplicationItem({ student, id, activity, time, status, avatar, theme }:
           
           {isPending ? (
               <View style={styles.actionGrid}>
-                  <TouchableOpacity style={[styles.actionBtn, styles.rejectBtn, { backgroundColor: '#EF444415', borderColor: '#EF444430' }]}>
+                  <TouchableOpacity 
+                    style={[styles.actionBtn, styles.rejectBtn, { backgroundColor: '#EF444415', borderColor: '#EF444430' }]}
+                    onPress={() => onReject?.(id)}
+                  >
                     <X size={16} color="#EF4444" />
                     <Text style={styles.rejectText}>Reject</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={[styles.actionBtn, styles.approveBtn]}>
+                  <TouchableOpacity 
+                    style={[styles.actionBtn, styles.approveBtn]}
+                    onPress={() => onApprove?.(id)}
+                  >
                     <Check size={16} color="#FFFFFF" />
                     <Text style={styles.approveText}>Approve</Text>
                   </TouchableOpacity>

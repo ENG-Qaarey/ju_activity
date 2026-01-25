@@ -1,3 +1,4 @@
+import React from 'react';
 import { StyleSheet, ScrollView, View, TouchableOpacity, Dimensions, TextInput } from 'react-native';
 import { Image } from 'expo-image';
 import { 
@@ -11,13 +12,63 @@ import { Colors } from '@/src/data/theme';
 import { ThemedText } from '@/src/components/themed-text';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { useRouter } from 'expo-router';
+import { client } from '@/src/lib/api';
+import { ENDPOINTS } from '@/src/lib/config';
 
 const { width } = Dimensions.get('window');
+
+const MOCK_RECENT = [
+    {
+        id: '101',
+        title: "Intro to Graphic Design",
+        category: "Workshop",
+        time: "Added 2h ago",
+        location: "Lab 4",
+        color: "#0EA5E9"
+    },
+    {
+        id: '102',
+        title: "Annual Chess Masters",
+        category: "Tournament",
+        time: "Added 5h ago",
+        location: "Cafeteria",
+        color: "#10B981"
+    },
+    {
+        id: '103',
+        title: "Blockchain Fundamentals",
+        category: "Seminar",
+        time: "Added Yesterday",
+        location: "Main Hall",
+        color: "#8B5CF6"
+    }
+];
 
 export default function StudentDashboard() {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   const router = useRouter();
+  const [recentActivities, setRecentActivities] = React.useState<any[]>(MOCK_RECENT);
+
+  React.useEffect(() => {
+    const fetchRecent = async () => {
+        try {
+            const data = await client.get(ENDPOINTS.ACTIVITIES);
+            if (Array.isArray(data) && data.length > 0) {
+                // Take top 3 recently created
+                setRecentActivities(data.slice(0, 3).map((act, index) => ({
+                    ...act,
+                    // Map backend fields to UI fields if needed, or just ensure backend sends what we need
+                    time: `Date: ${act.date}`,
+                    color: index === 0 ? "#0EA5E9" : index === 1 ? "#10B981" : "#8B5CF6"
+                })));
+            }
+        } catch (error) {
+            console.log('Using mock recent activities');
+        }
+    };
+    fetchRecent();
+  }, []);
 
   return (
     <GradientBackground>
@@ -102,30 +153,21 @@ export default function StudentDashboard() {
                 <ThemedText style={[styles.sectionTitle, { color: theme.text }]}>Recently Added Activities</ThemedText>
             </View>
             <View style={styles.activityList}>
-                <ActivityCompactItem 
-                    title="Intro to Graphic Design"
-                    category="Workshop"
-                    time="Added 2h ago"
-                    location="Lab 4"
-                    color="#0EA5E9"
-                    theme={theme}
-                />
-                <ActivityCompactItem 
-                    title="Annual Chess Masters"
-                    category="Tournament"
-                    time="Added 5h ago"
-                    location="Cafeteria"
-                    color="#10B981"
-                    theme={theme}
-                />
-                <ActivityCompactItem 
-                    title="Blockchain Fundamentals"
-                    category="Seminar"
-                    time="Added Yesterday"
-                    location="Main Hall"
-                    color="#8B5CF6"
-                    theme={theme}
-                />
+                {recentActivities.map((act) => (
+                    <ActivityCompactItem 
+                        key={act.id}
+                        title={act.title}
+                        category={act.category}
+                        time={act.time}
+                        location={act.location}
+                        color={act.color || "#0EA5E9"}
+                        theme={theme}
+                        onPress={() => router.push({ 
+                            pathname: '/(student)/details' as any, 
+                            params: { ...act } 
+                        })} 
+                    />
+                ))}
             </View>
         </View>
       </ScrollView>
