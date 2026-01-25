@@ -99,7 +99,7 @@ export default function CoordinatorProfile() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.versionText, { color: theme.textSecondary }]}>Coordinator Portal v2.0.4 • Stable</Text>
+          <Text style={[styles.versionText, { color: theme.textSecondary }]}>JU Activity Hub v1.0.1 • Stable</Text>
         </View>
       </ScrollView>
     </GradientBackground>

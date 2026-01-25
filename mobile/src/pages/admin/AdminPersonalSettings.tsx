@@ -62,7 +62,7 @@ export default function AdminPersonalSettings() {
               <Label icon={User} label="Full Name" theme={theme} />
               <TextInput 
                 style={[styles.input, { backgroundColor: theme.background, color: theme.text, borderColor: theme.border }]} 
-                defaultValue="Jamiila Ahmed" 
+                defaultValue="Jamiila Xassan" 
                 placeholder="Enter full name"
                 placeholderTextColor={theme.textSecondary}
               />

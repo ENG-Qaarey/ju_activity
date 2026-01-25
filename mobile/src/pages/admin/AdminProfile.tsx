@@ -98,7 +98,7 @@ export default function AdminProfile() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.versionText, { color: theme.textSecondary }]}>Admin Console v2.0.4 • Stable</Text>
+          <Text style={[styles.versionText, { color: theme.textSecondary }]}>JU Activity Hub v1.0.1 • Stable</Text>
         </View>
       </ScrollView>
     </GradientBackground>
