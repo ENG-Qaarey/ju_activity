@@ -105,7 +105,7 @@ export default function StudentProfile() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.versionText, { color: theme.textSecondary }]}>Student Portal v2.0.4 • JU Activity Hub</Text>
+          <Text style={[styles.versionText, { color: theme.textSecondary }]}>JU Activity Hub v1.0.1 • Stable</Text>
         </View>
       </ScrollView>
     </GradientBackground>
