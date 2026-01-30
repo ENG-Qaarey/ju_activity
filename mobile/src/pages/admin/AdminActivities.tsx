@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput, Alert, RefreshControl } from 'react-native';
-import { Eye, Calendar, Clock, MapPin, Users, User, Search, Filter, Edit3, Trash2 } from 'lucide-react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput, Alert, RefreshControl, Modal, Dimensions } from 'react-native';
+import { Eye, Calendar, Clock, MapPin, Users, User, Search, Filter, Edit3, Trash2, X, Info, AlignLeft, ShieldCheck } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -17,6 +17,8 @@ export default function AdminActivities() {
   const theme = Colors[colorScheme];
   const [activities, setActivities] = React.useState<any[]>([]);
   const [refreshing, setRefreshing] = React.useState(false);
+  const [selectedActivity, setSelectedActivity] = React.useState<any>(null);
+  const [modalVisible, setModalVisible] = React.useState(false);
 
   const fetchActivities = async () => {
       try {
@@ -53,12 +55,7 @@ export default function AdminActivities() {
                       setActivities(prev => prev.filter(a => a.id !== id));
                       Alert.alert("Success", "Activity deleted successfully");
                   } catch (e: any) {
-                      if (e.message && e.message.toLowerCase().includes('not found')) {
-                          setActivities(prev => prev.filter(a => a.id !== id));
-                          Alert.alert("Notice", "Activity was not found (already deleted). List updated.");
-                      } else {
-                          Alert.alert("Error", e.message || "Failed to delete activity");
-                      }
+                      Alert.alert("Error", e.message || "Failed to delete activity");
                   }
               }}
           ]
@@ -66,8 +63,6 @@ export default function AdminActivities() {
   };
 
   const handleEdit = (activity: any) => {
-      // Pass primitive params or stringify object if needed, depending on router
-      // For simplicity sending essential IDs/Mode
       router.push({
           pathname: '/(admin)/create' as any,
           params: { mode: 'edit', activityId: activity.id, ...activity }
@@ -75,10 +70,8 @@ export default function AdminActivities() {
   };
 
   const handleView = (activity: any) => {
-      router.push({
-          pathname: '/(student)/details' as any,
-          params: { ...activity }
-      });
+      setSelectedActivity(activity);
+      setModalVisible(true);
   };
 
   return (
@@ -91,17 +84,16 @@ export default function AdminActivities() {
             <RefreshControl 
                 refreshing={refreshing} 
                 onRefresh={onRefresh} 
-                tintColor={theme.text}
-                colors={[theme.text]} 
+                tintColor={theme.primary}
             />
         }
       >
-        {/* Blue Header Banner - Matching Monitor Style */}
+        {/* Blue Header Banner */}
         <View style={styles.headerBanner}>
             <View style={{ flex: 1 }}>
                 <Text style={styles.bannerTitle}>Admin Activities</Text>
                 <Text style={styles.bannerSubtitle}>
-                    Manage and oversee every event across the university campus.
+                    Complete administrative oversight of all university activity signals.
                 </Text>
             </View>
             <TouchableOpacity style={styles.calendarBtn} onPress={() => router.push('/(admin)/create' as any)}>
@@ -110,12 +102,12 @@ export default function AdminActivities() {
             </TouchableOpacity>
         </View>
 
-        {/* Search and Filters - Matching Monitor Style */}
+        {/* Search and Filters */}
         <View style={styles.searchRow}>
             <View style={[styles.searchContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
                 <Search size={18} color={theme.textSecondary} style={styles.searchIcon} />
                 <TextInput 
-                    placeholder="Quick search activities..." 
+                    placeholder="Search mission logs..." 
                     style={[styles.searchInput, { color: theme.text }]}
                     placeholderTextColor={theme.textSecondary}
                 />
@@ -125,11 +117,10 @@ export default function AdminActivities() {
             </TouchableOpacity>
         </View>
 
-        {/* Section Header - Matching Monitor Style */}
         <View style={styles.sectionHeader}>
             <View>
-                <Text style={[styles.sectionTitle, { color: theme.text }]}>Activities Feed</Text>
-                <Text style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>System-wide event management</Text>
+                <Text style={[styles.sectionTitle, { color: theme.text }]}>Telemetry Feed</Text>
+                <Text style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>Managed activities repository</Text>
             </View>
         </View>
 
@@ -145,7 +136,7 @@ export default function AdminActivities() {
                         month={month} 
                         day={day.toString()} 
                         category={act.category} 
-                        creator={act.coordinatorName || "Unknown"}
+                        creator={act.coordinatorName || "Authorized User"}
                         title={act.title} 
                         time={act.time} 
                         location={act.location} 
@@ -158,36 +149,111 @@ export default function AdminActivities() {
                     />
                 );
             }) : (
-                <Text style={{ textAlign: 'center', color: theme.textSecondary, marginTop: 20 }}>No activities found.</Text>
+                <Text style={{ textAlign: 'center', color: theme.textSecondary, marginTop: 20 }}>No mission logs found.</Text>
             )}
         </View>
       </ScrollView>
+
+      {/* DETAILED ACTIVITY MODAL - High Fidelity Admin Overview */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <GlassCard style={[styles.modalContent, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <View style={[styles.modalHandle, { backgroundColor: theme.border + '66' }]} />
+            
+            <View style={styles.modalHeader}>
+              <View style={styles.modalTitleRow}>
+                <Info size={20} color={theme.primary} />
+                <Text style={[styles.modalTitle, { color: theme.text }]}>Intelligence Detail</Text>
+              </View>
+              <TouchableOpacity onPress={() => setModalVisible(false)} style={[styles.closeIconBtn, { backgroundColor: theme.border + '33' }]}>
+                <X size={20} color={theme.text} />
+              </TouchableOpacity>
+            </View>
+
+            {selectedActivity && (
+              <ScrollView showsVerticalScrollIndicator={false} style={styles.modalScroll}>
+                <View style={[styles.detailCategoryBadge, { backgroundColor: theme.primary + '15' }]}>
+                    <Text style={[styles.detailCategoryText, { color: theme.primary }]}>{selectedActivity.category}</Text>
+                </View>
+
+                <Text style={[styles.detailActivityTitle, { color: theme.text }]}>{selectedActivity.title}</Text>
+                
+                <View style={styles.detailGrid}>
+                    <DetailBlock icon={Calendar} label="Target Date" value={new Date(selectedActivity.date).toLocaleDateString()} theme={theme} />
+                    <DetailBlock icon={Clock} label="Operational Time" value={selectedActivity.time} theme={theme} />
+                    <DetailBlock icon={MapPin} label="Beacon Site" value={selectedActivity.location} theme={theme} />
+                    <DetailBlock icon={Users} label="Participation" value={`${selectedActivity.enrolled}/${selectedActivity.capacity} Enrolled`} theme={theme} />
+                </View>
+
+                <View style={styles.detailSection}>
+                    <View style={styles.detailSectionHeader}>
+                        <AlignLeft size={16} color={theme.textSecondary} />
+                        <Text style={[styles.detailSectionLabel, { color: theme.textSecondary }]}>Mission Briefing</Text>
+                    </View>
+                    <Text style={[styles.detailDescription, { color: theme.text }]}>{selectedActivity.description || 'No additional mission details provided.'}</Text>
+                </View>
+
+                <View style={styles.detailSection}>
+                    <View style={styles.detailSectionHeader}>
+                        <ShieldCheck size={16} color={theme.textSecondary} />
+                        <Text style={[styles.detailSectionLabel, { color: theme.textSecondary }]}>Authorized Coordinator</Text>
+                    </View>
+                    <View style={styles.detailCoordinatorBox}>
+                        <View style={[styles.detailAvatar, { backgroundColor: theme.border }]}>
+                            <User size={14} color={theme.textSecondary} />
+                        </View>
+                        <Text style={[styles.detailCoordinatorName, { color: theme.text }]}>{selectedActivity.coordinatorName || 'System Intelligence'}</Text>
+                    </View>
+                </View>
+
+                {/* NO APPLY BUTTON FOR ADMINS */}
+                <View style={{ height: 40 }} />
+              </ScrollView>
+            )}
+          </GlassCard>
+        </View>
+      </Modal>
     </GradientBackground>
   );
+}
+
+function DetailBlock({ icon: Icon, label, value, theme }: any) {
+    return (
+        <View style={styles.detailBlock}>
+            <View style={[styles.detailIconBox, { backgroundColor: theme.background }]}>
+                <Icon size={18} color={theme.primary} />
+            </View>
+            <View>
+                <Text style={[styles.detailLabel, { color: theme.textSecondary }]}>{label}</Text>
+                <Text style={[styles.detailValue, { color: theme.text }]}>{value}</Text>
+            </View>
+        </View>
+    );
 }
 
 function AdminActivityCard({ month, day, category, creator, title, time, location, attendees, status, theme, onDelete, onEdit, onView }: any) {
     const isOngoing = status === 'Ongoing';
     const isCompleted = status === 'Completed';
-    const isUpcoming = status === 'Upcoming';
     
-    // Status style mapping
     let statusColor = '#0EA5E9';
-    let statusBg = theme.background; // Default fallback
+    let statusBg = theme.background;
     if (isOngoing) { statusColor = '#22C55E'; statusBg = '#22C55E15'; }
     else if (isCompleted) { statusColor = theme.textSecondary; statusBg = theme.textSecondary + '15'; }
-    else { statusBg = '#0EA5E915'; } // Upcoming
+    else { statusBg = '#0EA5E915'; }
 
     return (
         <GlassCard style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            {/* Left: Enhanced Date Block */}
             <View style={[styles.dateBlock, { backgroundColor: theme.background, borderColor: theme.border }]}>
                 <Text style={[styles.dateMonth, { color: theme.textSecondary }]}>{month}</Text>
                 <Text style={[styles.dateDay, { color: theme.text }]}>{day}</Text>
                 <View style={styles.dateLine} />
             </View>
 
-            {/* Middle: Content & Metadata */}
             <View style={styles.cardMain}>
                 <View style={styles.tagRow}>
                     <View style={[styles.categoryBadge, { backgroundColor: theme.border }]}>
@@ -201,7 +267,7 @@ function AdminActivityCard({ month, day, category, creator, title, time, locatio
 
                 <Text style={[styles.activityTitle, { color: theme.text }]} numberOfLines={1}>{title}</Text>
                 
-                <View style={styles.metaGrid}>
+                <View style={styles.metaRow}>
                     <View style={styles.metaItem}>
                         <Clock size={12} color={theme.textSecondary} />
                         <Text style={[styles.metaText, { color: theme.textSecondary }]}>{time}</Text>
@@ -216,23 +282,22 @@ function AdminActivityCard({ month, day, category, creator, title, time, locatio
                     </View>
                 </View>
 
-                <View style={styles.creatorRow}>
-                    <View style={[styles.creatorAvatar, { backgroundColor: theme.border }]}>
+                <View style={styles.creatorInfo}>
+                    <View style={[styles.avatarSmall, { backgroundColor: theme.border }]}>
                         <User size={10} color={theme.textSecondary} />
                     </View>
-                    <Text style={[styles.creatorName, { color: theme.textSecondary }]}>{creator}</Text>
+                    <Text style={[styles.creatorLabel, { color: theme.textSecondary }]}>{creator}</Text>
                 </View>
             </View>
 
-            {/* Right: Actions Column - Stacked Vertically */}
             <View style={[styles.actionsColumn, { borderLeftColor: theme.border }]}>
                 <TouchableOpacity onPress={onView} style={[styles.actionBtn, { backgroundColor: theme.primary + '15', borderColor: theme.primary + '30' }]}>
                     <Eye size={12} color={theme.primary} />
-                    <Text style={[styles.actionBtnText, { color: theme.primary }]}>View</Text>
+                    <Text style={[styles.actionBtnText, { color: theme.primary }]}>VIEW</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={onEdit} style={[styles.actionBtn, { backgroundColor: '#8B5CF615', borderColor: '#8B5CF630' }]}>
                     <Edit3 size={12} color="#8B5CF6" />
-                    <Text style={[styles.actionBtnText, { color: '#8B5CF6' }]}>Edit</Text>
+                    <Text style={[styles.actionBtnText, { color: '#8B5CF6' }]}>EDIT</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={onDelete} style={[styles.actionBtn, { backgroundColor: '#EF444415', borderColor: '#EF444430' }]}>
                     <Trash2 size={12} color="#EF4444" />
@@ -248,9 +313,9 @@ const styles = StyleSheet.create({
   contentContainer: { padding: 12, paddingTop: 14, paddingBottom: 60 },
   headerBanner: { 
     backgroundColor: '#0EA5E9', 
-    padding: 20, 
+    padding: 24, 
     borderRadius: 24, 
-    marginBottom: 16, 
+    marginBottom: 20, 
     flexDirection: 'row', 
     alignItems: 'center',
     shadowColor: '#0EA5E9',
@@ -259,8 +324,8 @@ const styles = StyleSheet.create({
     shadowRadius: 15,
     elevation: 8
   },
-  bannerTitle: { fontSize: 22, fontWeight: '900', color: '#FFFFFF', letterSpacing: -0.5 },
-  bannerSubtitle: { fontSize: 11, color: '#FFFFFF', opacity: 0.8, marginTop: 4, lineHeight: 16, maxWidth: '80%' },
+  bannerTitle: { fontSize: 24, fontWeight: '900', color: '#FFFFFF', letterSpacing: -0.5 },
+  bannerSubtitle: { fontSize: 11, color: '#FFFFFF', opacity: 0.9, marginTop: 4, lineHeight: 16, maxWidth: '85%' },
   calendarBtn: { 
     flexDirection: 'row', 
     alignItems: 'center', 
@@ -272,73 +337,102 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.4)'
   },
   calendarBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
-  searchRow: { flexDirection: 'row', gap: 10, marginBottom: 20, alignItems: 'center' },
+  searchRow: { flexDirection: 'row', gap: 10, marginBottom: 24, alignItems: 'center' },
   searchContainer: { 
     flex: 1, 
     flexDirection: 'row', 
     alignItems: 'center', 
-    borderRadius: 14, 
-    paddingHorizontal: 12, 
-    height: 44, 
+    borderRadius: 16, 
+    paddingHorizontal: 14, 
+    height: 48, 
     borderWidth: 1,
   },
-  searchIcon: { marginRight: 8 },
-  searchInput: { flex: 1, height: '100%', fontSize: 13, fontWeight: '500' },
+  searchIcon: { marginRight: 10 },
+  searchInput: { flex: 1, height: '100%', fontSize: 14, fontWeight: '500' },
   filterBtn: { 
-    width: 44, 
-    height: 44, 
-    borderRadius: 14, 
+    width: 48, 
+    height: 48, 
+    borderRadius: 16, 
     justifyContent: 'center', 
     alignItems: 'center', 
     borderWidth: 1, 
   },
   sectionHeader: { marginBottom: 16, paddingHorizontal: 4 },
-  sectionTitle: { fontSize: 18, fontWeight: '900' },
-  sectionSubtitle: { fontSize: 12, marginTop: 2 },
-  list: { gap: 12 },
+  sectionTitle: { fontSize: 18, fontWeight: '900', letterSpacing: -0.5 },
+  sectionSubtitle: { fontSize: 12, marginTop: 2, fontWeight: '500' },
+  list: { gap: 14 },
   card: { 
     flexDirection: 'row', 
-    padding: 12, 
+    padding: 14, 
     borderRadius: 24, 
     borderWidth: 1,
   },
   dateBlock: { 
-    width: 58, 
-    height: 65, 
-    borderRadius: 16, 
+    width: 60, 
+    height: 68, 
+    borderRadius: 18, 
     justifyContent: 'center', 
     marginTop: 10,
     alignItems: 'center',
     borderWidth: 1,
   },
   dateMonth: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase' },
-  dateDay: { fontSize: 20, fontWeight: '900', marginTop: -2 },
-  dateLine: { width: 12, height: 2, backgroundColor: '#0EA5E9', marginTop: 2, borderRadius: 1 },
-  cardMain: { flex: 1, paddingLeft: 14, paddingRight: 10 },
-  tagRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
-  categoryBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+  dateDay: { fontSize: 22, fontWeight: '900', marginTop: -2 },
+  dateLine: { width: 14, height: 2, backgroundColor: '#0EA5E9', marginTop: 3, borderRadius: 1 },
+  cardMain: { flex: 1, paddingLeft: 16, paddingRight: 10 },
+  tagRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
+  categoryBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
   categoryText: { fontSize: 9, fontWeight: '800', textTransform: 'uppercase' },
-  statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, gap: 4 },
+  statusBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, gap: 5 },
   statusDot: { width: 4, height: 4, borderRadius: 2 },
   statusText: { fontSize: 9, fontWeight: '800', textTransform: 'uppercase' },
-  activityTitle: { fontSize: 16, fontWeight: '800', marginBottom: 8 },
-  metaGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 8 },
-  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  activityTitle: { fontSize: 17, fontWeight: '900', marginBottom: 10 },
+  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 10 },
+  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   metaText: { fontSize: 11, fontWeight: '600' },
-  creatorRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  creatorAvatar: { width: 18, height: 18, borderRadius: 9, justifyContent: 'center', alignItems: 'center' },
-  creatorName: { fontSize: 10, fontWeight: '700' },
-  actionsColumn: { paddingLeft: 12, borderLeftWidth: 1, gap: 6, justifyContent: 'center' },
+  creatorInfo: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  avatarSmall: { width: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  creatorLabel: { fontSize: 11, fontWeight: '600' },
+  actionsColumn: { paddingLeft: 14, borderLeftWidth: 1, gap: 8, justifyContent: 'center' },
   actionBtn: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    gap: 5, 
-    paddingVertical: 5, 
+    gap: 6, 
+    paddingVertical: 6, 
     paddingHorizontal: 10, 
-    borderRadius: 8,
+    borderRadius: 10,
     borderWidth: 1,
-    minWidth: 58,
+    minWidth: 62,
   },
   actionBtnText: { fontSize: 10, fontWeight: '800' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+  modalContent: { 
+    height: Dimensions.get('window').height * 0.75, 
+    borderTopLeftRadius: 40, 
+    borderTopRightRadius: 40, 
+    padding: 24, 
+    paddingTop: 12, 
+    borderWidth: 1 
+  },
+  modalHandle: { width: 44, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 20 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+  modalTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  modalTitle: { fontSize: 18, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 1 },
+  closeIconBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+  modalScroll: { flex: 1 },
+  detailCategoryBadge: { alignSelf: 'flex-start', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10, marginBottom: 12 },
+  detailCategoryText: { fontSize: 11, fontWeight: '800', textTransform: 'uppercase' },
+  detailActivityTitle: { fontSize: 26, fontWeight: '900', marginBottom: 20, letterSpacing: -0.5 },
+  detailGrid: { gap: 14, marginBottom: 28 },
+  detailBlock: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  detailIconBox: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 5 },
+  detailLabel: { fontSize: 11, fontWeight: '600', marginBottom: 1 },
+  detailValue: { fontSize: 15, fontWeight: '700' },
+  detailSection: { marginBottom: 24 },
+  detailSectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
+  detailSectionLabel: { fontSize: 12, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
+  detailDescription: { fontSize: 15, lineHeight: 24, fontWeight: '500' },
+  detailCoordinatorBox: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: 'rgba(255,255,255,0.03)', padding: 12, borderRadius: 16 },
+  detailAvatar: { width: 32, height: 32, borderRadius: 16, justifyContent: 'center', alignItems: 'center' },
+  detailCoordinatorName: { fontSize: 15, fontWeight: '700' },
 });
- 
