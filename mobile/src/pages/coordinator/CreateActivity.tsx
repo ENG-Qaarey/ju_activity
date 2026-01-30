@@ -10,7 +10,13 @@ import { client } from '@/src/lib/api';
 import { useAuth } from '@/src/context/AuthContext';
 import { ActivityIndicator, Alert } from 'react-native';
 
-const CATEGORIES = ['Workshop', 'Seminar', 'Tech Talk', 'Innovation Forum', 'Networking', 'Make-up Session'];
+// Match backend categories
+const CATEGORY_OPTIONS = [
+  { label: 'Workshop', value: 'workshop' },
+  { label: 'Seminar', value: 'seminar' },
+  { label: 'Training Program', value: 'training' },
+  { label: 'Extracurricular', value: 'extracurricular' },
+];
 
 export default function CoordinatorCreateActivity() {
   const router = useRouter();
@@ -86,7 +92,7 @@ export default function CoordinatorCreateActivity() {
     if (modalType === 'time') return renderTimeModal();
 
     const isCategory = modalType === 'category';
-    const data = CATEGORIES;
+    const data = CATEGORY_OPTIONS;
     const title = 'Select Category';
     const field = 'category';
 
@@ -109,21 +115,21 @@ export default function CoordinatorCreateActivity() {
             </View>
             <FlatList
               data={data}
-              keyExtractor={item => item}
+              keyExtractor={item => item.value}
               renderItem={({ item }) => (
                 <TouchableOpacity 
                   style={[styles.modalItem, { borderBottomColor: theme.border }]}
                   onPress={() => {
-                    updateField(field, item);
+                    updateField(field, item.value);
                     setModalType(null);
                   }}
                 >
                   <Text style={[
                     styles.modalItemText,
                     { color: theme.textSecondary },
-                    formData[field] === item && { color: theme.primary, fontWeight: '700' }
-                  ]}>{item}</Text>
-                  {formData[field] === item && <Check size={18} color={theme.primary} />}
+                    formData.category === item.value && { color: theme.primary, fontWeight: '700' }
+                  ]}>{item.label}</Text>
+                  {formData.category === item.value && <Check size={18} color={theme.primary} />}
                 </TouchableOpacity>
               )}
             />
@@ -341,10 +347,21 @@ export default function CoordinatorCreateActivity() {
             return (
               <TouchableOpacity 
                 key={item} 
-                style={[styles.timeItem, isSelected && styles.timeItemSelected]}
+                style={[
+                  styles.timeItem, 
+                  isSelected && { 
+                    borderWidth: 2, 
+                    borderColor: theme.primary,
+                    backgroundColor: theme.primary + '20'
+                  }
+                ]}
                 onPress={() => onSelect(item)}
               >
-                <Text style={[styles.timeItemText, isSelected && styles.timeItemTextSelected]}>{item}</Text>
+                <Text style={[
+                  styles.timeItemText,
+                  { color: theme.text },
+                  isSelected && { color: theme.primary, fontWeight: '800' }
+                ]}>{item}</Text>
               </TouchableOpacity>
             );
           })}
@@ -492,7 +509,9 @@ export default function CoordinatorCreateActivity() {
                                 { color: theme.tabIconDefault },
                                 formData.category && { color: theme.text, fontWeight: '600' }
                             ]}>
-                              {formData.category || 'Select category'}
+                              {formData.category 
+                                ? CATEGORY_OPTIONS.find(c => c.value === formData.category)?.label || formData.category 
+                                : 'Select category'}
                             </Text>
                             <ChevronDown size={18} color={theme.tabIconDefault} />
                         </TouchableOpacity>
@@ -707,9 +726,7 @@ const styles = StyleSheet.create({
   timeColumnScroll: { flex: 1 },
   timeColumnContent: { paddingVertical: 10 },
   timeItem: { paddingVertical: 12, alignItems: 'center', borderRadius: 6, marginBottom: 8 },
-  timeItemSelected: { borderWidth: 2, borderColor: '#000' },
   timeItemText: { fontSize: 18, fontWeight: '500' },
-  timeItemTextSelected: { color: '#FFFFFF', fontWeight: '800' },
   // Legacy/Common Picker Styles
   pickerSectionLabel: { fontSize: 11, fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', marginTop: 12, marginBottom: 8, marginLeft: 4 },
   pickerGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },

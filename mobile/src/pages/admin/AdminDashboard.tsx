@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, ScrollView, View, Text, TouchableOpacity, Animated, Easing } from 'react-native';
 import { 
   Users, Activity, FileText, Bell, TrendingUp, AlertTriangle, 
   ShieldCheck, ChevronRight, UserPlus, Monitor, FileSearch, 
@@ -10,6 +10,7 @@ import { GlassCard } from '@/src/components/GlassCard';
 
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
+import { useRouter } from 'expo-router';
 
 import { client } from '@/src/lib/api';
 import { ENDPOINTS } from '@/src/lib/config';
@@ -40,7 +41,33 @@ export default function AdminDashboard() {
       activities: 0,
       pendingApps: 0
   });
+  const [hasUnread, setHasUnread] = React.useState(false);
+  const shakeAnim = React.useRef(new Animated.Value(0)).current;
+  const shakeLoop = React.useRef<Animated.CompositeAnimation | null>(null);
+  const router = useRouter();
+  
   const [notifications, setNotifications] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    if (hasUnread) {
+        // Stop any existing loop first
+        shakeLoop.current?.stop();
+        shakeLoop.current = Animated.loop(
+            Animated.sequence([
+                Animated.timing(shakeAnim, { toValue: 10, duration: 100, useNativeDriver: true }),
+                Animated.timing(shakeAnim, { toValue: -10, duration: 100, useNativeDriver: true }),
+                Animated.timing(shakeAnim, { toValue: 10, duration: 100, useNativeDriver: true }),
+                Animated.timing(shakeAnim, { toValue: 0, duration: 100, useNativeDriver: true }),
+                Animated.delay(1000) 
+            ])
+        );
+        shakeLoop.current.start();
+    } else {
+        shakeLoop.current?.stop();
+        shakeAnim.setValue(0);
+    }
+    return () => shakeLoop.current?.stop();
+  }, [hasUnread]);
 
   React.useEffect(() => {
       const fetchData = async () => {
@@ -61,6 +88,8 @@ export default function AdminDashboard() {
 
               if (notifRes.status === 'fulfilled') {
                   setNotifications(notifRes.value.slice(0, 3));
+                  const unreadCount = Array.isArray(notifRes.value) ? notifRes.value.filter((n: any) => !n.read).length : 0;
+                  setHasUnread(unreadCount > 0);
               }
           } catch (e) {
               console.log('Failed to fetch dashboard data', e);
@@ -88,6 +117,21 @@ export default function AdminDashboard() {
                 <Text style={styles.bannerTitle}>Admin Center</Text>
                 <Text style={styles.bannerSubtitle}>Monitor metrics and orchestrate campus activities.</Text>
             </View>
+            <TouchableOpacity 
+                style={styles.headerBellBtn}
+                onPress={() => {
+                    setHasUnread(false);
+                    router.push('/(admin)/notifications');
+                }}
+            >
+                {hasUnread && <View style={styles.notifDot} />}
+                <Animated.View style={{ transform: [{ rotate: shakeAnim.interpolate({
+                    inputRange: [-10, 10],
+                    outputRange: ['-10deg', '10deg']
+                }) }] }}>
+                    <Bell size={24} color="#FFFFFF" />
+                </Animated.View>
+            </TouchableOpacity>
         </View>
 
         {/* Dynamic Stats Scroll */}
@@ -192,6 +236,8 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   contentContainer: { padding: 16, paddingTop: 14, paddingBottom: 60 },
   headerBanner: { 
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#0EA5E9', 
     padding: 24, 
     borderRadius: 28, 
@@ -231,4 +277,26 @@ const styles = StyleSheet.create({
   alertMsg: { fontSize: 13, fontWeight: '700' },
   alertFooter: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
   alertTime: { fontSize: 11, fontWeight: '500' },
+  headerBellBtn: {
+      padding: 10,
+      backgroundColor: 'rgba(255,255,255,0.2)',
+      borderRadius: 12,
+      marginLeft: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: 48,
+      width: 48,
+  },
+  notifDot: {
+      position: 'absolute',
+      top: 10,
+      right: 12,
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: '#EF4444',
+      zIndex: 10,
+      borderWidth: 1.5,
+      borderColor: '#FFFFFF'
+  }
 });

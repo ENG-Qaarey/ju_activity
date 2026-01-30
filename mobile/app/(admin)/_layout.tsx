@@ -13,6 +13,7 @@ import { Image } from 'expo-image';
 import { usePathname } from 'expo-router';
 import { useAuth } from '@/src/context/AuthContext';
 import { IMAGE_BASE } from '@/src/lib/config';
+import { ShakingBellIcon } from '@/src/components/ShakingBellIcon';
 
 export default function AdminLayout() {
   const router = useRouter();
@@ -65,13 +66,23 @@ export default function AdminLayout() {
             active={isActive('/monitor')}
             theme={theme}
           />
-          <DrawerLink 
-            icon={Bell} 
-            label="Notifications" 
+          {/* Custom Notifications Link with Shaking Bell */}
+          <TouchableOpacity 
+            style={[styles.drawerLink, isActive('/notifications') && { backgroundColor: theme.primary }]}
             onPress={() => { router.push('/(admin)/notifications'); setOpen(false); }}
-            active={isActive('/notifications')}
-            theme={theme}
-          />
+          >
+            <ShakingBellIcon 
+              size={20} 
+              color={isActive('/notifications') ? '#FFFFFF' : theme.icon} 
+              dotColor="#EF4444"
+              route="/(admin)/notifications"
+            />
+            <Text style={[
+              styles.drawerLinkLabel, 
+              { color: isActive('/notifications') ? '#FFFFFF' : theme.textSecondary },
+              isActive('/notifications') && styles.drawerLinkLabelActive
+            ]}>Notifications</Text>
+          </TouchableOpacity>
           <DrawerLink 
             icon={Inbox} 
             label="Applications" 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, ScrollView, View, TouchableOpacity, Dimensions, TextInput } from 'react-native';
+import { StyleSheet, ScrollView, View, TouchableOpacity, Dimensions, TextInput, Animated, Easing } from 'react-native';
 import { Image } from 'expo-image';
 import { 
   Calendar, Users, Award, Sparkles, Bell, 
@@ -59,6 +59,34 @@ export default function StudentDashboard() {
   });
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
+  const [hasUnread, setHasUnread] = React.useState(false);
+  const shakeAnim = React.useRef(new Animated.Value(0)).current;
+  const shakeLoop = React.useRef<Animated.CompositeAnimation | null>(null);
+
+  React.useEffect(() => {
+    if (hasUnread) {
+        startShake();
+    } else {
+        shakeLoop.current?.stop();
+        shakeAnim.setValue(0);
+    }
+    return () => shakeLoop.current?.stop();
+  }, [hasUnread]);
+
+  const startShake = () => {
+      // Stop any existing loop first
+      shakeLoop.current?.stop();
+      shakeLoop.current = Animated.loop(
+          Animated.sequence([
+              Animated.timing(shakeAnim, { toValue: 10, duration: 100, useNativeDriver: true }),
+              Animated.timing(shakeAnim, { toValue: -10, duration: 100, useNativeDriver: true }),
+              Animated.timing(shakeAnim, { toValue: 10, duration: 100, useNativeDriver: true }),
+              Animated.timing(shakeAnim, { toValue: 0, duration: 100, useNativeDriver: true }),
+              Animated.delay(1000) 
+          ])
+      );
+      shakeLoop.current.start();
+  };
 
   React.useEffect(() => {
     loadDashboardData();
@@ -67,10 +95,11 @@ export default function StudentDashboard() {
   const loadDashboardData = async () => {
     try {
         setLoading(true);
-        const [actsData, appsData, attendanceData] = await Promise.all([
+        const [actsData, appsData, attendanceData, notifsData] = await Promise.all([
             client.get(ENDPOINTS.ACTIVITIES),
             client.get('/applications'),
-            client.get('/attendance?status=present')
+            client.get('/attendance?status=present'),
+            client.get('/notifications')
         ]);
 
         if (Array.isArray(actsData)) {
@@ -88,6 +117,14 @@ export default function StudentDashboard() {
             events: presentCount,
             saved: appsCount
         });
+
+        // Check for unread notifications
+        // Assuming notification object has 'read' or 'isRead', otherwise just check length > 0
+        const unreadCount = Array.isArray(notifsData) 
+            ? notifsData.filter((n: any) => !n.read).length 
+            : 0;
+        setHasUnread(unreadCount > 0);
+
     } catch (error) {
         console.error('Failed to load dashboard data:', error);
     } finally {
@@ -119,10 +156,18 @@ export default function StudentDashboard() {
             </View>
             <TouchableOpacity 
                 style={[styles.notifBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
-                onPress={() => router.push('/(student)/(tabs)/notifications')}
+                onPress={() => {
+                    setHasUnread(false); // Stop shaking on click
+                    router.push('/(student)/(tabs)/notifications');
+                }}
             >
-                <View style={[styles.notifDot, { borderColor: theme.card }]} />
-                <Bell size={22} color={theme.text} />
+                {hasUnread && <View style={[styles.notifDot, { borderColor: theme.card }]} />}
+                <Animated.View style={{ transform: [{ rotate: shakeAnim.interpolate({
+                    inputRange: [-10, 10],
+                    outputRange: ['-10deg', '10deg']
+                }) }] }}>
+                    <Bell size={22} color={theme.text} />
+                </Animated.View>
             </TouchableOpacity>
         </View>
 
