@@ -13,7 +13,13 @@ import { Colors } from '@/src/data/theme';
 import { client } from '@/src/lib/api';
 import { ENDPOINTS } from '@/src/lib/config';
 
-const CATEGORIES = ['Workshop', 'Seminar', 'Tech Talk', 'Innovation Forum', 'Networking', 'Make-up Session'];
+// Update categories to match backend enum values (from web project reference)
+const CATEGORY_OPTIONS = [
+  { label: 'Workshop', value: 'workshop' },
+  { label: 'Seminar', value: 'seminar' },
+  { label: 'Training Program', value: 'training' },
+  { label: 'Extracurricular', value: 'extracurricular' },
+];
 
 export default function AdminCreateActivity() {
   const router = useRouter();
@@ -147,7 +153,7 @@ export default function AdminCreateActivity() {
     if (modalType === 'time') return renderTimeModal();
 
     const isCategory = modalType === 'category';
-    const data = isCategory ? CATEGORIES : coordinatorsList;
+    const data = isCategory ? CATEGORY_OPTIONS : coordinatorsList;
     const title = isCategory ? 'Select Category' : 'Assign Coordinator';
 
     if (!modalType) return null;
@@ -169,19 +175,20 @@ export default function AdminCreateActivity() {
             </View>
             <FlatList
               data={data}
-              keyExtractor={item => isCategory ? item : item.id}
+              keyExtractor={item => isCategory ? item.value : item.id}
               renderItem={({ item }) => {
-                const label = isCategory ? item : item.name;
-                const isSelected = isCategory ? (formData.category === label) : (formData.coordinatorId === item.id);
-
+                const label = isCategory ? item.label : item.name;
+                const value = isCategory ? item.value : item.id;
+                const isSelected = isCategory ? (formData.category === value) : (formData.coordinatorId === value);
+                
                 return (
                   <TouchableOpacity 
                     style={[styles.modalItem, { borderBottomColor: theme.border }]}
                     onPress={() => {
                       if (isCategory) {
-                          updateField('category', label);
+                          updateField('category', value);
                       } else {
-                          setFormData(prev => ({ ...prev, coordinator: item.name, coordinatorId: item.id }));
+                          setFormData(prev => ({ ...prev, coordinator: label, coordinatorId: value }));
                       }
                       setModalType(null);
                     }}
@@ -410,10 +417,21 @@ export default function AdminCreateActivity() {
             return (
               <TouchableOpacity 
                 key={item} 
-                style={[styles.timeItem, isSelected && styles.timeItemSelected]}
+                style={[
+                  styles.timeItem, 
+                  isSelected && { 
+                    borderWidth: 2, 
+                    borderColor: theme.primary,
+                    backgroundColor: theme.primary + '20'
+                  }
+                ]}
                 onPress={() => onSelect(item)}
               >
-                <Text style={[styles.timeItemText, isSelected && styles.timeItemTextSelected]}>{item}</Text>
+                <Text style={[
+                  styles.timeItemText,
+                  { color: theme.text },
+                  isSelected && { color: theme.primary, fontWeight: '800' }
+                ]}>{item}</Text>
               </TouchableOpacity>
             );
           })}
@@ -553,7 +571,9 @@ export default function AdminCreateActivity() {
                                 { color: theme.tabIconDefault },
                                 formData.category && { color: theme.text, fontWeight: '600' }
                             ]}>
-                              {formData.category || 'Select category'}
+                              {formData.category 
+                                ? CATEGORY_OPTIONS.find(c => c.value === formData.category)?.label || formData.category 
+                                : 'Select category'}
                             </Text>
                             <ChevronDown size={18} color={theme.tabIconDefault} />
                         </TouchableOpacity>
@@ -749,9 +769,7 @@ const styles = StyleSheet.create({
   timeColumnScroll: { flex: 1 },
   timeColumnContent: { paddingVertical: 10 },
   timeItem: { paddingVertical: 12, alignItems: 'center', borderRadius: 6, marginBottom: 8 },
-  timeItemSelected: { borderWidth: 2, borderColor: '#000' },
   timeItemText: { fontSize: 18, fontWeight: '500' },
-  timeItemTextSelected: { color: '#FFFFFF', fontWeight: '800' },
   // Legacy/Common Picker Styles
   pickerSectionLabel: { fontSize: 11, fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', marginTop: 12, marginBottom: 8, marginLeft: 4 },
   pickerGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },

@@ -12,6 +12,7 @@ import { Colors } from '@/src/data/theme';
 import { Image } from 'expo-image';
 import { useAuth } from '@/src/context/AuthContext';
 import { IMAGE_BASE } from '@/src/lib/config';
+import { ShakingBellIcon } from '@/src/components/ShakingBellIcon';
 
 export default function CoordinatorLayout() {
   const { user } = useAuth();
@@ -58,13 +59,23 @@ export default function CoordinatorLayout() {
             active={pathname.includes('/applications')}
             theme={theme}
           />
-          <DrawerLink 
-            icon={Bell} 
-            label="Notifications" 
+          {/* Custom Notifications Link with Shaking Bell */}
+          <TouchableOpacity 
+            style={[styles.drawerLink, pathname.includes('/notifications') && { backgroundColor: theme.primary }]}
             onPress={() => { router.push('/(coordinator)/notifications'); setOpen(false); }}
-            active={pathname.includes('/notifications')}
-            theme={theme}
-          />
+          >
+            <ShakingBellIcon 
+              size={20} 
+              color={pathname.includes('/notifications') ? '#FFFFFF' : theme.icon} 
+              dotColor="#EF4444"
+              route="/(coordinator)/notifications"
+            />
+            <Text style={[
+              styles.drawerLinkLabel, 
+              { color: pathname.includes('/notifications') ? '#FFFFFF' : theme.textSecondary },
+              pathname.includes('/notifications') && styles.drawerLinkLabelActive
+            ]}>Notifications</Text>
+          </TouchableOpacity>
           <DrawerLink 
             icon={CheckSquare} 
             label="Attendance" 
@@ -267,6 +278,7 @@ const styles = StyleSheet.create({
     marginBottom: 8 
   },
   drawerLinkLabel: { fontSize: 17, fontWeight: '600', marginLeft: 16, letterSpacing: 0.2 },
+  drawerLinkLabelActive: { fontWeight: '800' },
   drawerFooter: { padding: 16, borderTopWidth: 1, marginBottom: 20 },
   profileBox: { flexDirection: 'row', alignItems: 'center', padding: 12, borderRadius: 12 },
   avatar: { width: 36, height: 36, borderRadius: 18, marginRight: 10 },

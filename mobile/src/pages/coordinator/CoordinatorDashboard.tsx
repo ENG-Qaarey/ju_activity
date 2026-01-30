@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, ScrollView, View, Text, TouchableOpacity, Animated, Easing } from 'react-native';
 import { 
   Activity, Users, FileText, Bell, BarChart3, Clock, 
   CheckCircle, ChevronRight, Plus, Rocket, Target, Zap 
@@ -28,6 +28,30 @@ export default function CoordinatorDashboard() {
   });
   const [upcomingSessions, setUpcomingSessions] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
+  
+  const [hasUnread, setHasUnread] = React.useState(false);
+  const shakeAnim = React.useRef(new Animated.Value(0)).current;
+  const shakeLoop = React.useRef<Animated.CompositeAnimation | null>(null);
+
+  React.useEffect(() => {
+    if (hasUnread) {
+        shakeLoop.current?.stop();
+        shakeLoop.current = Animated.loop(
+            Animated.sequence([
+                Animated.timing(shakeAnim, { toValue: 10, duration: 100, useNativeDriver: true }),
+                Animated.timing(shakeAnim, { toValue: -10, duration: 100, useNativeDriver: true }),
+                Animated.timing(shakeAnim, { toValue: 10, duration: 100, useNativeDriver: true }),
+                Animated.timing(shakeAnim, { toValue: 0, duration: 100, useNativeDriver: true }),
+                Animated.delay(1000) 
+            ])
+        );
+        shakeLoop.current.start();
+    } else {
+        shakeLoop.current?.stop();
+        shakeAnim.setValue(0);
+    }
+    return () => shakeLoop.current?.stop();
+  }, [hasUnread]);
 
   React.useEffect(() => {
     if (user?.id) {
@@ -39,9 +63,10 @@ export default function CoordinatorDashboard() {
     try {
       setLoading(true);
       // Fetch stats
-      const [activities, pendingApps] = await Promise.all([
+      const [activities, pendingApps, notifRes] = await Promise.all([
         client.get(`/activities?coordinatorId=${user?.id}`),
-        client.get('/applications?status=pending')
+        client.get('/applications?status=pending'),
+        client.get('/notifications')
       ]);
 
       const activeNow = activities.filter((a: any) => a.status === 'upcoming').length;
@@ -61,6 +86,10 @@ export default function CoordinatorDashboard() {
         .slice(0, 3);
       
       setUpcomingSessions(sorted);
+      
+      const unreadCount = Array.isArray(notifRes) ? notifRes.filter((n: any) => !n.read).length : 0;
+      setHasUnread(unreadCount > 0);
+
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
     } finally {
@@ -98,6 +127,21 @@ export default function CoordinatorDashboard() {
                 <Text style={styles.bannerTitle}>Coordinator Command</Text>
                 <Text style={styles.bannerSubtitle}>Orchestrate excellence and track student engagement live.</Text>
             </View>
+            <TouchableOpacity 
+                style={styles.headerBellBtn}
+                onPress={() => {
+                    setHasUnread(false);
+                    router.push('/(coordinator)/notifications');
+                }}
+            >
+                {hasUnread && <View style={styles.notifDot} />}
+                <Animated.View style={{ transform: [{ rotate: shakeAnim.interpolate({
+                    inputRange: [-10, 10],
+                    outputRange: ['-10deg', '10deg']
+                }) }] }}>
+                    <Bell size={24} color="#FFFFFF" />
+                </Animated.View>
+            </TouchableOpacity>
         </View>
 
         {/* Dynamic Stats Row */}
@@ -225,6 +269,8 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   contentContainer: { padding: 16, paddingTop: 14, paddingBottom: 60 },
   headerBanner: { 
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 24, 
     borderRadius: 28, 
     marginBottom: 24, 
@@ -254,6 +300,28 @@ const styles = StyleSheet.create({
   actionCard: { padding: 16, borderRadius: 20, alignItems: 'center' },
   actionIconBg: { width: 48, height: 48, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
   actionLabel: { fontSize: 13, fontWeight: '800' },
+  headerBellBtn: {
+      padding: 10,
+      backgroundColor: 'rgba(255,255,255,0.2)',
+      borderRadius: 12,
+      marginLeft: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: 48,
+      width: 48,
+  },
+  notifDot: {
+      position: 'absolute',
+      top: 10,
+      right: 12,
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: '#EF4444',
+      zIndex: 10,
+      borderWidth: 1.5,
+      borderColor: '#FFFFFF'
+  },
   queueHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, paddingHorizontal: 4 },
   viewAll: { fontSize: 13, fontWeight: '700' },
   sessionList: { gap: 10 },

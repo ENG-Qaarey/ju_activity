@@ -7,6 +7,7 @@ import { Colors } from '@/src/data/theme';
 import { Image } from 'expo-image';
 import { useAuth } from '@/src/context/AuthContext';
 import { IMAGE_BASE } from '@/src/lib/config';
+import { ShakingBellIcon } from '@/src/components/ShakingBellIcon';
 
 export default function StudentTabsLayout() {
   const { user } = useAuth();
@@ -92,7 +93,14 @@ export default function StudentTabsLayout() {
         name="notifications"
         options={{
           title: 'Alerts',
-          tabBarIcon: ({ color }) => <Bell size={24} color={color} />,
+          tabBarIcon: ({ color, focused }) => (
+            <ShakingBellIcon 
+              size={24} 
+              color={color} 
+              dotColor="#EF4444"
+              route="/(student)/(tabs)/notifications"
+            />
+          ),
         }}
       />
       <Tabs.Screen
