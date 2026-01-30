@@ -17,12 +17,21 @@ export const userService = {
       const total = users.length;
       const active = users.filter(user => user.status === 'active').length;
       const inactive = total - active;
-      
+
+      const students = users.filter(user => user.role === 'student').length;
+      const coordinators = users.filter(user => user.role === 'coordinator').length;
+      const admins = users.filter(user => user.role === 'admin').length;
+
       return {
         total,
         active,
         inactive,
-        activePercentage: Math.round((active / total) * 100) || 0
+        activePercentage: Math.round((active / total) * 100) || 0,
+        distribution: {
+          students,
+          coordinators,
+          admins
+        }
       };
     } catch (error) {
       console.error('Error fetching user stats:', error);
@@ -30,7 +39,12 @@ export const userService = {
         total: 0,
         active: 0,
         inactive: 0,
-        activePercentage: 0
+        activePercentage: 0,
+        distribution: {
+          students: 0,
+          coordinators: 0,
+          admins: 0
+        }
       };
     }
   }
