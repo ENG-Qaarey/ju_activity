@@ -22,6 +22,8 @@ import { useAuth } from '@/src/context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 
+import { Mail, Lock, User, SquareUser, KeyRound, ShieldCheck, Eye, EyeOff } from 'lucide-react-native';
+
 /* ---------------- Floating Orb ---------------- */
 function FloatingOrb({ size, x, y, duration, delay }: any) {
   const translate = useRef(new Animated.Value(0)).current;
@@ -176,6 +178,7 @@ export default function Login() {
 
               <Label text="Email Address" />
               <Input
+                icon={Mail}
                 placeholder="Enter your email"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -191,8 +194,9 @@ export default function Login() {
 
               <Label text="Password" />
               <Input
+                icon={Lock}
+                isPassword
                 placeholder="Enter your password"
-                secureTextEntry
                 value={password}
                 onChangeText={(t: string) => {
                   setPassword(t);
@@ -242,14 +246,27 @@ function Label({ text }: { text: string }) {
   return <Text style={styles.label}>{text}</Text>;
 }
 
-function Input({ focused, ...props }: any) {
+function Input({ focused, icon: Icon, isPassword, ...props }: any) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <View style={[styles.inputContainer, focused && styles.inputFocused]}>
+      {Icon && <Icon size={20} color={focused ? '#0EA5E9' : '#94A3B8'} style={styles.inputIcon} />}
       <TextInput
         {...props}
+        secureTextEntry={isPassword ? !showPassword : props.secureTextEntry}
         style={styles.input}
         placeholderTextColor="#94A3B8"
       />
+      {isPassword && (
+        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+          {showPassword ? (
+            <EyeOff size={20} color="#64748B" />
+          ) : (
+            <Eye size={20} color="#64748B" />
+          )}
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -301,21 +318,33 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.4)',
     borderRadius: 14,
     borderWidth: 2,
     borderColor: 'rgba(148,163,184,0.3)',
+    marginBottom: 0,
   },
   inputFocused: {
     borderColor: '#0EA5E9',
     backgroundColor: '#FFFFFF',
   },
   input: {
+    flex: 1,
     paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingRight: 16,
+    paddingLeft: 4,
     fontSize: 15,
     color: '#0F172A',
     fontWeight: '500',
+  },
+  inputIcon: {
+    marginLeft: 14,
+  },
+  eyeIcon: {
+    padding: 10,
+    marginRight: 4,
   },
   errorBox: {
     marginTop: 14,

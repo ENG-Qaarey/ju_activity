@@ -17,8 +17,49 @@ import { BlurView } from 'expo-blur';
 import { client } from '@/src/lib/api';
 import { ENDPOINTS } from '@/src/lib/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Mail, Lock, User, CreditCard, ShieldCheck, Eye, EyeOff } from 'lucide-react-native';
 
 const { width, height } = Dimensions.get('window');
+
+/* ---------------- Floating Orb ---------------- */
+function FloatingOrb({ size, x, y, duration, delay }: any) {
+  const translate = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(translate, {
+          toValue: -25,
+          duration,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+          delay,
+        }),
+        Animated.timing(translate, {
+          toValue: 0,
+          duration,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={[
+        styles.orb,
+        {
+          width: size,
+          height: size,
+          top: y,
+          left: x,
+          transform: [{ translateY: translate }],
+        },
+      ]}
+    />
+  );
+}
 
 export default function Register() {
   const fade = useRef(new Animated.Value(0)).current;
@@ -86,7 +127,18 @@ export default function Register() {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* ... (Background & Orbs) ... */}
+      {/* BACKGROUND */}
+      <LinearGradient
+        colors={['#F0F9FF', '#E0F2FE', '#BAE6FD', '#7DD3FC']}
+        style={StyleSheet.absoluteFill}
+      />
+
+      {/* FLOATING ORBS */}
+      <View style={StyleSheet.absoluteFill}>
+        <FloatingOrb size={300} x={-120} y={-120} duration={6000} delay={0} />
+        <FloatingOrb size={260} x={width - 140} y={height / 3} duration={7000} delay={600} />
+        <FloatingOrb size={360} x={-80} y={height - 260} duration={8000} delay={1200} />
+      </View>
       
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -111,6 +163,7 @@ export default function Register() {
 
               <Label text="Full Name" />
               <Input
+                icon={User}
                 placeholder="Enter your full name"
                 value={name}
                 onChangeText={setName}
@@ -121,6 +174,7 @@ export default function Register() {
 
               <Label text="Student ID" />
               <Input
+                icon={CreditCard}
                 placeholder="Enter your student ID"
                 value={studentId}
                 onChangeText={setStudentId}
@@ -131,6 +185,7 @@ export default function Register() {
 
               <Label text="Email Address" />
               <Input
+                icon={Mail}
                 placeholder="student@jazeerauniversity.edu.so"
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -143,8 +198,9 @@ export default function Register() {
 
               <Label text="Password" />
               <Input
+                icon={Lock}
+                isPassword
                 placeholder="Create password"
-                secureTextEntry
                 value={password}
                 onChangeText={setPassword}
                 focused={focused === 'password'}
@@ -154,8 +210,9 @@ export default function Register() {
 
               <Label text="Confirm Password" />
               <Input
+                icon={ShieldCheck}
+                isPassword
                 placeholder="Re-enter password"
-                secureTextEntry
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 focused={focused === 'confirm'}
@@ -207,14 +264,27 @@ function Label({ text }: { text: string }) {
   return <Text style={styles.label}>{text}</Text>;
 }
 
-function Input({ focused, ...props }: any) {
+function Input({ focused, icon: Icon, isPassword, ...props }: any) {
+  const [showPassword, setShowPassword] = useState(false);
+
   return (
     <View style={[styles.inputContainer, focused && styles.inputFocused]}>
+      {Icon && <Icon size={20} color={focused ? '#0EA5E9' : '#94A3B8'} style={styles.inputIcon} />}
       <TextInput
         {...props}
+        secureTextEntry={isPassword ? !showPassword : props.secureTextEntry}
         style={styles.input}
         placeholderTextColor="#94A3B8"
       />
+      {isPassword && (
+        <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+          {showPassword ? (
+            <EyeOff size={20} color="#64748B" />
+          ) : (
+            <Eye size={20} color="#64748B" />
+          )}
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -264,6 +334,8 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(255,255,255,0.4)',
     borderRadius: 14,
     borderWidth: 2,
@@ -274,11 +346,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   input: {
+    flex: 1,
     paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingRight: 16,
+    paddingLeft: 4,
     fontSize: 15,
     color: '#0F172A',
     fontWeight: '500',
+  },
+  inputIcon: {
+    marginLeft: 14,
+  },
+  eyeIcon: {
+    padding: 10,
+    marginRight: 4,
   },
   hint: {
     fontSize: 12,
