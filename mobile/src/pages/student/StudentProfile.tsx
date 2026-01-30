@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, ScrollView, View, Text, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
   User, Mail, Shield, Bell, CircleHelp, LogOut, 
@@ -22,10 +22,17 @@ import { IMAGE_BASE } from '@/src/lib/config';
 
 export default function StudentProfile() {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, loading, logout, refreshProfile } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   const { refreshTheme } = useTheme();
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refreshProfile();
+    setRefreshing(false);
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -35,7 +42,18 @@ export default function StudentProfile() {
 
   return (
     <GradientBackground>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.contentContainer} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
+        }
+      >
+        {loading && !refreshing ? (
+            <ActivityIndicator size="large" color={theme.primary} style={{ marginTop: 20 }} />
+        ) : (
+            <>
         {/* Profile Header */}
         <View style={styles.header}>
           <View style={styles.avatarContainer}>
@@ -111,6 +129,8 @@ export default function StudentProfile() {
         <View style={styles.footer}>
           <Text style={[styles.versionText, { color: theme.textSecondary }]}>JU Activity Hub v1.0.1 • Stable</Text>
         </View>
+            </>
+        )}
       </ScrollView>
     </GradientBackground>
   );
