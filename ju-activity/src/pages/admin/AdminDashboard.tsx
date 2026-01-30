@@ -33,6 +33,11 @@ const AdminDashboard = () => {
     active: 0,
     inactive: 0,
     activePercentage: 0,
+    distribution: {
+      students: 0,
+      coordinators: 0,
+      admins: 0
+    },
     loading: true
   });
 
@@ -258,9 +263,9 @@ const AdminDashboard = () => {
             <CardContent>
               <div className="flex items-center justify-around py-8">
                 {[
-                  { label: "Students", value: 120, color: "bg-primary" },
-                  { label: "Coordinators", value: 24, color: "bg-success" },
-                  { label: "Admins", value: 12, color: "bg-warning" },
+                  { label: "Students", value: userStats.loading ? "..." : userStats.distribution.students, color: "bg-primary" },
+                  { label: "Coordinators", value: userStats.loading ? "..." : userStats.distribution.coordinators, color: "bg-success" },
+                  { label: "Admins", value: userStats.loading ? "..." : userStats.distribution.admins, color: "bg-warning" },
                 ].map((item) => (
                   <div key={item.label} className="text-center">
                     <div
