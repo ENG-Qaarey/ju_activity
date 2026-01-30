@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, User, CreditCard, Mail, Lock, ShieldCheck, KeyRound } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { authApi } from "@/lib/api";
 
@@ -377,49 +377,62 @@ const RegisterScreen = () => {
             {phase === 'form' ? (
               <form onSubmit={handleRegister} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    name="fullName"
-                    type="text"
-                    placeholder="Enter your full name"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    autoComplete="name"
-                  />
+                  <Label htmlFor="fullName" className="text-slate-700 font-semibold text-sm">Full Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <Input
+                      id="fullName"
+                      name="fullName"
+                      type="text"
+                      placeholder="Enter your full name"
+                      value={formData.fullName}
+                      onChange={handleChange}
+                      autoComplete="name"
+                      className="pl-10 bg-white text-slate-900 border-transparent focus-visible:border-sky-500 focus-visible:ring-sky-500 h-11 transition-all"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="studentId">Student ID</Label>
-                  <Input
-                    id="studentId"
-                    name="studentId"
-                    type="text"
-                    placeholder="Enter your student ID"
-                    value={formData.studentId}
-                    onChange={handleChange}
-                  />
+                  <Label htmlFor="studentId" className="text-slate-700 font-semibold text-sm">Student ID</Label>
+                  <div className="relative">
+                    <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <Input
+                      id="studentId"
+                      name="studentId"
+                      type="text"
+                      placeholder="Enter your student ID"
+                      value={formData.studentId}
+                      onChange={handleChange}
+                      className="pl-10 bg-white text-slate-900 border-transparent focus-visible:border-sky-500 focus-visible:ring-sky-500 h-11 transition-all"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="student@jazeerauniversity.edu.so"
-                    value={formData.email}
-                    onChange={handleChange}
-                    autoComplete="email"
-                  />
+                  <Label htmlFor="email" className="text-slate-700 font-semibold text-sm">Email Address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="student@jazeerauniversity.edu.so"
+                      value={formData.email}
+                      onChange={handleChange}
+                      autoComplete="email"
+                      className="pl-10 bg-white text-slate-900 border-transparent focus-visible:border-sky-500 focus-visible:ring-sky-500 h-11 transition-all"
+                    />
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     Use your university email address
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-slate-700 font-semibold text-sm">Password</Label>
                   <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
                     <Input
                       id="password"
                       name="password"
@@ -427,11 +440,12 @@ const RegisterScreen = () => {
                       placeholder="Create a strong password"
                       value={formData.password}
                       onChange={handleChange}
+                      className="pl-10 bg-white text-slate-900 border-transparent focus-visible:border-sky-500 focus-visible:ring-sky-500 h-11 transition-all"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword((prev) => !prev)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors focus:outline-none"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -442,15 +456,19 @@ const RegisterScreen = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    placeholder="Re-enter your password"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                  />
+                  <Label htmlFor="confirmPassword" className="text-slate-700 font-semibold text-sm">Confirm Password</Label>
+                  <div className="relative">
+                    <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <Input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      placeholder="Re-enter your password"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className="pl-10 bg-white text-slate-900 border-transparent focus-visible:border-sky-500 focus-visible:ring-sky-500 h-11 transition-all"
+                    />
+                  </div>
                   {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
                     <p className="text-xs text-destructive">Passwords do not match</p>
                   )}
@@ -475,20 +493,23 @@ const RegisterScreen = () => {
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="verificationCode">Verification Code</Label>
-                  <Input
-                    id="verificationCode"
-                    value={verificationCodeInput}
-                    onChange={(e) => {
-                      // Only allow numbers and limit to 6 digits
-                      const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-                      setVerificationCodeInput(value);
-                    }}
-                    placeholder="000000"
-                    maxLength={6}
-                    className="text-center text-2xl tracking-widest"
-                    autoComplete="one-time-code"
-                  />
+                  <Label htmlFor="verificationCode" className="text-slate-700 font-semibold text-sm">Verification Code</Label>
+                  <div className="relative">
+                    <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                    <Input
+                      id="verificationCode"
+                      value={verificationCodeInput}
+                      onChange={(e) => {
+                        // Only allow numbers and limit to 6 digits
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                        setVerificationCodeInput(value);
+                      }}
+                      placeholder="000000"
+                      maxLength={6}
+                      className="pl-10 text-center text-2xl tracking-widest bg-white text-slate-900 border-transparent focus-visible:border-sky-500 focus-visible:ring-sky-500 h-14 transition-all"
+                      autoComplete="one-time-code"
+                    />
+                  </div>
                   <p className="text-xs text-muted-foreground text-center">
                     6-digit code
                   </p>
@@ -528,7 +549,7 @@ const RegisterScreen = () => {
               </div>
             )}
 
-            <p className="text-center text-muted-foreground mt-6">
+            <div className="text-center text-muted-foreground mt-6">
               Already have an account?{' '}
               <Button
                 variant="link"
@@ -538,7 +559,7 @@ const RegisterScreen = () => {
               >
                 Sign in here
               </Button>
-            </p>
+            </div>
           </CardContent>
         </Card>
       </motion.div>
