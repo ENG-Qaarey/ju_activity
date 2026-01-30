@@ -10,10 +10,75 @@ import { ThemedText } from '@/src/components/themed-text';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/src/context/AuthContext';
+import { client } from '@/src/lib/api';
 
 export default function CoordinatorDashboard() {
+  const router = useRouter();
+  const { user } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+
+  const [stats, setStats] = React.useState({
+    activities: 0,
+    activeNow: 0,
+    reviews: 0,
+    students: 0,
+  });
+  const [upcomingSessions, setUpcomingSessions] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (user?.id) {
+      loadDashboardData();
+    }
+  }, [user]);
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      // Fetch stats
+      const [activities, pendingApps] = await Promise.all([
+        client.get(`/activities?coordinatorId=${user?.id}`),
+        client.get('/applications?status=pending')
+      ]);
+
+      const activeNow = activities.filter((a: any) => a.status === 'upcoming').length;
+      const totalStudents = activities.reduce((acc: number, curr: any) => acc + (curr.enrolled || 0), 0);
+
+      setStats({
+        activities: activities.length,
+        activeNow: activeNow,
+        reviews: pendingApps.length,
+        students: totalStudents > 1000 ? (totalStudents / 1000).toFixed(1) + 'K' : totalStudents.toString(),
+      });
+
+      // Upcoming sessions (latest 3)
+      const sorted = activities
+        .filter((a: any) => a.status === 'upcoming')
+        .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        .slice(0, 3);
+      
+      setUpcomingSessions(sorted);
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+
+    if (date.toDateString() === today.toDateString()) return 'Today';
+    if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
+    
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
 
   return (
     <GradientBackground>
@@ -41,10 +106,10 @@ export default function CoordinatorDashboard() {
             <Zap size={14} color={theme.primary} />
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statsScroll} contentContainerStyle={styles.statsScrollContent}>
-          <StatBox label="Activities" value="12" icon={Activity} color="#0EA5E9" theme={theme} />
-          <StatBox label="Active Now" value="4" icon={CheckCircle} color="#22C55E" theme={theme} />
-          <StatBox label="Reviews" value="28" icon={FileText} color="#F59E0B" theme={theme} />
-          <StatBox label="Students" value="1.2K" icon={Users} color="#8B5CF6" theme={theme} />
+          <StatBox label="Activities" value={stats.activities.toString()} icon={Activity} color="#0EA5E9" theme={theme} />
+          <StatBox label="Active Now" value={stats.activeNow.toString()} icon={CheckCircle} color="#22C55E" theme={theme} />
+          <StatBox label="Reviews" value={stats.reviews.toString()} icon={FileText} color="#F59E0B" theme={theme} />
+          <StatBox label="Students" value={stats.students} icon={Users} color="#8B5CF6" theme={theme} />
         </ScrollView>
 
         {/* Action Center Grid */}
@@ -52,10 +117,34 @@ export default function CoordinatorDashboard() {
             <Text style={[styles.sectionTitle, { color: theme.text }]}>Terminal Actions</Text>
         </View>
         <View style={styles.actionGrid}>
-          <ActionButton icon={Plus} label="New Activity" color="#0EA5E9" theme={theme} />
-          <ActionButton icon={Users} label="Attendance" color="#8B5CF6" theme={theme} />
-          <ActionButton icon={FileText} label="Review Apps" color="#F59E0B" theme={theme} />
-          <ActionButton icon={Bell} label="Broadcast" color="#22C55E" theme={theme} />
+          <ActionButton 
+            icon={Plus} 
+            label="New Activity" 
+            color="#0EA5E9" 
+            theme={theme} 
+            onPress={() => router.push('/(coordinator)/propose')} 
+          />
+          <ActionButton 
+            icon={Users} 
+            label="Attendance" 
+            color="#8B5CF6" 
+            theme={theme} 
+            onPress={() => router.push('/(coordinator)/attendance')} 
+          />
+          <ActionButton 
+            icon={FileText} 
+            label="Review Apps" 
+            color="#F59E0B" 
+            theme={theme} 
+            onPress={() => router.push('/(coordinator)/applications')} 
+          />
+          <ActionButton 
+            icon={Bell} 
+            label="Broadcast" 
+            color="#22C55E" 
+            theme={theme} 
+            onPress={() => router.push('/(coordinator)/notifications')} 
+          />
         </View>
 
         {/* Upcoming Sessions Section */}
@@ -65,27 +154,23 @@ export default function CoordinatorDashboard() {
         </View>
         
         <View style={styles.sessionList}>
-            <SessionItem 
-                title="UI/UX Workshop" 
-                meta="Today • 02:00 PM • Lab 04" 
-                icon={Target}
-                color="#0EA5E9"
-                theme={theme}
-            />
-            <SessionItem 
-                title="Open Day Planning" 
-                meta="Tomorrow • 10:00 AM • Hall B" 
-                icon={Activity}
-                color="#8B5CF6"
-                theme={theme}
-            />
-            <SessionItem 
-                title="Tech Talk" 
-                meta="Jan 25 • 11:30 AM • Remote" 
-                icon={Zap}
-                color="#22C55E"
-                theme={theme}
-            />
+            {upcomingSessions.length > 0 ? (
+              upcomingSessions.map((session, index) => (
+                <SessionItem 
+                    key={session.id || index}
+                    title={session.title} 
+                    meta={`${formatDate(session.date)} • ${session.time} • ${session.location}`} 
+                    icon={Target}
+                    color={index % 2 === 0 ? "#0EA5E9" : "#8B5CF6"}
+                    theme={theme}
+                    onPress={() => router.push({ pathname: '/(coordinator)/activities', params: { id: session.id } })}
+                />
+              ))
+            ) : (
+                <GlassCard style={[styles.emptyCard, { backgroundColor: theme.card }]}>
+                    <Text style={{ color: theme.textSecondary, textAlign: 'center' }}>No upcoming sessions</Text>
+                </GlassCard>
+            )}
         </View>
       </ScrollView>
     </GradientBackground>
@@ -104,9 +189,9 @@ function StatBox({ label, value, icon: Icon, color, theme }: any) {
   );
 }
 
-function ActionButton({ icon: Icon, label, color, theme }: any) {
+function ActionButton({ icon: Icon, label, color, theme, onPress }: any) {
   return (
-    <TouchableOpacity style={styles.actionBtn}>
+    <TouchableOpacity style={styles.actionBtn} onPress={onPress}>
       <GlassCard style={[styles.actionCard, { backgroundColor: theme.card }]}>
         <View style={[styles.actionIconBg, { backgroundColor: color + '10' }]}>
             <Icon size={24} color={color} />
@@ -117,20 +202,22 @@ function ActionButton({ icon: Icon, label, color, theme }: any) {
   );
 }
 
-function SessionItem({ title, meta, icon: Icon, color, theme }: any) {
+function SessionItem({ title, meta, icon: Icon, color, theme, onPress }: any) {
     return (
-        <GlassCard style={[styles.sessionItem, { backgroundColor: theme.card }]}>
-            <View style={styles.sLeft}>
-                <View style={[styles.sIconBg, { backgroundColor: color + '10' }]}>
-                    <Icon size={20} color={color} />
+        <TouchableOpacity onPress={onPress}>
+            <GlassCard style={[styles.sessionItem, { backgroundColor: theme.card }]}>
+                <View style={styles.sLeft}>
+                    <View style={[styles.sIconBg, { backgroundColor: color + '10' }]}>
+                        <Icon size={20} color={color} />
+                    </View>
+                    <View>
+                        <Text style={[styles.sTitle, { color: theme.text }]}>{title}</Text>
+                        <Text style={[styles.sMeta, { color: theme.textSecondary }]}>{meta}</Text>
+                    </View>
                 </View>
-                <View>
-                    <Text style={[styles.sTitle, { color: theme.text }]}>{title}</Text>
-                    <Text style={[styles.sMeta, { color: theme.textSecondary }]}>{meta}</Text>
-                </View>
-            </View>
-            <ChevronRight size={18} color={theme.icon} />
-        </GlassCard>
+                <ChevronRight size={18} color={theme.icon} />
+            </GlassCard>
+        </TouchableOpacity>
     )
 }
 
@@ -175,4 +262,5 @@ const styles = StyleSheet.create({
   sIconBg: { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
   sTitle: { fontSize: 15, fontWeight: '700' },
   sMeta: { fontSize: 12, marginTop: 2 },
+  emptyCard: { padding: 32, borderRadius: 20, alignItems: 'center' },
 });

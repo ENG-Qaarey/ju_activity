@@ -7,11 +7,75 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
+import { client } from '@/src/lib/api';
+import { useAuth } from '@/src/context/AuthContext';
+import { ActivityIndicator, RefreshControl } from 'react-native';
 
 export default function CoordinatorApplications() {
   const router = useRouter();
+  const { user } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+
+  const [applications, setApplications] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
+
+  const fetchApplications = async () => {
+    try {
+      setLoading(true);
+      const data = await client.get('/applications');
+      setApplications(data);
+    } catch (error) {
+      console.error('Failed to fetch applications:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchApplications();
+  }, []);
+
+  const handleUpdateStatus = async (id: string, status: string) => {
+    try {
+      await client.put(`/applications/${id}/status`, { status });
+      // Refresh local state
+      setApplications(prev => prev.map(app => 
+        app.id === id ? { ...app, status } : app
+      ));
+    } catch (error) {
+      console.error(`Failed to update application ${id} to ${status}:`, error);
+      alert('Failed to update status');
+    }
+  };
+
+  const filteredApplications = applications.filter(app => 
+    app.studentName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    app.student?.studentId?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    app.activity?.title?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const stats = {
+    pending: applications.filter(a => a.status === 'pending').length,
+    approved: applications.filter(a => a.status === 'approved').length,
+    rejected: applications.filter(a => a.status === 'rejected').length
+  };
+
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 60) return `${diffMins} mins ago`;
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    return `${diffDays} days ago`;
+  };
 
   return (
     <GradientBackground>
@@ -22,7 +86,14 @@ export default function CoordinatorApplications() {
         </TouchableOpacity>
       </View> */}
 
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.contentContainer} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchApplications(); }} tintColor={theme.primary} />
+        }
+      >
         {/* Header Section */}
         <View style={styles.header}>
             <View>
@@ -34,27 +105,31 @@ export default function CoordinatorApplications() {
             </TouchableOpacity>
         </View>
 
-        {/* Analytic Stats Grid */}
-        <View style={styles.statsGrid}>
-            <StatCard icon={Clock} label="Pending" value="28" color="#F59E0B" theme={theme} />
-            <StatCard icon={Check} label="Approved" value="142" color="#22C55E" theme={theme} />
-            <StatCard icon={Zap} label="Growth" value="+12%" color="#0EA5E9" theme={theme} />
-        </View>
+         {/* Analytic Stats Grid */}
+         <View style={styles.statsGrid}>
+             <StatCard icon={Clock} label="Pending" value={stats.pending.toString()} color="#F59E0B" theme={theme} />
+             <StatCard icon={Check} label="Approved" value={stats.approved.toString()} color="#22C55E" theme={theme} />
+             <StatCard icon={X} label="Rejected" value={stats.rejected.toString()} color="#EF4444" theme={theme} />
+         </View>
 
-        {/* Search & Filter Bar */}
-        <View style={styles.searchRow}>
-            <View style={[styles.searchContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                <Search size={18} color={theme.textSecondary} style={styles.searchIcon} />
-                <TextInput 
-                    placeholder="Search applicant names or IDs..." 
-                    style={[styles.searchInput, { color: theme.text }]}
-                    placeholderTextColor={theme.textSecondary}
-                />
-            </View>
-            <TouchableOpacity style={[styles.quickFilterBtn, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                <Filter size={18} color={theme.primary} />
-            </TouchableOpacity>
-        </View>
+         <View style={styles.searchRow}>
+             <View style={[styles.searchContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                 <Search size={18} color={theme.textSecondary} style={styles.searchIcon} />
+                 <TextInput 
+                     placeholder="Search applicant names or IDs..." 
+                     style={[styles.searchInput, { color: theme.text }]}
+                     placeholderTextColor={theme.textSecondary}
+                     value={searchQuery}
+                     onChangeText={setSearchQuery}
+                 />
+             </View>
+             <TouchableOpacity 
+                style={[styles.quickFilterBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
+                onPress={() => setSearchQuery('')}
+             >
+                 <X size={18} color={theme.primary} />
+             </TouchableOpacity>
+         </View>
 
         {/* Section Header */}
         <View style={styles.sectionHeader}>
@@ -64,45 +139,33 @@ export default function CoordinatorApplications() {
             </TouchableOpacity>
         </View>
 
-        {/* Application Feed */}
-        <View style={styles.list}>
-           <ApplicationItem 
-                student="Muscab Axmed" 
-                id="ID-2024-001" 
-                activity="UI/UX Masterclass" 
-                time="5 mins ago" 
-                status="Pending" 
-                avatar="https://i.pravatar.cc/150?u=muscab"
-                theme={theme}
-            />
-           <ApplicationItem 
-                student="Fatuma Farah" 
-                id="ID-2024-042" 
-                activity="UI/UX Masterclass" 
-                time="42 mins ago" 
-                status="Pending" 
-                avatar="https://i.pravatar.cc/150?u=fatuma"
-                theme={theme}
-            />
-           <ApplicationItem 
-                student="Axmed Qaarey" 
-                id="ID-2024-115" 
-                activity="JU Open Day 2026" 
-                time="2 hours ago" 
-                status="Approved" 
-                avatar="https://i.pravatar.cc/150?u=axmed"
-                theme={theme}
-            />
-           <ApplicationItem 
-                student="Deeqa Warsame" 
-                id="ID-2024-098" 
-                activity="Leadership Seminar" 
-                time="Yesterday" 
-                status="Rejected" 
-                avatar="https://i.pravatar.cc/150?u=deeqa"
-                theme={theme}
-            />
-        </View>
+         {/* Application Feed */}
+         <View style={styles.list}>
+            {loading && !refreshing ? (
+                <View style={{ padding: 40 }}>
+                    <ActivityIndicator size="large" color={theme.primary} />
+                </View>
+            ) : filteredApplications.length > 0 ? (
+                filteredApplications.map((app) => (
+                    <ApplicationItem 
+                        key={app.id}
+                        student={app.studentName || 'Student'} 
+                        id={app.student?.studentId || 'N/A'} 
+                        activity={app.activity?.title || 'Unknown Activity'} 
+                        time={formatTime(app.appliedAt)} 
+                        status={app.status.charAt(0).toUpperCase() + app.status.slice(1)} 
+                        avatar={app.student?.avatar || `https://i.pravatar.cc/150?u=${app.studentId}`}
+                        theme={theme}
+                        onApprove={() => handleUpdateStatus(app.id, 'approved')}
+                        onReject={() => handleUpdateStatus(app.id, 'rejected')}
+                    />
+                ))
+            ) : (
+                <View style={{ padding: 40, alignItems: 'center' }}>
+                    <Text style={{ color: theme.textSecondary }}>No applications found</Text>
+                </View>
+            )}
+         </View>
       </ScrollView>
     </GradientBackground>
   );
@@ -120,7 +183,7 @@ function StatCard({ icon: Icon, label, value, color, theme }: any) {
     );
 }
 
-function ApplicationItem({ student, id, activity, time, status, avatar, theme }: any) {
+ function ApplicationItem({ student, id, activity, time, status, avatar, theme, onApprove, onReject }: any) {
   const isPending = status === 'Pending';
   const isApproved = status === 'Approved';
   const isRejected = status === 'Rejected';
@@ -162,17 +225,23 @@ function ApplicationItem({ student, id, activity, time, status, avatar, theme }:
             <Text style={[styles.timeValue, { color: theme.textSecondary }]}>{time}</Text>
           </View>
           
-          {isPending ? (
-              <View style={styles.actionGrid}>
-                  <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#EF444415', borderColor: '#EF444430' }]}>
-                    <X size={16} color="#EF4444" />
-                    <Text style={styles.rejectText}>Reject</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={[styles.actionBtn, { backgroundColor: theme.primary, borderColor: theme.primary }]}>
-                    <Check size={16} color="#FFFFFF" />
-                    <Text style={styles.approveText}>Approve</Text>
-                  </TouchableOpacity>
-              </View>
+           {isPending ? (
+               <View style={styles.actionGrid}>
+                   <TouchableOpacity 
+                        style={[styles.actionBtn, { backgroundColor: '#EF444415', borderColor: '#EF444430' }]}
+                        onPress={onReject}
+                    >
+                     <X size={16} color="#EF4444" />
+                     <Text style={styles.rejectText}>Reject</Text>
+                   </TouchableOpacity>
+                   <TouchableOpacity 
+                        style={[styles.actionBtn, { backgroundColor: theme.primary, borderColor: theme.primary }]}
+                        onPress={onApprove}
+                    >
+                     <Check size={16} color="#FFFFFF" />
+                     <Text style={styles.approveText}>Approve</Text>
+                   </TouchableOpacity>
+               </View>
           ) : (
                 <TouchableOpacity style={[styles.detailsBtn, { backgroundColor: theme.background, borderColor: theme.border }]}>
                     <Text style={[styles.detailsBtnText, { color: theme.textSecondary }]}>Full Entry</Text>

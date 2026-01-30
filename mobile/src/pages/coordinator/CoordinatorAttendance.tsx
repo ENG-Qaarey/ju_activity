@@ -1,11 +1,14 @@
 import React from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput, Dimensions, Modal, KeyboardAvoidingView, Platform } from 'react-native';
-import { CheckCircle2, ChevronRight, ClipboardList, ChevronDown, Users, Check, X, UserCheck, UserX, Clock, Send } from 'lucide-react-native';
+import { CheckCircle2, ClipboardList, ChevronDown, X, UserCheck, UserX, Clock, Send, Users } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
-import { useRouter } from 'expo-router';
+import { client } from '@/src/lib/api';
+import { useAuth } from '@/src/context/AuthContext';
+import { ActivityIndicator, Alert } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -28,20 +31,77 @@ const MOCK_STUDENTS = [
 
 export default function CoordinatorAttendance() {
   const router = useRouter();
+  const { activityId: paramActivityId } = useLocalSearchParams();
+  const { user } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
-  const [selectedActivity, setSelectedActivity] = React.useState<string | null>(null);
+  
+  const [activities, setActivities] = React.useState<any[]>([]);
+  const [selectedActivity, setSelectedActivity] = React.useState<any | null>(null);
   const [showActivityPicker, setShowActivityPicker] = React.useState(false);
-  const [attendance, setAttendance] = React.useState<Record<number, 'present' | 'absent' | 'excused' | null>>({});
+  const [students, setStudents] = React.useState<any[]>([]);
+  const [attendance, setAttendance] = React.useState<Record<string, 'present' | 'absent' | 'excused' | null>>({});
+  const [loading, setLoading] = React.useState(true);
+  const [fetchingStudents, setFetchingStudents] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
   
   // Excuse Modal State
   const [isExcuseModalVisible, setIsExcuseModalVisible] = React.useState(false);
   const [currentStudent, setCurrentStudent] = React.useState<any>(null);
   const [excuseReason, setExcuseReason] = React.useState('');
 
-  const toggleAttendance = (studentId: number, status: 'present' | 'absent' | 'excused') => {
+  React.useEffect(() => {
+    fetchActivities();
+  }, []);
+
+  const fetchActivities = async () => {
+    try {
+      setLoading(true);
+      const data = await client.get(`/activities?coordinatorId=${user?.id}`);
+      setActivities(data);
+      
+      // If activityId passed in params, select it
+      if (paramActivityId) {
+        const found = data.find((a: any) => a.id === paramActivityId);
+        if (found) {
+          handleSelectActivity(found);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch activities:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSelectActivity = async (activity: any) => {
+    setSelectedActivity(activity);
+    setShowActivityPicker(false);
+    setAttendance({});
+    
+    try {
+      setFetchingStudents(true);
+      // Fetch approved applications for this activity
+      const apps = await client.get(`/applications?activityId=${activity.id}&status=approved`);
+      setStudents(apps);
+      
+      // Fetch existing attendance if any
+      const existingAttendance = await client.get(`/attendance?activityId=${activity.id}`);
+      const attendanceMap: Record<string, any> = {};
+      existingAttendance.forEach((record: any) => {
+        attendanceMap[record.studentId] = record.status;
+      });
+      setAttendance(attendanceMap);
+    } catch (error) {
+      console.error('Failed to fetch students/attendance:', error);
+    } finally {
+      setFetchingStudents(false);
+    }
+  };
+
+  const toggleAttendance = (studentId: string, status: 'present' | 'absent' | 'excused') => {
     if (status === 'excused' && attendance[studentId] !== 'excused') {
-      const student = MOCK_STUDENTS.find(s => s.id === studentId);
+      const student = students.find(s => s.studentId === studentId);
       setCurrentStudent(student);
       setIsExcuseModalVisible(true);
       return;
@@ -53,14 +113,45 @@ export default function CoordinatorAttendance() {
     }));
   };
 
+  const handleSaveAttendance = async () => {
+    if (!selectedActivity) return;
+    
+    const attendanceData = students.map(student => ({
+      studentId: student.studentId,
+      studentName: student.studentName,
+      applicationId: student.id,
+      // Map excused to absent since backend only supports present/absent for now
+      status: attendance[student.studentId] === 'present' ? 'present' : 'absent'
+    })).filter(item => attendance[item.studentId] !== null);
+
+    if (attendanceData.length === 0) {
+      Alert.alert('No Changes', 'Please mark attendance for at least one student.');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await client.post('/attendance/batch', {
+        activityId: selectedActivity.id,
+        attendanceData
+      });
+      Alert.alert('Success', 'Attendance session successfully recorded!');
+    } catch (error: any) {
+      console.error('Failed to save attendance:', error);
+      Alert.alert('Error', error.message || 'Failed to record attendance');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSaveExcuse = () => {
     if (!excuseReason.trim()) {
-      alert("Please enter a reason for the excuse.");
+      Alert.alert("Reason Required", "Please enter a reason for the excuse.");
       return;
     }
     setAttendance(prev => ({
       ...prev,
-      [currentStudent.id]: 'excused'
+      [currentStudent.studentId]: 'excused'
     }));
     setIsExcuseModalVisible(false);
     setExcuseReason('');
@@ -159,26 +250,24 @@ export default function CoordinatorAttendance() {
             <TouchableOpacity 
               style={[styles.dropdown, { backgroundColor: theme.background, borderColor: theme.border }]}
               onPress={() => setShowActivityPicker(!showActivityPicker)}
+              disabled={loading}
             >
                 <Text style={[styles.dropdownText, { color: selectedActivity ? theme.text : theme.textSecondary }]} numberOfLines={1}>
-                  {selectedActivity || "Choose an activity to begin..."}
+                  {loading ? 'Loading activities...' : (selectedActivity?.title || "Choose an activity to begin...")}
                 </Text>
                 <ChevronDown size={18} color={theme.primary} />
             </TouchableOpacity>
 
             {showActivityPicker && (
               <View style={[styles.pickerDropdown, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                {MOCK_ACTIVITIES.map((act) => (
+                {activities.map((act) => (
                   <TouchableOpacity 
-                    key={act} 
+                    key={act.id} 
                     style={[styles.pickerItem, { borderBottomColor: theme.border }]}
-                    onPress={() => {
-                      setSelectedActivity(act);
-                      setShowActivityPicker(false);
-                      setAttendance({}); // Reset for new activity
-                    }}
+                    onPress={() => handleSelectActivity(act)}
                   >
-                    <Text style={[styles.pickerItemText, { color: theme.text }]}>{act}</Text>
+                    <Text style={[styles.pickerItemText, { color: theme.text }]}>{act.title}</Text>
+                    <Text style={{ fontSize: 10, color: theme.textSecondary }}>{act.date.split('T')[0]} at {act.time}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -192,7 +281,7 @@ export default function CoordinatorAttendance() {
                     <StatBox label="Present" value={presentCount} color="#22C55E" theme={theme} />
                     <StatBox label="Absent" value={absentCount} color="#EF4444" theme={theme} />
                     <StatBox label="Excused" value={excusedCount} color="#F59E0B" theme={theme} />
-                    <StatBox label="Total" value={MOCK_STUDENTS.length} color={theme.primary} theme={theme} />
+                    <StatBox label="Total" value={students.length} color={theme.primary} theme={theme} />
                 </View>
 
                 {/* Approved Students Header */}
@@ -204,65 +293,80 @@ export default function CoordinatorAttendance() {
                 {/* Student List Container */}
                 <GlassCard style={[styles.studentsCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
                     <View style={styles.studentList}>
-                        {MOCK_STUDENTS.map((student) => {
-                            const status = attendance[student.id];
-                            return (
-                            <View key={student.id} style={[styles.studentRow, { borderBottomColor: theme.border }]}>
-                                <View style={styles.studentInfo}>
-                                    <View style={[styles.avatarBox, { backgroundColor: theme.background, borderColor: theme.border }]}>
-                                        <Text style={[styles.avatarText, { color: theme.textSecondary }]}>{student.id}</Text>
+                        {fetchingStudents ? (
+                            <ActivityIndicator size="small" color={theme.primary} style={{ margin: 20 }} />
+                        ) : students.length > 0 ? (
+                            students.map((student) => {
+                                const status = attendance[student.studentId];
+                                return (
+                                <View key={student.id} style={[styles.studentRow, { borderBottomColor: theme.border }]}>
+                                    <View style={styles.studentInfo}>
+                                        <View style={[styles.avatarBox, { backgroundColor: theme.background, borderColor: theme.border }]}>
+                                            <Text style={[styles.avatarText, { color: theme.textSecondary }]}>{student.student?.studentId?.slice(-2) || '??'}</Text>
+                                        </View>
+                                        <View style={styles.nameContent}>
+                                            <Text style={[styles.studentName, { color: theme.text }]} numberOfLines={1}>{student.studentName}</Text>
+                                            <Text style={[styles.studentDetail, { color: theme.textSecondary }]}>{student.student?.studentId || 'N/A'}</Text>
+                                        </View>
                                     </View>
-                                    <View style={styles.nameContent}>
-                                        <Text style={[styles.studentName, { color: theme.text }]} numberOfLines={1}>{student.name}</Text>
-                                        <Text style={[styles.studentDetail, { color: theme.textSecondary }]}>{student.applied}</Text>
-                                    </View>
-                                </View>
-                                
-                                <View style={styles.actions}>
-                                    <TouchableOpacity 
-                                      style={[
-                                          styles.actionIconBtn, 
-                                          { backgroundColor: status === 'present' ? '#22C55E' : theme.background, borderColor: status === 'present' ? '#22C55E' : theme.border }
-                                      ]}
-                                      onPress={() => toggleAttendance(student.id, 'present')}
-                                    >
-                                        <UserCheck size={18} color={status === 'present' ? '#FFFFFF' : theme.textSecondary} />
-                                    </TouchableOpacity>
                                     
-                                    <TouchableOpacity 
-                                      style={[
-                                          styles.actionIconBtn, 
-                                          { backgroundColor: status === 'absent' ? '#EF4444' : theme.background, borderColor: status === 'absent' ? '#EF4444' : theme.border }
-                                      ]}
-                                      onPress={() => toggleAttendance(student.id, 'absent')}
-                                    >
-                                        <UserX size={18} color={status === 'absent' ? '#FFFFFF' : theme.textSecondary} />
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity 
-                                      style={[
-                                          styles.actionIconBtn, 
-                                          { backgroundColor: status === 'excused' ? '#F59E0B' : theme.background, borderColor: status === 'excused' ? '#F59E0B' : theme.border }
-                                      ]}
-                                      onPress={() => toggleAttendance(student.id, 'excused')}
-                                    >
-                                        <Clock size={18} color={status === 'excused' ? '#FFFFFF' : theme.textSecondary} />
-                                    </TouchableOpacity>
+                                    <View style={styles.actions}>
+                                        <TouchableOpacity 
+                                          style={[
+                                              styles.actionIconBtn, 
+                                              { backgroundColor: status === 'present' ? '#22C55E' : theme.background, borderColor: status === 'present' ? '#22C55E' : theme.border }
+                                          ]}
+                                          onPress={() => toggleAttendance(student.studentId, 'present')}
+                                        >
+                                            <UserCheck size={18} color={status === 'present' ? '#FFFFFF' : theme.textSecondary} />
+                                        </TouchableOpacity>
+                                        
+                                        <TouchableOpacity 
+                                          style={[
+                                              styles.actionIconBtn, 
+                                              { backgroundColor: status === 'absent' ? '#EF4444' : theme.background, borderColor: status === 'absent' ? '#EF4444' : theme.border }
+                                          ]}
+                                          onPress={() => toggleAttendance(student.studentId, 'absent')}
+                                        >
+                                            <UserX size={18} color={status === 'absent' ? '#FFFFFF' : theme.textSecondary} />
+                                        </TouchableOpacity>
+    
+                                        <TouchableOpacity 
+                                          style={[
+                                              styles.actionIconBtn, 
+                                              { backgroundColor: status === 'excused' ? '#F59E0B' : theme.background, borderColor: status === 'excused' ? '#F59E0B' : theme.border }
+                                          ]}
+                                          onPress={() => toggleAttendance(student.studentId, 'excused')}
+                                        >
+                                            <Clock size={18} color={status === 'excused' ? '#FFFFFF' : theme.textSecondary} />
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
+                                );
+                            })
+                        ) : (
+                            <View style={{ padding: 20, alignItems: 'center' }}>
+                                <Text style={{ color: theme.textSecondary }}>No approved students</Text>
                             </View>
-                            );
-                        })}
+                        )}
                     </View>
                 </GlassCard>
 
-                {/* Large Action Button */}
-                <TouchableOpacity 
-                    style={[styles.saveBtn, { backgroundColor: theme.primary }]}
-                    onPress={() => alert('Attendance session successfully recorded!')}
-                >
-                    <CheckCircle2 size={20} color="#FFFFFF" />
-                    <Text style={styles.saveBtnText}>Record Attendance</Text>
-                </TouchableOpacity>
+                 {/* Large Action Button */}
+                 <TouchableOpacity 
+                     style={[styles.saveBtn, { backgroundColor: theme.primary, opacity: saving ? 0.7 : 1 }]}
+                     onPress={handleSaveAttendance}
+                     disabled={saving}
+                 >
+                     {saving ? (
+                         <ActivityIndicator size="small" color="#FFFFFF" />
+                     ) : (
+                         <>
+                            <CheckCircle2 size={20} color="#FFFFFF" />
+                            <Text style={styles.saveBtnText}>Record Attendance</Text>
+                         </>
+                     )}
+                 </TouchableOpacity>
             </View>
         ) : (
             <View style={styles.emptyState}>

@@ -18,6 +18,7 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import { useTheme } from "@/src/context/ThemeContext";
+import { useAuth } from '@/src/context/AuthContext';
 
 const { width, height } = Dimensions.get('window');
 
@@ -63,6 +64,7 @@ function FloatingOrb({ size, x, y, duration, delay }: any) {
 
 export default function Login() {
   const { refreshTheme } = useTheme();
+  const { setUser, refreshProfile } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -108,6 +110,13 @@ export default function Login() {
       
       if (response && response.token) {
           await AsyncStorage.setItem('user_token', response.token);
+          
+          // Update global auth state before navigating
+          if (response.user) {
+              setUser(response.user);
+          } else {
+              await refreshProfile();
+          }
           
           const role = response.user?.role || 'student';
           

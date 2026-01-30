@@ -3,14 +3,19 @@ import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput, Modal,
 import { ShieldCheck, FileText, Calendar, Clock, MapPin, Users, ChevronDown, Rocket, X, Check, Trash2, RefreshCw, Send, ArrowLeft } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
+import { client } from '@/src/lib/api';
+import { useAuth } from '@/src/context/AuthContext';
+import { ActivityIndicator, Alert } from 'react-native';
 
 const CATEGORIES = ['Workshop', 'Seminar', 'Tech Talk', 'Innovation Forum', 'Networking', 'Make-up Session'];
 
 export default function CoordinatorCreateActivity() {
   const router = useRouter();
+  const { editId } = useLocalSearchParams();
+  const { user } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   
@@ -24,6 +29,40 @@ export default function CoordinatorCreateActivity() {
     location: '',
     capacity: ''
   });
+  const [loading, setLoading] = React.useState(false);
+  const [fetching, setFetching] = React.useState(false);
+
+  React.useEffect(() => {
+    if (editId) {
+        fetchActivityDetails();
+    }
+  }, [editId]);
+
+  const fetchActivityDetails = async () => {
+    try {
+        setFetching(true);
+        const data = await client.get(`/activities/${editId}`);
+        const dateObj = new Date(data.date);
+        const m = dateObj.getMonth() + 1;
+        const d = dateObj.getDate();
+        const dateStr = `${m < 10 ? '0'+m : m}/${d < 10 ? '0'+d : d}/${dateObj.getFullYear()}`;
+        
+        setFormData({
+            title: data.title,
+            description: data.description,
+            category: data.category,
+            date: dateStr,
+            time: data.time,
+            location: data.location,
+            capacity: data.capacity.toString()
+        });
+    } catch (error) {
+        console.error('Failed to fetch activity details:', error);
+        Alert.alert('Error', 'Failed to load activity details');
+    } finally {
+        setFetching(false);
+    }
+  };
 
   // Calendar State
   const [viewingDate, setViewingDate] = React.useState(new Date(2026, 0, 1));
@@ -367,6 +406,13 @@ export default function CoordinatorCreateActivity() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
+        {fetching ? (
+            <View style={{ flex: 1, height: 400, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" color={theme.primary} />
+                <Text style={{ marginTop: 10, color: theme.textSecondary }}>Loading blueprint...</Text>
+            </View>
+        ) : (
+            <>
         {/* Page Header */}
         <View style={styles.header}>
             <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
@@ -376,7 +422,7 @@ export default function CoordinatorCreateActivity() {
                 <ShieldCheck size={14} color={theme.textSecondary} />
                 <Text style={[styles.actionTagText, { color: theme.textSecondary }]}>COORDINATOR PORTAL</Text>
             </View>
-            <Text style={[styles.title, { color: theme.text }]}>Propose New Activity</Text>
+            <Text style={[styles.title, { color: theme.text }]}>{editId ? 'Modify Activity' : 'Propose New Activity'}</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
                 Design a new activity blueprint and submit it for university approval.
             </Text>
@@ -524,25 +570,57 @@ export default function CoordinatorCreateActivity() {
                 <TouchableOpacity 
                     style={[styles.cancelBtn, { borderColor: theme.primary }]} 
                     onPress={() => router.back()}
+                    disabled={loading}
                 >
                     <Text style={[styles.cancelText, { color: theme.primary }]}>Cancel</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
-                  style={[styles.publishBtn, { backgroundColor: theme.primary }]}
-                  onPress={() => {
-                    if (!formData.title || !formData.date) {
-                      alert('Please fill at least the Title and Date.');
+                  style={[styles.publishBtn, { backgroundColor: theme.primary, opacity: loading ? 0.7 : 1 }]}
+                  disabled={loading}
+                  onPress={async () => {
+                    if (!formData.title || !formData.date || !formData.category || !formData.description || !formData.location || !formData.capacity) {
+                      Alert.alert('Incomplete Form', 'Please fill all required fields.');
                       return;
                     }
-                    alert('Activity Proposal Submitted Successfully!');
-                    router.back();
+                    
+                    try {
+                        setLoading(true);
+                        const payload = {
+                            ...formData,
+                            capacity: parseInt(formData.capacity, 10),
+                            // Basic format conversion for backend
+                            date: formData.date.split('/').join('-') // transform mm/dd/yyyy to mm-dd-yyyy which is more standard
+                        };
+
+                        if (editId) {
+                            await client.put(`/activities/${editId}`, payload);
+                            Alert.alert('Success', 'Activity updated successfully!');
+                        } else {
+                            await client.post('/activities', payload);
+                            Alert.alert('Success', 'Activity proposal submitted successfully!');
+                        }
+                        router.back();
+                    } catch (error: any) {
+                        console.error('Submission failed:', error);
+                        Alert.alert('Submission Error', error.message || 'Failed to submit proposal');
+                    } finally {
+                        setLoading(false);
+                    }
                   }}
                 >
-                    <Send size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
-                    <Text style={styles.publishText}>Submit Proposal</Text>
+                    {loading ? (
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                        <>
+                            <Send size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
+                            <Text style={styles.publishText}>{editId ? 'Update Blueprint' : 'Submit Proposal'}</Text>
+                        </>
+                    )}
                 </TouchableOpacity>
             </View>
         </GlassCard>
+        </>
+        )}
         </ScrollView>
       </KeyboardAvoidingView>
       {renderPickerModal()}

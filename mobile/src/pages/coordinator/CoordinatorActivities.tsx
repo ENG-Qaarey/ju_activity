@@ -6,11 +6,72 @@ import { GlassCard } from '@/src/components/GlassCard';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { useRouter } from 'expo-router';
+import { client } from '@/src/lib/api';
+import { useAuth } from '@/src/context/AuthContext';
+import { ActivityIndicator, RefreshControl, Alert } from 'react-native';
 
 export default function CoordinatorActivities() {
   const router = useRouter();
+  const { user } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+
+  const [activities, setActivities] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
+
+  const fetchActivities = async () => {
+    try {
+      setLoading(true);
+      const data = await client.get(`/activities?coordinatorId=${user?.id}`);
+      setActivities(data);
+    } catch (error) {
+      console.error('Failed to fetch coordinator activities:', error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (user?.id) fetchActivities();
+  }, [user]);
+
+  const handleDelete = async (id: string, title: string) => {
+    Alert.alert(
+      "Delete Activity",
+      `Are you sure you want to delete "${title}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await client.delete(`/activities/${id}`);
+              setActivities(prev => prev.filter(a => a.id !== id));
+            } catch (error: any) {
+              Alert.alert('Error', error.message || 'Failed to delete activity');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const filteredActivities = activities.filter(a => 
+    a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    a.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    a.location.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const day = date.getDate().toString();
+    const month = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+    return { day, month };
+  };
 
   return (
     <GradientBackground>
@@ -25,30 +86,39 @@ export default function CoordinatorActivities() {
         </TouchableOpacity>
       </View> */}
 
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.contentContainer} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchActivities(); }} tintColor={theme.primary} />
+        }
+      >
         {/* Blue Header Banner */}
-        <View style={styles.headerBanner}>
-            <View style={{ flex: 1 }}>
-                <Text style={styles.bannerTitle}>Activities</Text>
-                <Text style={styles.bannerSubtitle}>
-                    Overview of all activities you are currently coordinating.
-                </Text>
-            </View>
-            <View style={styles.countBadge}>
-                <Text style={styles.countText}>12</Text>
-                <Text style={styles.countLabel}>Active</Text>
-            </View>
-        </View>
+         <View style={styles.headerBanner}>
+             <View style={{ flex: 1 }}>
+                 <Text style={styles.bannerTitle}>Activities</Text>
+                 <Text style={styles.bannerSubtitle}>
+                     Overview of all activities you are currently coordinating.
+                 </Text>
+             </View>
+             <View style={styles.countBadge}>
+                 <Text style={styles.countText}>{activities.length}</Text>
+                 <Text style={styles.countLabel}>Total</Text>
+             </View>
+         </View>
 
         {/* Search and Filters */}
         <View style={styles.searchRow}>
             <View style={[styles.searchContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
                 <Search size={18} color={theme.textSecondary} style={styles.searchIcon} />
-                <TextInput 
-                    placeholder="Quick search titles..." 
-                    style={[styles.searchInput, { color: theme.text }]}
-                    placeholderTextColor={theme.textSecondary}
-                />
+                 <TextInput 
+                     placeholder="Quick search titles..." 
+                     style={[styles.searchInput, { color: theme.text }]}
+                     placeholderTextColor={theme.textSecondary}
+                     value={searchQuery}
+                     onChangeText={setSearchQuery}
+                 />
             </View>
             <TouchableOpacity style={[styles.filterBtn, { backgroundColor: theme.card, borderColor: theme.border }]}>
                 <Filter size={16} color={theme.primary} />
@@ -63,47 +133,43 @@ export default function CoordinatorActivities() {
             </View>
         </View>
 
-        <View style={styles.list}>
-            <CActivityCard 
-                month="JAN" 
-                day="20" 
-                category="Workshop" 
-                title="UI/UX Design Masterclass" 
-                time="02:00 PM" 
-                location="Lab 04, IT Building" 
-                attendees="28/30"
-                status="Upcoming" 
-                theme={theme}
-            />
-            <CActivityCard 
-                month="JAN" 
-                day="22" 
-                category="Seminar" 
-                title="JU Open Day 2026" 
-                time="10:00 AM" 
-                location="Main Plaza" 
-                attendees="142/200"
-                status="Upcoming" 
-                theme={theme}
-            />
-             <CActivityCard 
-                month="JAN" 
-                day="25" 
-                category="Workshop" 
-                title="React Native Deep Dive" 
-                time="09:00 AM" 
-                location="Remote / Zoom" 
-                attendees="45/50"
-                status="Draft" 
-                theme={theme}
-            />
-        </View>
+         <View style={styles.list}>
+             {loading && !refreshing ? (
+                 <View style={{ padding: 40 }}>
+                     <ActivityIndicator size="large" color={theme.primary} />
+                 </View>
+             ) : filteredActivities.length > 0 ? (
+                 filteredActivities.map((activity) => {
+                     const { day, month } = formatDate(activity.date);
+                     return (
+                        <CActivityCard 
+                            key={activity.id}
+                            month={month} 
+                            day={day} 
+                            category={activity.category} 
+                            title={activity.title} 
+                            time={activity.time} 
+                            location={activity.location} 
+                            attendees={`${activity.enrolled}/${activity.capacity}`}
+                            status={activity.status.charAt(0).toUpperCase() + activity.status.slice(1)} 
+                            theme={theme}
+                            onDelete={() => handleDelete(activity.id, activity.title)}
+                            onEdit={() => router.push({ pathname: '/(coordinator)/propose', params: { editId: activity.id } })}
+                        />
+                     );
+                 })
+             ) : (
+                <View style={{ padding: 40, alignItems: 'center' }}>
+                    <Text style={{ color: theme.textSecondary }}>No activities found</Text>
+                </View>
+             )}
+         </View>
       </ScrollView>
     </GradientBackground>
   );
 }
 
-function CActivityCard({ month, day, category, title, time, location, attendees, status, theme }: any) {
+ function CActivityCard({ month, day, category, title, time, location, attendees, status, theme, onDelete, onEdit }: any) {
     const isOngoing = status === 'Ongoing';
     const isCompleted = status === 'Completed';
     const isDraft = status === 'Draft';
@@ -161,11 +227,17 @@ function CActivityCard({ month, day, category, title, time, location, attendees,
                     <Eye size={12} color={theme.primary} />
                     <Text style={[styles.actionBtnText, { color: theme.primary }]}>View</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#8B5CF615', borderColor: '#8B5CF630' }]}>
+                <TouchableOpacity 
+                    style={[styles.actionBtn, { backgroundColor: '#8B5CF615', borderColor: '#8B5CF630' }]}
+                    onPress={onEdit}
+                >
                     <Edit3 size={12} color="#8B5CF6" />
                     <Text style={[styles.actionBtnText, { color: '#8B5CF6' }]}>Edit</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#EF444415', borderColor: '#EF444430' }]}>
+                <TouchableOpacity 
+                    style={[styles.actionBtn, { backgroundColor: '#EF444415', borderColor: '#EF444430' }]}
+                    onPress={onDelete}
+                >
                     <Trash2 size={12} color="#EF4444" />
                     <Text style={[styles.actionBtnText, { color: '#EF4444' }]}>Del</Text>
                 </TouchableOpacity>
