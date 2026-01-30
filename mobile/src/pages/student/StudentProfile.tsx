@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, ScrollView, View, Text, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
   User, Mail, Shield, Bell, CircleHelp, LogOut, 
@@ -16,35 +16,56 @@ import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { useTheme } from '@/src/context/ThemeContext';
+import { useAuth } from '@/src/context/AuthContext';
+
+import { IMAGE_BASE } from '@/src/lib/config';
 
 export default function StudentProfile() {
   const router = useRouter();
+  const { user, loading, logout, refreshProfile } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   const { refreshTheme } = useTheme();
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refreshProfile();
+    setRefreshing(false);
+  };
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('current-user');
-    await AsyncStorage.removeItem('user_token');
+    await logout();
     await refreshTheme();
     router.replace('/login');
   };
 
   return (
     <GradientBackground>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.contentContainer} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
+        }
+      >
+        {loading && !refreshing ? (
+            <ActivityIndicator size="large" color={theme.primary} style={{ marginTop: 20 }} />
+        ) : (
+            <>
         {/* Profile Header */}
         <View style={styles.header}>
           <View style={styles.avatarContainer}>
             <Image 
-              source={{ uri: 'https://github.com/shadcn.png' }} 
+              source={{ uri: user?.avatar ? (user.avatar.startsWith('http') ? user.avatar : `${IMAGE_BASE}${user.avatar}`) : 'https://github.com/shadcn.png' }} 
               style={[styles.avatar, { borderColor: theme.card }]} 
             />
             <View style={[styles.studentBadge, { borderColor: theme.card }]}>
                 <Award size={12} color="#FFFFFF" strokeWidth={3} />
             </View>
           </View>
-          <ThemedText style={[styles.userName, { color: theme.text }]}>Muscab Ahmed</ThemedText>
+          <ThemedText style={[styles.userName, { color: theme.text }]}>{user?.name || 'Muscab Ahmed'}</ThemedText>
           <View style={[styles.roleLabel, { backgroundColor: theme.primary + '20' }]}>
               <Text style={[styles.roleText, { color: theme.primary }]}>STUDENT PORTAL</Text>
           </View>
@@ -101,13 +122,15 @@ export default function StudentProfile() {
                 onPress={() => router.push('/(student)/support/faq')}
                 theme={theme} 
             />
-            <ProfileItem icon={LogOut} label="Sign Out Room" color={theme.error} onPress={handleLogout} theme={theme} />
+            <ProfileItem icon={LogOut} label="Logout" color={theme.error} onPress={handleLogout} theme={theme} />
           </GlassCard>
         </View>
 
         <View style={styles.footer}>
           <Text style={[styles.versionText, { color: theme.textSecondary }]}>JU Activity Hub v1.0.1 • Stable</Text>
         </View>
+            </>
+        )}
       </ScrollView>
     </GradientBackground>
   );

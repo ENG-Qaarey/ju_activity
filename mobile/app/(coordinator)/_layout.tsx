@@ -10,8 +10,11 @@ import {
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { Image } from 'expo-image';
+import { useAuth } from '@/src/context/AuthContext';
+import { IMAGE_BASE } from '@/src/lib/config';
 
 export default function CoordinatorLayout() {
+  const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
@@ -75,12 +78,12 @@ export default function CoordinatorLayout() {
       <View style={[styles.drawerFooter, { borderTopColor: theme.border }]}>
         <View style={[styles.profileBox, { backgroundColor: theme.background }]}>
           <Image 
-            source={{ uri: 'https://github.com/shadcn.png' }} 
+            source={{ uri: user?.avatar ? (user.avatar.startsWith('http') ? user.avatar : `${IMAGE_BASE}${user.avatar}`) : 'https://github.com/shadcn.png' }} 
             style={styles.avatar} 
           />
           <View style={styles.profileInfo}>
-            <Text style={[styles.profileName, { color: theme.text }]}>Coordinator</Text>
-            <Text style={[styles.profileEmail, { color: theme.textSecondary }]}>coordi@gmail.com</Text>
+            <Text style={[styles.profileName, { color: theme.text }]}>{user?.name || 'Coordinator'}</Text>
+            <Text style={[styles.profileEmail, { color: theme.textSecondary }]}>{user?.email || 'coordi@gmail.com'}</Text>
           </View>
         </View>
       </View>
@@ -112,7 +115,7 @@ export default function CoordinatorLayout() {
               <View>
                 <Text style={[styles.headerHub, { color: theme.textSecondary }]}>JU ACTIVITY HUB</Text>
                 <View style={styles.onlineStatus}>
-                  <Text style={[styles.userName, { color: theme.text }]}>Coordinator</Text>
+                  <Text style={[styles.userName, { color: theme.text }]}>{user?.name || 'Coordinator'}</Text>
                   <View style={styles.statusDot} />
                   <Text style={styles.statusText}>Active</Text>
                 </View>
@@ -125,7 +128,7 @@ export default function CoordinatorLayout() {
                 <MessageCircle size={20} color={theme.icon} />
               </TouchableOpacity>
               <Image 
-                source={{ uri: 'https://github.com/shadcn.png' }} 
+                source={{ uri: user?.avatar ? (user.avatar.startsWith('http') ? user.avatar : `${IMAGE_BASE}${user.avatar}`) : 'https://github.com/shadcn.png' }} 
                 style={[styles.headerAvatar, { borderColor: theme.border }]} 
               />
             </View>

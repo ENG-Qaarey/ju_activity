@@ -9,36 +9,12 @@ import { useRouter } from 'expo-router';
 
 import { client } from '@/src/lib/api';
 import { ENDPOINTS } from '@/src/lib/config';
+import { ActivityIndicator, RefreshControl } from 'react-native';
 
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = width > 600 ? (width - 60) / 2 : width - 40;
 
 const CATEGORIES = ['All', 'Workshop', 'Seminar', 'Training', 'Extracurricular'];
-
-const MOCK_ACTIVITIES = [
-  {
-    id: '1',
-    title: 'Leadership Mastery',
-    category: 'Seminar',
-    description: 'Leadership is the ability to guide, inspire, and influence people to work together toward achieving a common goal.',
-    date: '2026-01-20',
-    time: '20:30',
-    location: 'Main Hall',
-    enrolled: 0,
-    capacity: 20
-  },
-  {
-    id: '2',
-    title: 'Full-Stuck Development',
-    category: 'Workshop',
-    description: 'A Full-Stack Developer is a software developer who can build both the front-end and the back-end of an application.',
-    date: '2026-01-20',
-    time: '15:29',
-    location: 'Lab 1',
-    enrolled: 1,
-    capacity: 12
-  }
-];
 
 export default function StudentActivities() {
   const router = useRouter();
@@ -46,26 +22,33 @@ export default function StudentActivities() {
   const theme = Colors[colorScheme];
   const [activeCategory, setActiveCategory] = React.useState('All');
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [activities, setActivities] = React.useState<any[]>(MOCK_ACTIVITIES);
+  const [activities, setActivities] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
 
   React.useEffect(() => {
-    const fetchActivities = async () => {
-        try {
-            setLoading(true);
-            const data = await client.get(ENDPOINTS.ACTIVITIES);
-            if (Array.isArray(data) && data.length > 0) {
-                setActivities(data);
-            }
-        } catch (error) {
-            console.log('Using mock data due to API error:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     fetchActivities();
   }, []);
+
+  const fetchActivities = async () => {
+    try {
+        setLoading(true);
+        const data = await client.get(ENDPOINTS.ACTIVITIES);
+        if (Array.isArray(data)) {
+            setActivities(data);
+        }
+    } catch (error) {
+        console.error('Failed to fetch activities:', error);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchActivities();
+    setRefreshing(false);
+  };
 
   const filteredActivities = activities.filter(act => 
     (activeCategory === 'All' || act.category === activeCategory) &&
@@ -78,6 +61,9 @@ export default function StudentActivities() {
         style={styles.scrollView} 
         contentContainerStyle={styles.contentContainer} 
         showsVerticalScrollIndicator={false}
+        refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
+        }
       >
         <View style={styles.header}>
             <ThemedText style={[styles.title, { color: theme.text }]}>Available Activities</ThemedText>
@@ -121,7 +107,11 @@ export default function StudentActivities() {
 
         {/* Activities Grid */}
         <View style={styles.listContainer}>
-            {filteredActivities.length > 0 ? (
+            {loading && !refreshing ? (
+                <View style={{ flex: 1, padding: 40, alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color={theme.primary} />
+                </View>
+            ) : filteredActivities.length > 0 ? (
                 filteredActivities.map(activity => (
                     <ActivityCard 
                         key={activity.id} 
@@ -134,7 +124,7 @@ export default function StudentActivities() {
                     />
                 ))
             ) : (
-                <View style={styles.emptyState}>
+                <View style={[styles.emptyState, { width: '100%' }]}>
                     <ThemedText style={styles.emptyText}>No activities found matching your criteria.</ThemedText>
                 </View>
             )}
@@ -163,7 +153,7 @@ function ActivityCard({ activity, theme, onPress }: any) {
             <View style={styles.metaList}>
                 <View style={styles.metaItem}>
                     <Calendar size={14} color={theme.primary} />
-                    <ThemedText style={[styles.metaText, { color: theme.textSecondary }]}>{activity.date}</ThemedText>
+                    <ThemedText style={[styles.metaText, { color: theme.textSecondary }]}>{activity.date.split('T')[0]}</ThemedText>
                 </View>
                 <View style={styles.metaItem}>
                     <Clock size={14} color={theme.primary} />

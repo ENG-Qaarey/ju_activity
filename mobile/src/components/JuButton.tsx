@@ -1,5 +1,4 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, View } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, View, ActivityIndicator } from 'react-native';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 
@@ -11,9 +10,10 @@ interface JuButtonProps {
   variant?: 'primary' | 'secondary' | 'outline';
   icon?: React.ElementType;
   disabled?: boolean;
+  loading?: boolean;
 }
 
-export function JuButton({ title, onPress, style, textStyle, variant = 'primary', icon: Icon, disabled }: JuButtonProps) {
+export function JuButton({ title, onPress, style, textStyle, variant = 'primary', icon: Icon, disabled, loading }: JuButtonProps) {
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
 
@@ -43,19 +43,25 @@ export function JuButton({ title, onPress, style, textStyle, variant = 'primary'
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
-      disabled={disabled}
+      disabled={disabled || loading}
       style={[
         styles.button, 
         variantStyles.button, 
         style,
-        disabled && { opacity: 0.5 }
+        (disabled || loading) && { opacity: 0.5 }
       ]}
     >
       <View style={styles.contentContainer}>
-        {Icon && <Icon size={20} color={variantStyles.text.color} style={styles.icon} />}
-        <Text style={[styles.text, variantStyles.text, textStyle]}>
-          {title}
-        </Text>
+        {loading ? (
+            <ActivityIndicator size="small" color={variantStyles.text.color} />
+        ) : (
+            <>
+                {Icon && <Icon size={20} color={variantStyles.text.color} style={styles.icon} />}
+                <Text style={[styles.text, variantStyles.text, textStyle]}>
+                    {title}
+                </Text>
+            </>
+        )}
       </View>
     </TouchableOpacity>
   );

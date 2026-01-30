@@ -12,7 +12,7 @@ import { Colors } from '@/src/data/theme';
 import { Image } from 'expo-image';
 import { usePathname } from 'expo-router';
 import { useAuth } from '@/src/context/AuthContext';
-import { BASE_URL } from '@/src/lib/config';
+import { IMAGE_BASE } from '@/src/lib/config';
 
 export default function AdminLayout() {
   const router = useRouter();
@@ -24,11 +24,9 @@ export default function AdminLayout() {
   const isActive = (path: string) => pathname === path;
   const theme = Colors[colorScheme];
 
-  const fullAvatarUrl = user?.avatar?.startsWith('http') 
-    ? user.avatar 
-    : user?.avatar 
-      ? `${BASE_URL.replace('/api', '')}${user.avatar}`
-      : 'https://github.com/shadcn.png';
+  const fullAvatarUrl = user?.avatar 
+    ? (user.avatar.startsWith('http') ? user.avatar : `${IMAGE_BASE}${user.avatar}`) 
+    : 'https://github.com/shadcn.png';
 
   const renderDrawerContent = () => (
     <View style={[styles.drawerContainer, { backgroundColor: theme.card }]}>
