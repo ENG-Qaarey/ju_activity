@@ -14,6 +14,8 @@ import { GradientBackground } from '@/src/components/GradientBackground';
 import { useRouter } from 'expo-router';
 import { client } from '@/src/lib/api';
 import { ENDPOINTS } from '@/src/lib/config';
+import { useAuth } from '@/src/context/AuthContext';
+import { ActivityIndicator, RefreshControl } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -45,30 +47,59 @@ const MOCK_RECENT = [
 ];
 
 export default function StudentDashboard() {
+  const { user } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   const router = useRouter();
-  const [recentActivities, setRecentActivities] = React.useState<any[]>(MOCK_RECENT);
+  const [recentActivities, setRecentActivities] = React.useState<any[]>([]);
+  const [stats, setStats] = React.useState({
+      points: 0,
+      events: 0,
+      saved: 0
+  });
+  const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
 
   React.useEffect(() => {
-    const fetchRecent = async () => {
-        try {
-            const data = await client.get(ENDPOINTS.ACTIVITIES);
-            if (Array.isArray(data) && data.length > 0) {
-                // Take top 3 recently created
-                setRecentActivities(data.slice(0, 3).map((act, index) => ({
-                    ...act,
-                    // Map backend fields to UI fields if needed, or just ensure backend sends what we need
-                    time: `Date: ${act.date}`,
-                    color: index === 0 ? "#0EA5E9" : index === 1 ? "#10B981" : "#8B5CF6"
-                })));
-            }
-        } catch (error) {
-            console.log('Using mock recent activities');
-        }
-    };
-    fetchRecent();
+    loadDashboardData();
   }, []);
+
+  const loadDashboardData = async () => {
+    try {
+        setLoading(true);
+        const [actsData, appsData, attendanceData] = await Promise.all([
+            client.get(ENDPOINTS.ACTIVITIES),
+            client.get('/applications'),
+            client.get('/attendance?status=present')
+        ]);
+
+        if (Array.isArray(actsData)) {
+            setRecentActivities(actsData.slice(0, 3).map((act, index) => ({
+                ...act,
+                color: index === 0 ? "#0EA5E9" : index === 1 ? "#10B981" : "#8B5CF6"
+            })));
+        }
+
+        const presentCount = Array.isArray(attendanceData) ? attendanceData.length : 0;
+        const appsCount = Array.isArray(appsData) ? appsData.length : 0;
+
+        setStats({
+            points: presentCount * 100, // Derived points
+            events: presentCount,
+            saved: appsCount
+        });
+    } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadDashboardData();
+    setRefreshing(false);
+  };
 
   return (
     <GradientBackground>
@@ -76,12 +107,15 @@ export default function StudentDashboard() {
         style={styles.scrollView} 
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
+        }
       >
         {/* Welcome Header */}
         <View style={styles.header}>
             <View>
-                <ThemedText style={[styles.welcomeText, { color: theme.textSecondary }]}>Morning,</ThemedText>
-                <ThemedText style={[styles.userName, { color: theme.text }]}>Muscab Axmed 👋</ThemedText>
+                <ThemedText style={[styles.welcomeText, { color: theme.textSecondary }]}>Welcome back,</ThemedText>
+                <ThemedText style={[styles.userName, { color: theme.text }]}>{user?.name || 'Student'} 👋</ThemedText>
             </View>
             <TouchableOpacity 
                 style={[styles.notifBtn, { backgroundColor: theme.card, borderColor: theme.border }]}
@@ -104,11 +138,11 @@ export default function StudentDashboard() {
 
         {/* Performance Stats */}
         <View style={[styles.statsSummaryRow, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <SummaryStat icon={Flame} label="Points" value="1,240" color="#F59E0B" theme={theme} />
+            <SummaryStat icon={Flame} label="Points" value={stats.points.toLocaleString()} color="#F59E0B" theme={theme} />
             <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
-            <SummaryStat icon={Target} label="Events" value="12" color="#10B981" theme={theme} />
+            <SummaryStat icon={Target} label="History" value={stats.events.toString()} color="#10B981" theme={theme} />
             <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
-            <SummaryStat icon={BookmarkCheck} label="Saved" value="4" color="#3B82F6" theme={theme} />
+            <SummaryStat icon={BookmarkCheck} label="Applied" value={stats.saved.toString()} color="#3B82F6" theme={theme} />
         </View>
 
         {/* Categories Grid */}
@@ -153,21 +187,29 @@ export default function StudentDashboard() {
                 <ThemedText style={[styles.sectionTitle, { color: theme.text }]}>Recently Added Activities</ThemedText>
             </View>
             <View style={styles.activityList}>
-                {recentActivities.map((act) => (
-                    <ActivityCompactItem 
-                        key={act.id}
-                        title={act.title}
-                        category={act.category}
-                        time={act.time}
-                        location={act.location}
-                        color={act.color || "#0EA5E9"}
-                        theme={theme}
-                        onPress={() => router.push({ 
-                            pathname: '/(student)/details' as any, 
-                            params: { ...act } 
-                        })} 
-                    />
-                ))}
+                {loading && !refreshing ? (
+                    <ActivityIndicator size="small" color={theme.primary} style={{ marginTop: 20 }} />
+                ) : recentActivities.length > 0 ? (
+                    recentActivities.map((act) => (
+                        <ActivityCompactItem 
+                            key={act.id}
+                            title={act.title}
+                            category={act.category}
+                            time={act.date.split('T')[0]}
+                            location={act.location}
+                            color={act.color || "#0EA5E9"}
+                            theme={theme}
+                            onPress={() => router.push({ 
+                                pathname: '/(student)/details' as any, 
+                                params: { ...act } 
+                            })} 
+                        />
+                    ))
+                ) : (
+                    <View style={{ padding: 20, alignItems: 'center' }}>
+                        <ThemedText style={{ color: theme.textSecondary }}>No recent activities</ThemedText>
+                    </View>
+                )}
             </View>
         </View>
       </ScrollView>

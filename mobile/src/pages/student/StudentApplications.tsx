@@ -11,75 +11,52 @@ import {
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { useRouter } from 'expo-router';
+import { client } from '@/src/lib/api';
+import { useAuth } from '@/src/context/AuthContext';
+import { ActivityIndicator, RefreshControl } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
-const MOCK_APPLICATIONS = [
-  {
-    id: '1',
-    activityTitle: 'Leadership Mastery',
-    category: 'Seminar',
-    status: 'Approved',
-    appliedDate: 'Jan 20',
-    location: 'Main Hall',
-    schedule: 'Feb 05, 10:00 AM',
-    isHistorical: false
-  },
-  {
-    id: '2',
-    activityTitle: 'Full-Stuck Development',
-    category: 'Workshop',
-    status: 'Pending',
-    appliedDate: 'Jan 22',
-    location: 'Lab 1',
-    schedule: 'Feb 15, 06:00 PM',
-    isHistorical: false
-  },
-  {
-    id: '3',
-    activityTitle: 'Cybersecurity Guard',
-    category: 'Workshop',
-    status: 'Pending',
-    appliedDate: 'Jan 24',
-    location: 'IT Wing',
-    schedule: 'Feb 20, 09:00 AM',
-    isHistorical: false
-  },
-  {
-    id: '4',
-    activityTitle: 'Graphic Design Basics',
-    category: 'Training',
-    status: 'Rejected',
-    appliedDate: 'Jan 05',
-    location: 'Media Lab',
-    schedule: 'Jan 15, 02:00 PM',
-    isHistorical: true
-  },
-  {
-    id: '5',
-    activityTitle: 'Public Speaking BootCamp',
-    category: 'Training',
-    status: 'Approved',
-    appliedDate: 'Dec 15',
-    location: 'Auditorium',
-    schedule: 'Jan 02, 02:00 PM',
-    isHistorical: true
-  }
-];
-
 export default function StudentApplications() {
   const router = useRouter();
+  const { user } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   const [searchQuery, setSearchQuery] = useState('');
-  const [applications, setApplications] = useState(MOCK_APPLICATIONS);
+  const [applications, setApplications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  React.useEffect(() => {
+    fetchApplications();
+  }, []);
+
+  const fetchApplications = async () => {
+    try {
+        setLoading(true);
+        const data = await client.get('/applications');
+        if (Array.isArray(data)) {
+            setApplications(data);
+        }
+    } catch (error) {
+        console.error('Failed to fetch applications:', error);
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchApplications();
+    setRefreshing(false);
+  };
 
   const filteredApps = applications.filter(app => 
-    app.activityTitle.toLowerCase().includes(searchQuery.toLowerCase())
+    app.activityTitle?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const currentApps = filteredApps.filter(app => !app.isHistorical);
-  const pastApps = filteredApps.filter(app => app.isHistorical);
+  const currentApps = filteredApps.filter(app => app.status === 'pending' || app.status === 'approved');
+  const pastApps = filteredApps.filter(app => app.status === 'rejected' || (app.activity && app.activity.status === 'completed'));
 
   const handleDelete = (id: string, title: string) => {
     Alert.alert(
@@ -104,6 +81,9 @@ export default function StudentApplications() {
         style={styles.scrollView} 
         contentContainerStyle={styles.contentContainer} 
         showsVerticalScrollIndicator={false}
+        refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
+        }
       >
         <View style={styles.header}>
             <ThemedText style={[styles.title, { color: theme.text }]}>My Applications</ThemedText>
@@ -126,9 +106,9 @@ export default function StudentApplications() {
 
         {/* Stats Summary - More Premium Grid */}
         <View style={styles.statsGrid}>
-            <StatCard label="Active" value={currentApps.length} theme={theme} icon={BookmarkCheck} color={theme.primary} />
-            <StatCard label="Pending" value={currentApps.filter(a => a.status === 'Pending').length} theme={theme} icon={Clock} color={theme.warning} />
-            <StatCard label="Passed" value={pastApps.length} theme={theme} icon={History} color={theme.success} />
+            <StatCard label="Applied" value={applications.length} theme={theme} icon={BookmarkCheck} color={theme.primary} />
+            <StatCard label="Pending" value={applications.filter(a => a.status === 'pending').length} theme={theme} icon={Clock} color={theme.warning} />
+            <StatCard label="Approved" value={applications.filter(a => a.status === 'approved').length} theme={theme} icon={CheckCircle2} color={theme.success} />
         </View>
 
         {/* Section: Current Applications */}
@@ -146,7 +126,7 @@ export default function StudentApplications() {
                             onDelete={() => handleDelete(app.id, app.activityTitle)}
                             onPress={() => router.push({
                                 pathname: '/(student)/details' as any,
-                                params: { ...app, isHistorical: String(app.isHistorical) }
+                                params: { ...app.activity, id: app.activityId }
                             })}
                         />
                     ))}
@@ -173,12 +153,16 @@ export default function StudentApplications() {
             </>
         )}
 
-        {filteredApps.length === 0 && (
+        {loading && !refreshing ? (
+            <View style={{ flex: 1, padding: 40, alignItems: 'center' }}>
+                <ActivityIndicator size="large" color={theme.primary} />
+            </View>
+        ) : filteredApps.length === 0 ? (
             <View style={styles.emptyState}>
                 <LayoutGrid size={48} color={theme.textSecondary} strokeWidth={1} />
                 <ThemedText style={[styles.emptyText, { color: theme.textSecondary }]}>No applications found.</ThemedText>
             </View>
-        )}
+        ) : null}
       </ScrollView>
     </GradientBackground>
   );
@@ -186,10 +170,10 @@ export default function StudentApplications() {
 
 function ApplicationCard({ application, theme, onDelete, onPress, isPast }: any) {
     const getStatusColor = () => {
-        switch (application.status) {
-            case 'Approved': return theme.success;
-            case 'Pending': return theme.warning;
-            case 'Rejected': return theme.error;
+        switch (application.status?.toLowerCase()) {
+            case 'approved': return theme.success;
+            case 'pending': return theme.warning;
+            case 'rejected': return theme.error;
             default: return theme.textSecondary;
         }
     };
@@ -203,11 +187,11 @@ function ApplicationCard({ application, theme, onDelete, onPress, isPast }: any)
                     <View style={styles.cardMainRow}>
                         <View style={styles.titleArea}>
                             <View style={[styles.typeBadge, { backgroundColor: isPast ? theme.border : theme.primary + '15' }]}>
-                                <ThemedText style={[styles.typeText, { color: isPast ? theme.textSecondary : theme.primary }]}>{application.category}</ThemedText>
+                                <ThemedText style={[styles.typeText, { color: isPast ? theme.textSecondary : theme.primary }]}>{application.activity?.category || 'General'}</ThemedText>
                             </View>
                             <ThemedText style={[styles.appTitle, { color: theme.text }]} numberOfLines={1}>{application.activityTitle}</ThemedText>
                         </View>
-                        <View style={[styles.statusTag, { backgroundColor: color + '10' }]}>
+                        <View style={[styles.statusTag, { backgroundColor: color + '15' }]}>
                             <View style={[styles.statusDot, { backgroundColor: color }]} />
                         </View>
                     </View>
@@ -215,23 +199,23 @@ function ApplicationCard({ application, theme, onDelete, onPress, isPast }: any)
                     <View style={styles.cardMetaRow}>
                         <View style={styles.metaItem}>
                             <Calendar size={12} color={theme.primary} />
-                            <ThemedText style={[styles.metaText, { color: theme.textSecondary }]}>{application.schedule}</ThemedText>
+                            <ThemedText style={[styles.metaText, { color: theme.textSecondary }]}>{application.activity?.date?.split('T')[0] || 'N/A'}</ThemedText>
                         </View>
                         <View style={styles.metaItem}>
                             <MapPin size={12} color={theme.primary} />
-                            <ThemedText style={[styles.metaText, { color: theme.textSecondary }]}>{application.location}</ThemedText>
+                            <ThemedText style={[styles.metaText, { color: theme.textSecondary }]}>{application.activity?.location || 'N/A'}</ThemedText>
                         </View>
                     </View>
                     
                     <View style={[styles.cardFooterCompact, { borderTopColor: theme.border }]}>
                         <ThemedText style={[styles.footerDate, { color: theme.textSecondary }]}>
-                            Applied: <ThemedText style={{ fontWeight: '800' }}>{application.appliedDate}</ThemedText>
+                            Applied: <ThemedText style={{ fontWeight: '800' }}>{application.appliedAt?.split('T')[0] || 'N/A'}</ThemedText>
                         </ThemedText>
-                        <ThemedText style={[styles.statusLabelSmall, { color }]}>{application.status}</ThemedText>
+                        <ThemedText style={[styles.statusLabelSmall, { color, textTransform: 'capitalize' }]}>{application.status}</ThemedText>
                     </View>
                 </View>
 
-                {application.status === 'Pending' && !isPast && (
+                {application.status === 'pending' && !isPast && (
                     <TouchableOpacity style={[styles.miniDeleteBtn, { backgroundColor: theme.error + '15' }]} onPress={(e) => { e.stopPropagation(); onDelete(); }}>
                         <Trash2 size={15} color={theme.error} />
                     </TouchableOpacity>

@@ -7,6 +7,9 @@ import { JuButton } from '@/src/components/JuButton';
 import { ThemedText } from '@/src/components/themed-text';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { client } from '@/src/lib/api';
+import { useAuth } from '@/src/context/AuthContext';
+import { ActivityIndicator, Alert } from 'react-native';
 
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
@@ -14,12 +17,15 @@ import { Colors } from '@/src/data/theme';
 export default function ActivityDetails() {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const { user } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   const [applied, setApplied] = React.useState(false);
   const [isApplying, setIsApplying] = React.useState(false);
+  const [checkingStatus, setCheckingStatus] = React.useState(true);
 
   const { 
+    id,
     title = 'Activity Details', 
     category = 'General', 
     description = 'No description available for this activity.',
@@ -29,6 +35,25 @@ export default function ActivityDetails() {
     enrolled = '0',
     capacity = '0',
   } = params;
+
+  React.useEffect(() => {
+    checkAppStatus();
+  }, [id, user?.id]);
+
+  const checkAppStatus = async () => {
+    if (!id || !user?.id) return;
+    try {
+        setCheckingStatus(true);
+        const apps = await client.get(`/applications?studentId=${user.id}&activityId=${id}`);
+        if (apps && apps.length > 0) {
+            setApplied(true);
+        }
+    } catch (error) {
+        console.error('Failed to check application status:', error);
+    } finally {
+        setCheckingStatus(false);
+    }
+  };
 
   const onShare = async () => {
     try {
@@ -40,13 +65,23 @@ export default function ActivityDetails() {
     }
   };
 
-  const handleApply = () => {
-    setIsApplying(true);
-    // Simulate API call
-    setTimeout(() => {
-        setIsApplying(false);
+  const handleApply = async () => {
+    if (!id) return;
+    
+    try {
+        setIsApplying(true);
+        await client.post('/applications', {
+            activityId: id,
+            activityTitle: title
+        });
         setApplied(true);
-    }, 1500);
+        Alert.alert('Success', 'Your application has been submitted and is pending review!');
+    } catch (error: any) {
+        console.error('Application failed:', error);
+        Alert.alert('Error', error.message || 'Failed to apply for activity');
+    } finally {
+        setIsApplying(false);
+    }
   };
 
   const handleBack = () => {
@@ -98,7 +133,7 @@ export default function ActivityDetails() {
             <ThemedText style={[styles.title, { color: theme.text }]}>{title}</ThemedText>
             
             <View style={styles.metaGrid}>
-                <MetaItem icon={Calendar} label="Date" value={date as string} theme={theme} />
+                <MetaItem icon={Calendar} label="Date" value={typeof date === 'string' ? date.split('T')[0] : date} theme={theme} />
                 <MetaItem icon={Clock} label="Time" value={time as string} theme={theme} />
                 <MetaItem icon={MapPin} label="Location" value={location as string} theme={theme} />
                 <MetaItem icon={Users} label="Participants" value={`${enrolled}/${capacity} Joined`} theme={theme} />
@@ -143,7 +178,8 @@ export default function ActivityDetails() {
                 title={applied ? "Already Applied" : (isApplying ? "Applying..." : "Apply Activity")} 
                 onPress={handleApply}
                 variant={applied ? "outline" : "primary"}
-                disabled={applied || isApplying}
+                disabled={applied || isApplying || checkingStatus}
+                loading={isApplying}
               />
           </View>
       </View>

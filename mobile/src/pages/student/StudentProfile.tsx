@@ -16,16 +16,19 @@ import { useRouter } from 'expo-router';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { useTheme } from '@/src/context/ThemeContext';
+import { useAuth } from '@/src/context/AuthContext';
+
+import { IMAGE_BASE } from '@/src/lib/config';
 
 export default function StudentProfile() {
   const router = useRouter();
+  const { user, logout } = useAuth();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
   const { refreshTheme } = useTheme();
 
   const handleLogout = async () => {
-    await AsyncStorage.removeItem('current-user');
-    await AsyncStorage.removeItem('user_token');
+    await logout();
     await refreshTheme();
     router.replace('/login');
   };
@@ -37,14 +40,14 @@ export default function StudentProfile() {
         <View style={styles.header}>
           <View style={styles.avatarContainer}>
             <Image 
-              source={{ uri: 'https://github.com/shadcn.png' }} 
+              source={{ uri: user?.avatar ? (user.avatar.startsWith('http') ? user.avatar : `${IMAGE_BASE}${user.avatar}`) : 'https://github.com/shadcn.png' }} 
               style={[styles.avatar, { borderColor: theme.card }]} 
             />
             <View style={[styles.studentBadge, { borderColor: theme.card }]}>
                 <Award size={12} color="#FFFFFF" strokeWidth={3} />
             </View>
           </View>
-          <ThemedText style={[styles.userName, { color: theme.text }]}>Muscab Ahmed</ThemedText>
+          <ThemedText style={[styles.userName, { color: theme.text }]}>{user?.name || 'Muscab Ahmed'}</ThemedText>
           <View style={[styles.roleLabel, { backgroundColor: theme.primary + '20' }]}>
               <Text style={[styles.roleText, { color: theme.primary }]}>STUDENT PORTAL</Text>
           </View>
@@ -101,7 +104,7 @@ export default function StudentProfile() {
                 onPress={() => router.push('/(student)/support/faq')}
                 theme={theme} 
             />
-            <ProfileItem icon={LogOut} label="Sign Out Room" color={theme.error} onPress={handleLogout} theme={theme} />
+            <ProfileItem icon={LogOut} label="Logout" color={theme.error} onPress={handleLogout} theme={theme} />
           </GlassCard>
         </View>
 
