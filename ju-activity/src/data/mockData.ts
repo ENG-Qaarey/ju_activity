@@ -22,6 +22,12 @@ export interface Application {
   appliedAt: string;
   status: "pending" | "approved" | "rejected";
   notes?: string;
+  student?: {
+    id: string;
+    name: string;
+    email: string;
+    avatar?: string | null;
+  };
 }
 
 export interface Notification {

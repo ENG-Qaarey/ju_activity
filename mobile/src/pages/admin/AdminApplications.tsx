@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert, Modal } from 'react-native';
 import { Check, X, Clock, User, FileText, ChevronRight, Filter } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
@@ -9,7 +9,7 @@ import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 
 import { client } from '@/src/lib/api';
-import { ENDPOINTS } from '@/src/lib/config';
+import { ENDPOINTS, IMAGE_BASE } from '@/src/lib/config';
 
 export default function AdminApplications() {
   const colorScheme = useColorScheme() ?? 'light';
@@ -18,6 +18,9 @@ export default function AdminApplications() {
   const [applications, setApplications] = React.useState<any[]>([]);
   const [refreshing, setRefreshing] = React.useState(false);
   const [stats, setStats] = React.useState({ pending: 0, approved: 0, rejected: 0 });
+  const [viewerVisible, setViewerVisible] = React.useState(false);
+  const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
+  const [selectedUserName, setSelectedUserName] = React.useState('');
 
   const fetchApplications = async () => {
     try {
@@ -150,16 +153,53 @@ export default function AdminApplications() {
                activity={app.activityTitle || 'Unknown Activity'} 
                time={formatTime(app.createdAt)} 
                status={app.status.charAt(0).toUpperCase() + app.status.slice(1)} 
-               avatar={`https://ui-avatars.com/api/?name=${encodeURIComponent(app.studentName || 'User')}&background=random`}
+               avatar={app.student?.avatar ? (app.student.avatar.startsWith('http') ? app.student.avatar : `${IMAGE_BASE}${app.student.avatar}`) : `https://ui-avatars.com/api/?name=${encodeURIComponent(app.studentName || 'User')}&background=random`}
                theme={theme}
                onApprove={handleApprove}
                onReject={handleReject}
+               onPressImage={() => {
+                 const avatarUrl = app.student?.avatar ? (app.student.avatar.startsWith('http') ? app.student.avatar : `${IMAGE_BASE}${app.student.avatar}`) : `https://ui-avatars.com/api/?name=${encodeURIComponent(app.studentName || 'User')}&background=random`;
+                 setSelectedImage(avatarUrl);
+                 setSelectedUserName(app.studentName || 'User');
+                 setViewerVisible(true);
+               }}
              />
            )) : (
              <Text style={{ textAlign: 'center', color: theme.textSecondary, marginTop: 20 }}>No applications found.</Text>
            )}
         </View>
       </ScrollView>
+
+      {/* Image Viewer Modal */}
+      <Modal
+        visible={viewerVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setViewerVisible(false)}
+      >
+        <View style={styles.viewerOverlay}>
+          <TouchableOpacity 
+            style={styles.viewerCloseArea} 
+            activeOpacity={1} 
+            onPress={() => setViewerVisible(false)}
+          >
+            <View style={styles.viewerContent}>
+              <Image 
+                source={{ uri: selectedImage || '' }}
+                style={styles.fullImage}
+                contentFit="contain"
+              />
+              <TouchableOpacity 
+                style={styles.viewerCloseBtn} 
+                onPress={() => setViewerVisible(false)}
+              >
+                <X size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+              <Text style={styles.viewerName}>{selectedUserName}</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </GradientBackground>
   );
 }
@@ -176,7 +216,7 @@ function StatCard({ icon: Icon, label, value, color, theme }: any) {
     );
 }
 
-function ApplicationItem({ id, student, studentId, activity, time, status, avatar, theme, onApprove, onReject }: any) {
+function ApplicationItem({ id, student, studentId, activity, time, status, avatar, theme, onApprove, onReject, onPressImage }: any) {
   const isPending = status === 'Pending';
   const isApproved = status === 'Approved';
   const isRejected = status === 'Rejected';
@@ -188,7 +228,9 @@ function ApplicationItem({ id, student, studentId, activity, time, status, avata
     <GlassCard style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
       <View style={styles.cardHeader}>
         <View style={styles.studentInfo}>
-            <Image source={{ uri: avatar }} style={[styles.avatar, { backgroundColor: theme.border }]} />
+            <TouchableOpacity onPress={onPressImage} activeOpacity={0.8}>
+                <Image source={{ uri: avatar }} style={[styles.avatar, { backgroundColor: theme.border }]} />
+            </TouchableOpacity>
             <View>
                 <Text style={[styles.studentName, { color: theme.text }]}>{student}</Text>
                 <Text style={[styles.studentId, { color: theme.textSecondary }]}>{studentId}</Text>
@@ -284,4 +326,47 @@ const styles = StyleSheet.create({
   approveText: { color: '#FFFFFF', fontSize: 11, fontWeight: '800' },
   detailsBtn: { flexDirection: 'row', alignItems: 'center', paddingVertical: 4, paddingHorizontal: 8, borderRadius: 8, gap: 4 },
   detailsBtnText: { fontSize: 10, fontWeight: '700' },
+
+  // Image Viewer Styles
+  viewerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  viewerCloseArea: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  viewerContent: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullImage: {
+    width: '90%',
+    height: '70%',
+    borderRadius: 20,
+  },
+  viewerCloseBtn: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  viewerName: {
+    position: 'absolute',
+    bottom: 50,
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '900',
+  },
 });
