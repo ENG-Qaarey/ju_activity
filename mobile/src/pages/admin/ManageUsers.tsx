@@ -1,8 +1,10 @@
 import React from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput, Alert, RefreshControl, Modal, KeyboardAvoidingView, Platform } from 'react-native';
-import { User, Shield, Search, Filter, Trash2, Ban, UserPlus, Mail, Calendar } from 'lucide-react-native';
+import { User, Shield, Search, Filter, Trash2, Ban, UserPlus, Mail, Calendar, X } from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
+import { Image } from 'expo-image';
+import { IMAGE_BASE } from '@/src/lib/config';
 
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
@@ -23,6 +25,9 @@ export default function ManageUsers() {
     password: '',
     department: '',
   });
+  const [viewerVisible, setViewerVisible] = React.useState(false);
+  const [selectedImage, setSelectedImage] = React.useState<string | null>(null);
+  const [selectedUserName, setSelectedUserName] = React.useState('');
 
   const fetchUsers = async () => {
     try {
@@ -190,6 +195,12 @@ export default function ManageUsers() {
                 theme={theme}
                 onDelete={() => handleDelete(user.id, user.name)}
                 onToggleStatus={() => handleToggleStatus(user.id, isActive, user.name)}
+                onPressImage={() => {
+                  const avatarUrl = user.avatar ? (user.avatar.startsWith('http') ? user.avatar : `${IMAGE_BASE}${user.avatar}`) : 'https://github.com/shadcn.png';
+                  setSelectedImage(avatarUrl);
+                  setSelectedUserName(user.name || 'User');
+                  setViewerVisible(true);
+                }}
               />
             );
           }) : (
@@ -197,6 +208,37 @@ export default function ManageUsers() {
           )}
         </View>
       </ScrollView>
+
+      {/* Image Viewer Modal */}
+      <Modal
+        visible={viewerVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setViewerVisible(false)}
+      >
+        <View style={styles.viewerOverlay}>
+          <TouchableOpacity 
+            style={styles.viewerCloseArea} 
+            activeOpacity={1} 
+            onPress={() => setViewerVisible(false)}
+          >
+            <View style={styles.viewerContent}>
+              <Image 
+                source={{ uri: selectedImage || '' }}
+                style={styles.fullImage}
+                contentFit="contain"
+              />
+              <TouchableOpacity 
+                style={styles.viewerCloseBtn} 
+                onPress={() => setViewerVisible(false)}
+              >
+                <X size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+              <Text style={styles.viewerName}>{selectedUserName}</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Modal>
 
       {/* Create Coordinator Modal */}
       <Modal
@@ -295,18 +337,27 @@ export default function ManageUsers() {
   );
 }
 
-function UserCard({ user, isMe, isActive, theme, onDelete, onToggleStatus }: any) {
+function UserCard({ user, isMe, isActive, theme, onDelete, onToggleStatus, onPressImage }: any) {
   const roleColor = user.role === 'admin' ? '#3B82F6' : user.role === 'coordinator' ? '#8B5CF6' : '#10B981';
   const roleBg = user.role === 'admin' ? '#3B82F615' : user.role === 'coordinator' ? '#8B5CF615' : '#10B98115';
   const statusColor = isActive ? '#22C55E' : '#EF4444';
   const statusBg = isActive ? '#22C55E15' : '#EF444415';
 
+  const avatarUrl = user.avatar ? (user.avatar.startsWith('http') ? user.avatar : `${IMAGE_BASE}${user.avatar}`) : 'https://github.com/shadcn.png';
+
   return (
     <GlassCard style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
-      {/* Left: User Avatar/Icon */}
-      <View style={[styles.iconBlock, { backgroundColor: theme.background, borderColor: theme.border }]}>
-        <User size={20} color={roleColor} />
-      </View>
+      {/* Left: User Avatar */}
+      <TouchableOpacity 
+        onPress={onPressImage}
+        activeOpacity={0.8}
+        style={[styles.iconBlock, { backgroundColor: theme.background, borderColor: theme.border, overflow: 'hidden' }]}
+      >
+        <Image 
+          source={{ uri: avatarUrl }} 
+          style={styles.cardAvatar}
+        />
+      </TouchableOpacity>
 
       {/* Middle: Content & Metadata */}
       <View style={styles.cardMain}>
@@ -562,5 +613,52 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '800',
+  },
+
+  // Image Viewer Styles
+  viewerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  viewerCloseArea: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  viewerContent: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullImage: {
+    width: '90%',
+    height: '70%',
+    borderRadius: 20,
+  },
+  viewerCloseBtn: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  viewerName: {
+    position: 'absolute',
+    bottom: 50,
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  cardAvatar: {
+    width: '100%',
+    height: '100%',
   },
 });

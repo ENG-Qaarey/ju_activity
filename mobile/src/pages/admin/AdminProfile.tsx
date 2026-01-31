@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, ScrollView, View, Text, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
+import { StyleSheet, ScrollView, View, Text, TouchableOpacity, RefreshControl, ActivityIndicator, Modal } from 'react-native';
+import { X } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { 
   User, Mail, Shield, Bell, CircleHelp, LogOut, 
@@ -24,6 +25,7 @@ export default function AdminProfile() {
   const theme = Colors[colorScheme];
   const { refreshTheme } = useTheme();
   const [refreshing, setRefreshing] = React.useState(false);
+  const [viewerVisible, setViewerVisible] = React.useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -57,7 +59,11 @@ export default function AdminProfile() {
             <>
         {/* Profile Header */}
         <View style={styles.header}>
-          <View style={styles.avatarContainer}>
+          <TouchableOpacity 
+            style={styles.avatarContainer}
+            onPress={() => setViewerVisible(true)}
+            activeOpacity={0.9}
+          >
             <Image 
               source={{ uri: fullAvatarUrl }} 
               style={[styles.avatar, { borderColor: theme.card }]} 
@@ -65,7 +71,7 @@ export default function AdminProfile() {
             <View style={[styles.adminBadge, { borderColor: theme.card }]}>
                 <Shield size={12} color="#FFFFFF" strokeWidth={3} />
             </View>
-          </View>
+          </TouchableOpacity>
           <ThemedText style={[styles.userName, { color: theme.text }]}>{user?.name || 'Admin'}</ThemedText>
           <View style={[styles.roleLabel, { backgroundColor: theme.primary + '20' }]}>
               <Text style={[styles.roleText, { color: theme.primary }]}>SYSTEM ADMINISTRATOR</Text>
@@ -128,6 +134,37 @@ export default function AdminProfile() {
             </>
         )}
       </ScrollView>
+
+      {/* Image Viewer Modal */}
+      <Modal
+        visible={viewerVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setViewerVisible(false)}
+      >
+        <View style={styles.viewerOverlay}>
+          <TouchableOpacity 
+            style={styles.viewerCloseArea} 
+            activeOpacity={1} 
+            onPress={() => setViewerVisible(false)}
+          >
+            <View style={styles.viewerContent}>
+              <Image 
+                source={{ uri: fullAvatarUrl }}
+                style={styles.fullImage}
+                contentFit="contain"
+              />
+              <TouchableOpacity 
+                style={styles.viewerCloseBtn} 
+                onPress={() => setViewerVisible(false)}
+              >
+                <X size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+              <ThemedText style={styles.viewerName}>{user?.name || 'Admin User'}</ThemedText>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </GradientBackground>
   );
 }
@@ -166,4 +203,47 @@ const styles = StyleSheet.create({
   itemLabel: { fontSize: 16, fontWeight: '600' },
   footer: { alignItems: 'center', marginTop: 20, marginBottom: 40 },
   versionText: { fontSize: 11, fontWeight: '600' },
+
+  // Image Viewer Styles
+  viewerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  viewerCloseArea: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  viewerContent: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullImage: {
+    width: '90%',
+    height: '70%',
+    borderRadius: 20,
+  },
+  viewerCloseBtn: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  viewerName: {
+    position: 'absolute',
+    bottom: 50,
+    color: '#FFFFFF',
+    fontSize: 20,
+    fontWeight: '900',
+  },
 });
