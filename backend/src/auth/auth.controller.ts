@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '../authz/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-	constructor(private readonly authService: AuthService) {}
+	constructor(private readonly authService: AuthService) { }
 
 	@Get('me')
 	@UseGuards(JwtAuthGuard)
@@ -33,10 +33,10 @@ export class AuthController {
 		return this.authService.register(payload);
 	}
 
-		@Post('google')
-		googleSignIn(@Body() payload: { credential: string }) {
-			return this.authService.signInWithGoogle(payload.credential);
-		}
+	@Post('google')
+	googleSignIn(@Body() payload: { credential: string }) {
+		return this.authService.signInWithGoogle(payload.credential);
+	}
 
 	@Post('verify-email')
 	verifyEmail(@Body() payload: { email: string; code: string }) {
@@ -46,5 +46,15 @@ export class AuthController {
 	@Post('resend-verification')
 	resendVerification(@Body() payload: { email: string }) {
 		return this.authService.resendVerification(payload.email);
+	}
+
+	@Post('forgot-password')
+	forgotPassword(@Body() payload: { email: string }) {
+		return this.authService.forgotPassword(payload.email);
+	}
+
+	@Post('reset-password')
+	resetPassword(@Body() payload: { email: string; newPassword: string }) {
+		return this.authService.resetPassword(payload);
 	}
 }

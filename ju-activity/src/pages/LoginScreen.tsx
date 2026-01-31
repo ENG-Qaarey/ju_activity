@@ -254,7 +254,12 @@ const LoginScreen = () => {
 
               {/* Forgot Password */}
               <div className="text-right">
-                <Button variant="link" type="button" className="px-0 text-primary">
+                <Button 
+                  variant="link" 
+                  type="button" 
+                  className="px-0 text-primary"
+                  onClick={() => navigate("/forgot-password")}
+                >
                   Forgot Password?
                 </Button>
               </div>

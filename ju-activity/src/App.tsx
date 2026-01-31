@@ -14,6 +14,7 @@ import LoginScreen from "./pages/LoginScreen";
 import RegisterScreen from "./pages/RegisterScreen";
 import ProfileScreen from "./pages/ProfileScreen";
 import ChangePasswordScreen from "./pages/ChangePasswordScreen";
+import ForgotPasswordScreen from "./pages/ForgotPasswordScreen";
 import StudentDashboard from "./pages/student/StudentDashboard";
 import StudentActivities from "./pages/student/StudentActivities";
 import ActivityDetails from "./pages/student/ActivityDetails";
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/" element={<SplashScreen />} />
             <Route path="/login" element={<LoginScreen />} />
             <Route path="/register" element={<RegisterScreen />} />
+            <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
 
             {/* Student Routes */}
             <Route

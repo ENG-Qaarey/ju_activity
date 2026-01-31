@@ -206,12 +206,20 @@ export default function Login() {
                 onFocus={() => setFocused('password')}
                 onBlur={() => setFocused(null)}
               />
-
               {submitted && error ? (
                 <View style={styles.errorBox}>
                   <Text style={styles.errorText}>{error}</Text>
                 </View>
               ) : null}
+
+              <TouchableOpacity 
+                style={{ alignSelf: 'flex-end', marginTop: 12, marginBottom: 4 }}
+                onPress={() => router.push('/forgot-password')}
+              >
+                <Text style={{ color: '#0284C7', fontWeight: '700', fontSize: 13 }}>
+                  Forgot Password?
+                </Text>
+              </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.button}
