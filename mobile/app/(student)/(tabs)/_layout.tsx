@@ -19,29 +19,26 @@ export default function StudentTabsLayout() {
       screenOptions={{
         headerShown: true,
         headerLeft: () => (
-          <View style={styles.headerLeftSpacer} />
-        ),
-        headerTitle: () => (
-          <View style={styles.headerTitleContainer}>
-            <View>
-              <Text style={[styles.headerHub, { color: theme.textSecondary }]}>JU ACTIVITY HUB</Text>
+          <View style={styles.headerLeftContainer}>
+             <Image 
+              source={{ uri: user?.avatar ? (user.avatar.startsWith('http') ? user.avatar : `${IMAGE_BASE}${user.avatar}`) : 'https://github.com/shadcn.png' }} 
+              style={[styles.headerAvatar, { borderColor: theme.border }]} 
+            />
+            <View style={styles.profileTextContainer}>
+              <Text style={[styles.userName, { color: theme.text }]}>{user?.name || 'Student'}</Text>
               <View style={styles.onlineStatus}>
-                <Text style={[styles.userName, { color: theme.text }]}>{user?.name || 'Student'}</Text>
                 <View style={styles.statusDot} />
                 <Text style={styles.statusText}>Online</Text>
               </View>
             </View>
           </View>
         ),
+        headerTitle: '',
         headerRight: () => (
           <View style={styles.headerIcons}>
             <TouchableOpacity style={[styles.headerIconBtn, { backgroundColor: theme.background }]}>
               <MessageCircle size={20} color={theme.icon} />
             </TouchableOpacity>
-            <Image 
-              source={{ uri: user?.avatar ? (user.avatar.startsWith('http') ? user.avatar : `${IMAGE_BASE}${user.avatar}`) : 'https://github.com/shadcn.png' }} 
-              style={[styles.headerAvatar, { borderColor: theme.border }]} 
-            />
           </View>
         ),
         headerStyle: {
@@ -115,8 +112,13 @@ export default function StudentTabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  headerLeftSpacer: {
-    marginLeft: 20,
+  headerLeftContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 16,
+  },
+  profileTextContainer: {
+    marginLeft: 10,
   },
   headerTitleContainer: {
     flexDirection: 'row',
@@ -131,12 +133,11 @@ const styles = StyleSheet.create({
   onlineStatus: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    marginTop: 2 
+    marginTop: 1 
   },
   userName: { 
-    fontSize: 14, 
+    fontSize: 13, 
     fontWeight: '700', 
-    marginRight: 6 
   },
   statusDot: { 
     width: 8, 

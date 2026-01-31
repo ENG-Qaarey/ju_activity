@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -38,6 +39,7 @@ import { Calendar, MapPin, Edit, Trash2, Eye, Users, Save } from "lucide-react";
 import { Activity } from "@/data/mockData";
 
 const ManageActivities = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { activities, deleteActivity, updateActivity, getApplicationsByActivity, getApprovedApplicationsByActivity } = useActivity();
   const [search, setSearch] = useState("");
@@ -314,6 +316,14 @@ const ManageActivities = () => {
                     >
                       <Users className="w-4 h-4 mr-2" />
                       View Students ({getApprovedApplicationsByActivity(activity.id).length})
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate(`/coordinator/activities/${activity.id}`)}
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      View Details
                     </Button>
                     {canManageActivity(activity) && (
                       <>

@@ -179,7 +179,11 @@ const ActivityDetails = () => {
         {/* Back Button */}
         <Button
           variant="ghost"
-          onClick={() => navigate("/student/activities")}
+          onClick={() => {
+            if (user?.role === "admin") navigate("/admin/activities");
+            else if (user?.role === "coordinator") navigate("/coordinator/activities");
+            else navigate("/student/activities");
+          }}
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Activities
@@ -288,26 +292,28 @@ const ActivityDetails = () => {
                 </div>
               </div>
 
-              {/* Apply Button */}
-              <Button
-                size="lg"
-                className="w-full md:w-auto"
-                disabled={isFull || hasApplied || isCompleted}
-                onClick={() => {
-                  if (isCompleted) {
-                    toast({
-                      title: "Activity completed",
-                      description: "This activity is completed. You can no longer apply.",
-                      variant: "destructive",
-                    });
-                    return;
-                  }
-                  setShowApplyDialog(true);
-                }}
-              >
-                <CheckCircle className="w-5 h-5 mr-2" />
-                {isCompleted ? "Activity Completed" : hasApplied ? "Already Applied" : "Apply for this Activity"}
-              </Button>
+              {/* Apply Button - Only for students */}
+              {user?.role === "student" && (
+                <Button
+                  size="lg"
+                  className="w-full md:w-auto"
+                  disabled={isFull || hasApplied || isCompleted}
+                  onClick={() => {
+                    if (isCompleted) {
+                      toast({
+                        title: "Activity completed",
+                        description: "This activity is completed. You can no longer apply.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    setShowApplyDialog(true);
+                  }}
+                >
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  {isCompleted ? "Activity Completed" : hasApplied ? "Already Applied" : "Apply for this Activity"}
+                </Button>
+              )}
             </CardContent>
           </Card>
         </motion.div>

@@ -193,7 +193,16 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
   // Filter notifications for current user
   const userNotifications = useMemo(() => {
     if (!user) return [];
-    return notifications.filter((notif) => notif.recipientId === user.id);
+    return notifications.filter((notif) => {
+      // Students and Coordinators only see notifications addressed to them.
+      if (user.role !== "admin") {
+        return notif.recipientId === user.id;
+      }
+
+      // Admins see all notifications in the system EXCEPT student announcements.
+      // This allows them to monitor application activities, approvals, etc.
+      return notif.type !== "announcement";
+    });
   }, [notifications, user]);
 
   const createActivity = async (
@@ -322,13 +331,17 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       await notificationsApi.markAsRead(id);
-    setNotifications((prev) =>
-      prev.map((notif) => 
-        notif.id === id && notif.recipientId === user.id 
-          ? { ...notif, read: true } 
-          : notif
-      )
-    );
+      setNotifications((prev) =>
+        prev.map((notif) => {
+          if (notif.id === id) {
+            // Admins can mark any notification read; others only their own.
+            if (user.role === "admin" || notif.recipientId === user.id) {
+              return { ...notif, read: true };
+            }
+          }
+          return notif;
+        })
+      );
     } catch (error: any) {
       console.error("Failed to mark notification as read:", error);
     }

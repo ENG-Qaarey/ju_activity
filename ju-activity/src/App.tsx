@@ -86,6 +86,7 @@ const App = () => (
                     <Route path="dashboard" element={<CoordinatorDashboard />} />
                     <Route path="create-activity" element={<CreateActivity />} />
                     <Route path="activities" element={<ManageActivities />} />
+                    <Route path="activities/:id" element={<ActivityDetails />} />
                     <Route path="activities/:id/edit" element={<CreateActivity />} /> {/* Mock edit route reuses create */}
                     <Route path="applications" element={<CoordinatorApplications />} />
                     <Route path="attendance" element={<AttendanceManagement />} />
@@ -110,6 +111,7 @@ const App = () => (
                     <Route path="manage-users" element={<ManageUsers />} />
                     <Route path="manage-roles" element={<ManageRoles />} />
                     <Route path="activities" element={<AdminActivities />} />
+                    <Route path="activities/:id" element={<ActivityDetails />} />
                     <Route path="monitor-activities" element={<MonitorActivities />} />
                     <Route path="notifications" element={<AdminNotifications />} />
                     <Route path="reports-advanced" element={<AdminReports />} />
