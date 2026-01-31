@@ -51,8 +51,9 @@ export default function StudentActivities() {
   };
 
   const filteredActivities = activities.filter(act => 
-    (activeCategory === 'All' || act.category === activeCategory) &&
-    act.title.toLowerCase().includes(searchQuery.toLowerCase())
+    (activeCategory === 'All' || act.category?.toLowerCase() === activeCategory.toLowerCase()) &&
+    (act.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+     act.category?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -141,7 +142,9 @@ function ActivityCard({ activity, theme, onPress }: any) {
         <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={[styles.card, { backgroundColor: theme.card, borderColor: theme.border }]}>
             <View style={styles.cardHeader}>
                 <View style={[styles.badge, { backgroundColor: theme.primary + '15' }]}>
-                    <ThemedText style={[styles.badgeText, { color: theme.primary }]}>{activity.category}</ThemedText>
+                    <ThemedText style={[styles.badgeText, { color: theme.primary }]}>
+                        {activity.category ? activity.category.charAt(0).toUpperCase() + activity.category.slice(1) : ''}
+                    </ThemedText>
                 </View>
                 <ThemedText style={[styles.cardMainTitle, { color: theme.text }]}>{activity.title}</ThemedText>
             </View>
