@@ -741,6 +741,27 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-lg border-b border-border">
           <div className="px-4 lg:px-6 py-3 flex flex-wrap items-center gap-3">
             <div className="flex min-w-0 flex-1 items-center gap-3">
+              {/* Conditionally show full profile on the far left for students */}
+              {user?.role === "student" && (
+                <div className="flex items-center gap-3 px-1 py-1 rounded-full sm:bg-muted/30">
+                  <Avatar className="w-8 h-8 border border-primary/20">
+                    {user?.avatar ? <AvatarImage src={user.avatar} alt={user.name} /> : null}
+                    <AvatarFallback className="bg-primary text-primary-foreground text-xs uppercase">
+                      {user?.name?.charAt(0) || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden sm:flex flex-col min-w-0">
+                    <span className="text-sm font-bold text-foreground truncate leading-none mb-0.5">
+                      {user.name}
+                    </span>
+                    <span className="text-[10px] font-medium text-emerald-500 flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Student Online
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <Button
                 variant="ghost"
                 size="icon"
@@ -750,16 +771,19 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               >
                 <Menu className="w-5 h-5" />
               </Button>
-              <div className="hidden min-w-0 flex-1 flex-col sm:flex">
-                <span className="text-[11px] uppercase tracking-[0.35em] text-muted-foreground">{portalLabel}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-foreground truncate">{headerHandle}</span>
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-500">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
-                    {headerStatusLabel}
-                  </span>
+
+              {user?.role !== "student" && (
+                <div className="hidden min-w-0 flex-1 flex-col sm:flex">
+                  <span className="text-[11px] uppercase tracking-[0.35em] text-muted-foreground">{portalLabel}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-foreground truncate">{headerHandle}</span>
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-500">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
+                      {headerStatusLabel}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Right Section */}
@@ -836,13 +860,19 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className={`gap-2 pl-2 pr-3 ${frostedControlClasses}`}>
-                    <Avatar className="w-8 h-8">
-                      {user?.avatar ? <AvatarImage src={user.avatar} alt={user?.name ?? "User"} /> : null}
-                      <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                        {user?.name?.charAt(0) || "U"}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="hidden md:inline font-medium">{user?.name}</span>
+                    {user?.role !== "student" ? (
+                      <>
+                        <Avatar className="w-8 h-8">
+                          {user?.avatar ? <AvatarImage src={user.avatar} alt={user?.name ?? "User"} /> : null}
+                          <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                            {user?.name?.charAt(0) || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="hidden md:inline font-medium">{user?.name}</span>
+                      </>
+                    ) : (
+                      <Settings className="w-5 h-5 text-muted-foreground" />
+                    )}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
@@ -875,7 +905,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <div className="flex items-center justify-between rounded-2xl border border-border/70 bg-card/70 px-4 py-2">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.35em] text-muted-foreground">{portalLabel}</p>
-                <p className="text-sm font-semibold text-foreground">{headerHandle}</p>
+                <p className="text-sm font-semibold text-foreground">
+                  {user?.role === "student" ? user.name : headerHandle}
+                </p>
               </div>
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-600">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />

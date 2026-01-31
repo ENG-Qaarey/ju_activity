@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ import {
 import { useActivity } from "@/contexts/ActivityContext";
 
 const AdminActivities = () => {
+  const navigate = useNavigate();
   const { activities, deleteActivity, updateActivity, getApplicationsByActivity } = useActivity();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
@@ -277,7 +279,15 @@ const AdminActivities = () => {
                     <div className="flex flex-wrap items-center gap-2 border-t md:border-t-0 md:border-l pt-4 md:pt-0 md:pl-6 mt-4 md:mt-0">
                       <Button variant="ghost" size="sm" onClick={() => openDetails(activity)}>
                         <Eye className="w-4 h-4 mr-2" />
-                        Details
+                        Quick View
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate(`/admin/activities/${activity.id}`)}
+                      >
+                        <Eye className="w-4 h-4 mr-2" />
+                        View Page
                       </Button>
                       <Button variant="outline" size="sm" onClick={() => openEditDialog(activity)}>
                         <Edit className="w-4 h-4 mr-2" />
