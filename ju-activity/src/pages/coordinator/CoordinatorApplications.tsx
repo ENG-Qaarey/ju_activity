@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const CoordinatorApplications = () => {
   const { user } = useAuth();
@@ -30,6 +31,8 @@ const CoordinatorApplications = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
   const [isUpdatingId, setIsUpdatingId] = useState<string | null>(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState<{ url: string | null; name: string }>({ url: null, name: "" });
 
   const coordinatorActivityIds = useMemo(() => {
     if (!user) return new Set<string>();
@@ -118,11 +121,17 @@ const CoordinatorApplications = () => {
                 <CardContent className="p-6">
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     <div className="flex items-start gap-4">
-                      <Avatar className="h-12 w-12 border border-border/60 flex-shrink-0">
+                      <Avatar 
+                        className="h-12 w-12 border border-border/60 flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
+                        onClick={() => {
+                          setSelectedAvatar({ url: app.student?.avatar || null, name: app.studentName || "User" });
+                          setIsImageModalOpen(true);
+                        }}
+                      >
                         {app.student?.avatar ? (
                           <AvatarImage src={app.student.avatar} alt={app.studentName} />
                         ) : null}
-                        <AvatarFallback className="bg-muted text-muted-foreground">
+                        <AvatarFallback className="bg-muted text-muted-foreground font-bold">
                           {(app.studentName || "U").charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -195,6 +204,38 @@ const CoordinatorApplications = () => {
           )}
         </div>
       </div>
+
+      <Dialog open={isImageModalOpen} onOpenChange={setIsImageModalOpen}>
+        <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden bg-transparent border-none shadow-none flex items-center justify-center">
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="relative group p-4"
+          >
+            {selectedAvatar.url ? (
+              <img 
+                src={selectedAvatar.url} 
+                alt={selectedAvatar.name}
+                className="max-h-[80vh] w-auto rounded-2xl shadow-2xl border-4 border-white/10 object-contain mx-auto"
+              />
+            ) : (
+              <div className="w-64 h-64 bg-primary/10 rounded-2xl flex items-center justify-center border-4 border-white/10 shadow-2xl">
+                <span className="text-8xl font-black text-primary/40 leading-none">
+                  {selectedAvatar.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 text-center bg-black/40 backdrop-blur-md px-6 py-2 rounded-full border border-white/10"
+            >
+              <p className="text-white font-bold tracking-wide uppercase text-sm">{selectedAvatar.name}</p>
+            </motion.div>
+          </motion.div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
