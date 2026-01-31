@@ -25,7 +25,9 @@ const safeDate = (dateVal: any) => {
 
 const timeAgo = (date: Date) => {
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-  if (isNaN(seconds)) return "just now";
+  if (isNaN(seconds) || seconds < 30) return "just now";
+  if (seconds < 60) return seconds + "s ago";
+
   let interval = seconds / 31536000;
   if (interval > 1) return Math.floor(interval) + "y ago";
   interval = seconds / 2592000;

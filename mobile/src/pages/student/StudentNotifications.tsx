@@ -13,8 +13,18 @@ import { Colors } from '@/src/data/theme';
 import { client } from '@/src/lib/api';
 import { RefreshControl } from 'react-native';
 
-const timeAgo = (date: Date) => {
+const safeDate = (dateVal: any) => {
+  if (!dateVal) return new Date();
+  const d = new Date(dateVal);
+  return isNaN(d.getTime()) ? new Date() : d;
+};
+
+const timeAgo = (dateVal: any) => {
+  const date = safeDate(dateVal);
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  if (seconds < 30) return "just now";
+  if (seconds < 60) return seconds + " seconds ago";
+
   let interval = seconds / 31536000;
   if (interval > 1) return Math.floor(interval) + " years ago";
   interval = seconds / 2592000;
@@ -25,7 +35,7 @@ const timeAgo = (date: Date) => {
   if (interval > 1) return Math.floor(interval) + " hours ago";
   interval = seconds / 60;
   if (interval > 1) return Math.floor(interval) + " minutes ago";
-  return Math.floor(seconds) + " seconds ago";
+  return "just now";
 };
 
 const { width } = Dimensions.get('window');
@@ -75,13 +85,30 @@ export default function StudentNotifications() {
     }
   };
 
-  const deleteNotif = async (id: string) => {
-    try {
-      await client.delete(`/notifications/${id}`);
-      setNotifications(prev => prev.filter(n => n.id !== id));
-    } catch (error) {
-      Alert.alert('Error', 'Failed to delete notification');
-    }
+  const deleteNotif = (id: string) => {
+    Alert.alert(
+      'Confirm Deletion',
+      'Are you sure you want to delete this notification?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await client.delete(`/notifications/${id}`);
+              setNotifications(prev => prev.filter(n => n.id !== id));
+            } catch (error: any) {
+              if (error.message === 'Notification not found') {
+                setNotifications(prev => prev.filter(n => n.id !== id));
+              } else {
+                Alert.alert('Error', 'Failed to delete notification');
+              }
+            }
+          }
+        }
+      ]
+    );
   };
 
   const markRead = async (id: string, currentlyRead: boolean) => {
@@ -279,6 +306,9 @@ function NotificationCard({ item, theme, colorScheme, onDelete, onPress }: any) 
                             {!item.read && <View style={[styles.unreadDot, { backgroundColor: theme.primary }]} />}
                             <ThemedText style={[styles.categoryLabel, { color: theme.textSecondary }, !item.read && { color: theme.primary }]}>
                                 {!item.read ? 'NEW' : (item.type || 'Alert').toUpperCase()}
+                            </ThemedText>
+                            <ThemedText style={{ fontSize: 10, color: theme.textSecondary }}>
+                                • {safeDate(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                             </ThemedText>
                         </View>
                     </View>

@@ -14,9 +14,13 @@ import { useRouter } from 'expo-router';
 
 import { client } from '@/src/lib/api';
 import { ENDPOINTS } from '@/src/lib/config';
+import { ShakingBellIcon } from '@/src/components/ShakingBellIcon';
 
 const timeAgo = (date: Date) => {
   const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  if (seconds < 30) return "just now";
+  if (seconds < 60) return Math.floor(seconds) + "s ago";
+
   let interval = seconds / 31536000;
   if (interval > 1) return Math.floor(interval) + "y ago";
   interval = seconds / 2592000;
@@ -27,7 +31,7 @@ const timeAgo = (date: Date) => {
   if (interval > 1) return Math.floor(interval) + "h ago";
   interval = seconds / 60;
   if (interval > 1) return Math.floor(interval) + "m ago";
-  return Math.floor(seconds) + "s ago";
+  return "just now";
 };
 
 // ... (existing imports)
@@ -41,33 +45,10 @@ export default function AdminDashboard() {
       activities: 0,
       pendingApps: 0
   });
-  const [hasUnread, setHasUnread] = React.useState(false);
-  const shakeAnim = React.useRef(new Animated.Value(0)).current;
-  const shakeLoop = React.useRef<Animated.CompositeAnimation | null>(null);
   const router = useRouter();
   
   const [notifications, setNotifications] = React.useState<any[]>([]);
 
-  React.useEffect(() => {
-    if (hasUnread) {
-        // Stop any existing loop first
-        shakeLoop.current?.stop();
-        shakeLoop.current = Animated.loop(
-            Animated.sequence([
-                Animated.timing(shakeAnim, { toValue: 10, duration: 100, useNativeDriver: true }),
-                Animated.timing(shakeAnim, { toValue: -10, duration: 100, useNativeDriver: true }),
-                Animated.timing(shakeAnim, { toValue: 10, duration: 100, useNativeDriver: true }),
-                Animated.timing(shakeAnim, { toValue: 0, duration: 100, useNativeDriver: true }),
-                Animated.delay(1000) 
-            ])
-        );
-        shakeLoop.current.start();
-    } else {
-        shakeLoop.current?.stop();
-        shakeAnim.setValue(0);
-    }
-    return () => shakeLoop.current?.stop();
-  }, [hasUnread]);
 
   React.useEffect(() => {
       const fetchData = async () => {
@@ -88,8 +69,6 @@ export default function AdminDashboard() {
 
               if (notifRes.status === 'fulfilled') {
                   setNotifications(notifRes.value.slice(0, 3));
-                  const unreadCount = Array.isArray(notifRes.value) ? notifRes.value.filter((n: any) => !n.read).length : 0;
-                  setHasUnread(unreadCount > 0);
               }
           } catch (e) {
               console.log('Failed to fetch dashboard data', e);
@@ -117,21 +96,13 @@ export default function AdminDashboard() {
                 <Text style={styles.bannerTitle}>Admin Center</Text>
                 <Text style={styles.bannerSubtitle}>Monitor metrics and orchestrate campus activities.</Text>
             </View>
-            <TouchableOpacity 
+            <ShakingBellIcon
+                size={24}
+                color="#FFFFFF"
+                badgeColor="#EF4444"
+                route="/(admin)/notifications"
                 style={styles.headerBellBtn}
-                onPress={() => {
-                    setHasUnread(false);
-                    router.push('/(admin)/notifications');
-                }}
-            >
-                {hasUnread && <View style={styles.notifDot} />}
-                <Animated.View style={{ transform: [{ rotate: shakeAnim.interpolate({
-                    inputRange: [-10, 10],
-                    outputRange: ['-10deg', '10deg']
-                }) }] }}>
-                    <Bell size={24} color="#FFFFFF" />
-                </Animated.View>
-            </TouchableOpacity>
+            />
         </View>
 
         {/* Dynamic Stats Scroll */}

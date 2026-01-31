@@ -74,7 +74,7 @@ export default function AdminLayout() {
             <ShakingBellIcon 
               size={20} 
               color={isActive('/notifications') ? '#FFFFFF' : theme.icon} 
-              dotColor="#EF4444"
+              badgeColor="#EF4444"
               route="/(admin)/notifications"
             />
             <Text style={[

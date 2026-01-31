@@ -67,7 +67,7 @@ export default function CoordinatorLayout() {
             <ShakingBellIcon 
               size={20} 
               color={pathname.includes('/notifications') ? '#FFFFFF' : theme.icon} 
-              dotColor="#EF4444"
+              badgeColor="#EF4444"
               route="/(coordinator)/notifications"
             />
             <Text style={[

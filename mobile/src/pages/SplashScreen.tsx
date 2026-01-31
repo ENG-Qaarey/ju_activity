@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, Dimensions, FlatList, Animated as RNAnimated } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { useAuth } from '@/src/context/AuthContext';
 import { Rocket, Target, Award, Sparkles, ArrowRight, ShieldCheck, Zap, Globe, ChevronRight } from 'lucide-react-native';
 import Animated, { 
   useSharedValue, 
@@ -66,9 +67,20 @@ const ONBOARDING_DATA = [
 
 export default function SplashScreen() {
   const router = useRouter();
+  const { user, loading } = useAuth();
   const flatListRef = useRef<FlatList>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useSharedValue(0);
+
+  // Auto-redirect if already logged in
+  React.useEffect(() => {
+    if (!loading && user) {
+        const role = user.role || 'student';
+        if (role === 'admin') router.replace('/(admin)/dashboard' as any);
+        else if (role === 'coordinator') router.replace('/(coordinator)/dashboard' as any);
+        else router.replace('/(student)/home' as any);
+    }
+  }, [user, loading]);
 
   const onScroll = useAnimatedScrollHandler((event) => {
     scrollX.value = event.contentOffset.x;
