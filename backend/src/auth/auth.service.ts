@@ -366,6 +366,7 @@ export class AuthService {
       message: `Password successfully reset (direct) for ${user.email}`,
     });
 
+    console.log(`✅ PASSWORD RESET SUCCESSFUL FOR: ${user.email}`);
     return { success: true };
   }
 }

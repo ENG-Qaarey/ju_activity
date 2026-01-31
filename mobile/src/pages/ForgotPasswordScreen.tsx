@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   Platform,
   Dimensions,
   Animated,
+  Easing,
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,6 +19,50 @@ import { Mail, Lock, ArrowLeft, ShieldCheck, Eye, EyeOff } from 'lucide-react-na
 import { client } from '@/src/lib/api';
 
 const { width, height } = Dimensions.get('window');
+
+const FloatingOrb = ({ size, x, y, duration = 6000, delay = 0 }: any) => {
+  const translate = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(translate, {
+          toValue: -25,
+          duration,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+          delay,
+        }),
+        Animated.timing(translate, {
+          toValue: 0,
+          duration,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={[
+        styles.orb,
+        {
+          width: size,
+          height: size,
+          top: y,
+          left: x,
+          transform: [{ translateY: translate }],
+        },
+      ]}
+    >
+      <LinearGradient
+        colors={['rgba(255,255,255,0.8)', 'rgba(186,230,253,0.4)']}
+        style={{ flex: 1, borderRadius: size / 2 }}
+      />
+    </Animated.View>
+  );
+};
 
 export default function ForgotPassword() {
   const router = useRouter();
@@ -27,6 +73,16 @@ export default function ForgotPassword() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const [fadeAnim] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   const handleReset = async () => {
     if (!email || !newPassword || !confirmPassword) {
@@ -57,19 +113,24 @@ export default function ForgotPassword() {
 
   if (submitted) {
     return (
-      <View style={styles.container}>
+      <View style={{ flex: 1 }}>
         <LinearGradient
           colors={['#F0F9FF', '#E0F2FE', '#BAE6FD', '#7DD3FC']}
           style={StyleSheet.absoluteFill}
         />
-        <View style={styles.content}>
-          <BlurView intensity={80} tint="light" style={styles.glass}>
+        <View style={styles.container}>
+          <BlurView intensity={90} tint="light" style={styles.glass}>
             <View style={styles.successIconBox}>
-                <ShieldCheck size={48} color="#0284C7" />
+              <LinearGradient
+                colors={['#22C55E', '#16A34A']}
+                style={styles.successIconGrad}
+              >
+                <ShieldCheck size={40} color="#FFFFFF" />
+              </LinearGradient>
             </View>
-            <Text style={styles.successTitle}>Reset Complete</Text>
-            <Text style={styles.successText}>
-                Your password has been successfully updated.
+            <Text style={styles.successTitle}>Reset Successful</Text>
+            <Text style={styles.successDescription}>
+              Your password has been updated. You can now use your new password to sign in to your account.
             </Text>
             <TouchableOpacity 
               style={styles.button}
@@ -79,7 +140,7 @@ export default function ForgotPassword() {
                 colors={['#0284C7', '#0EA5E9']}
                 style={styles.buttonGrad}
               >
-                <Text style={styles.buttonText}>Back to Login</Text>
+                <Text style={styles.buttonText}>Proceed to Login</Text>
               </LinearGradient>
             </TouchableOpacity>
           </BlurView>
@@ -89,15 +150,22 @@ export default function ForgotPassword() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1 }}>
       <LinearGradient
         colors={['#F0F9FF', '#E0F2FE', '#BAE6FD', '#7DD3FC']}
         style={StyleSheet.absoluteFill}
       />
-      
+
+      <View style={StyleSheet.absoluteFill}>
+        <FloatingOrb size={300} x={-120} y={-120} duration={6000} delay={0} />
+        <FloatingOrb size={260} x={width - 140} y={height / 3} duration={7000} delay={600} />
+        <FloatingOrb size={360} x={-80} y={height - 260} duration={8000} delay={1200} />
+      </View>
+
       <TouchableOpacity 
         style={styles.backBtn}
         onPress={() => router.back()}
+        activeOpacity={0.7}
       >
         <ArrowLeft size={24} color="#0C4A6E" />
       </TouchableOpacity>
@@ -106,87 +174,118 @@ export default function ForgotPassword() {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Reset Password</Text>
-            <Text style={styles.subtitle}>Enter your details to reset your password</Text>
-          </View>
-
-          <BlurView intensity={80} tint="light" style={styles.glass}>
-            <View style={styles.inputStack}>
-                <Text style={styles.label}>Email Address</Text>
-                <View style={styles.inputContainer}>
-                  <Mail size={18} color="#94A3B8" style={styles.inputIcon} />
-                  <TextInput
-                    placeholder="Enter your email"
-                    placeholderTextColor="#94A3B8"
-                    style={styles.input}
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                  />
-                </View>
-
-                <Text style={styles.label}>New Password</Text>
-                <View style={styles.inputContainer}>
-                  <Lock size={18} color="#94A3B8" style={styles.inputIcon} />
-                  <TextInput
-                    placeholder="Enter new password"
-                    placeholderTextColor="#94A3B8"
-                    style={styles.input}
-                    secureTextEntry={!showPasswords}
-                    value={newPassword}
-                    onChangeText={setNewPassword}
-                  />
-                </View>
-
-                <Text style={styles.label}>Confirm Password</Text>
-                <View style={styles.inputContainer}>
-                  <Lock size={18} color="#94A3B8" style={styles.inputIcon} />
-                  <TextInput
-                    placeholder="Confirm new password"
-                    placeholderTextColor="#94A3B8"
-                    style={styles.input}
-                    secureTextEntry={!showPasswords}
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                  />
-                  <TouchableOpacity onPress={() => setShowPasswords(!showPasswords)} style={styles.eyeIcon}>
-                    {showPasswords ? <EyeOff size={18} color="#94A3B8" /> : <Eye size={18} color="#94A3B8" />}
-                  </TouchableOpacity>
-                </View>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <Animated.View style={[styles.main, { opacity: fadeAnim }]}>
+            <View style={styles.header}>
+              <Text style={styles.title}>New Password</Text>
+              <Text style={styles.subtitle}>Secure your account by choosing a fresh password below</Text>
             </View>
 
-            {error ? (
-              <View style={styles.errorBox}>
-                <Text style={styles.errorText}>{error}</Text>
-              </View>
-            ) : null}
+            <BlurView intensity={90} tint="light" style={styles.glass}>
+              <View style={styles.inputStack}>
+                <View style={styles.field}>
+                  <Text style={styles.label}>Registered Email</Text>
+                  <View style={styles.inputContainer}>
+                    <Mail size={18} color="#94A3B8" style={styles.inputIcon} />
+                    <TextInput
+                      placeholder="e.g. jazeera@example.com"
+                      placeholderTextColor="#94A3B8"
+                      style={styles.input}
+                      value={email}
+                      onChangeText={setEmail}
+                      autoCapitalize="none"
+                      keyboardType="email-address"
+                    />
+                  </View>
+                </View>
 
-            <TouchableOpacity 
-              style={styles.button}
-              onPress={handleReset}
-              disabled={loading}
-            >
-              <LinearGradient
-                colors={['#0284C7', '#0EA5E9']}
-                style={styles.buttonGrad}
+                <View style={styles.field}>
+                  <Text style={styles.label}>Create Password</Text>
+                  <View style={styles.inputContainer}>
+                    <Lock size={18} color="#94A3B8" style={styles.inputIcon} />
+                    <TextInput
+                      placeholder="Minimum 6 characters"
+                      placeholderTextColor="#94A3B8"
+                      style={styles.input}
+                      secureTextEntry={!showPasswords}
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>Confirm Password</Text>
+                  <View style={styles.inputContainer}>
+                    <Lock size={18} color="#94A3B8" style={styles.inputIcon} />
+                    <TextInput
+                      placeholder="Repeat your password"
+                      placeholderTextColor="#94A3B8"
+                      style={styles.input}
+                      secureTextEntry={!showPasswords}
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                    />
+                    <TouchableOpacity onPress={() => setShowPasswords(!showPasswords)} style={styles.eyeIcon}>
+                      {showPasswords ? <EyeOff size={18} color="#94A3B8" /> : <Eye size={18} color="#94A3B8" />}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
+
+              {error ? (
+                <View style={styles.errorBox}>
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              ) : null}
+
+              <TouchableOpacity 
+                style={styles.button}
+                onPress={handleReset}
+                disabled={loading}
+                activeOpacity={0.9}
               >
-                <Text style={styles.buttonText}>
-                  {loading ? 'Processing...' : 'Update Password'}
-                </Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </BlurView>
-        </View>
+                <LinearGradient
+                  colors={['#0284C7', '#0EA5E9']}
+                  style={styles.buttonGrad}
+                >
+                  <Text style={styles.buttonText}>
+                    {loading ? 'Updating...' : 'Set New Password'}
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </BlurView>
+          </Animated.View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  orb: {
+    position: 'absolute',
+    borderRadius: 999,
+    backgroundColor: '#FFFFFF',
+    opacity: 0.8,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  main: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  container: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+  },
   backBtn: {
     position: 'absolute',
     top: 60,
@@ -194,20 +293,12 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255,255,255,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   header: {
     alignItems: 'center',
@@ -224,83 +315,109 @@ const styles = StyleSheet.create({
     color: '#0369A1',
     textAlign: 'center',
     fontWeight: '600',
+    lineHeight: 20,
     paddingHorizontal: 20,
   },
   glass: {
-    borderRadius: 28,
-    padding: 22,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 32,
+    padding: 28,
+    backgroundColor: 'rgba(255,255,255,0.3)',
     borderWidth: 1.5,
     borderColor: 'rgba(255,255,255,0.6)',
+    overflow: 'hidden',
   },
-  inputStack: { gap: 12 },
+  inputStack: { gap: 16 },
+  field: { gap: 8 },
   label: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
-    color: '#0C4A6E',
-    marginTop: 4,
+    color: '#0369A1',
+    marginLeft: 4,
     textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.6)',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(148,163,184,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.8)',
+    height: 56,
   },
-  inputIcon: { marginLeft: 14 },
+  inputIcon: { marginLeft: 16 },
   input: {
     flex: 1,
-    paddingVertical: 12,
     paddingHorizontal: 12,
-    fontSize: 15,
+    fontSize: 16,
     color: '#0F172A',
-    fontWeight: '600',
+    fontWeight: '700',
   },
-  eyeIcon: { padding: 10 },
+  eyeIcon: { padding: 12 },
   button: {
-    marginTop: 24,
-    borderRadius: 16,
+    marginTop: 32,
+    borderRadius: 18,
     overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#0284C7',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   buttonGrad: {
-    paddingVertical: 14,
+    paddingVertical: 16,
     alignItems: 'center',
   },
   buttonText: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '800',
+    fontSize: 17,
+    fontWeight: '900',
+    letterSpacing: 0.5,
   },
   errorBox: {
-    marginTop: 12,
-    backgroundColor: '#FEE2E2',
-    padding: 10,
-    borderRadius: 10,
+    marginTop: 16,
+    backgroundColor: 'rgba(254,226,226,0.8)',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(220,38,38,0.2)',
   },
   errorText: {
     color: '#DC2626',
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '800',
     textAlign: 'center',
   },
   successIconBox: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
+  },
+  successIconGrad: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#16A34A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
   },
   successTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: '900',
     color: '#0C4A6E',
     textAlign: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  successText: {
-    fontSize: 14,
-    color: '#64748B',
+  successDescription: {
+    fontSize: 15,
+    color: '#475569',
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
+    lineHeight: 22,
     fontWeight: '500',
+    paddingHorizontal: 10,
   },
 });
