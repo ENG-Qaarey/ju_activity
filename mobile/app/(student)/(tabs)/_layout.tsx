@@ -97,7 +97,7 @@ export default function StudentTabsLayout() {
             <ShakingBellIcon 
               size={24} 
               color={color} 
-              dotColor="#EF4444"
+              badgeColor="#EF4444"
               route="/(student)/(tabs)/notifications"
             />
           ),

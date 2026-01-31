@@ -49,7 +49,17 @@ export const client = {
 
             return responseBody as T;
         } catch (error: any) {
-            console.error(`API Request Failed: ${method} ${url}`, error);
+            // Skip console.error for specific scenarios:
+            // 1. 404s on DELETE (often handled naturally)
+            // 2. "User not found" on profile fetch (happens after DB resets/session expiry)
+            const msg = error.message?.toLowerCase() || '';
+            const isExpected404 = method === 'DELETE' && (msg.includes('not found') || error.status === 404);
+            const isProfileFetch = endpoint.includes('/users/me');
+            const isMissingUser = msg.includes('user not found') || msg.includes('unauthorized');
+
+            if (!isExpected404 && !(isProfileFetch && isMissingUser)) {
+                console.error(`API Request Failed: ${method} ${url}`, error);
+            }
             throw error;
         }
     },

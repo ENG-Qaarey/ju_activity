@@ -1,21 +1,130 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import { Bell, Clock, Info, CheckCircle2, AlertCircle, Bookmark, ArrowLeft, Search, Filter, Trash2, MailOpen, Mail } from 'lucide-react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput, RefreshControl, Alert } from 'react-native';
+import { 
+  Bell, Clock, Info, CheckCircle2, AlertCircle, 
+  Search, Filter, Trash2, MailOpen, Mail 
+} from 'lucide-react-native';
 import { GradientBackground } from '@/src/components/GradientBackground';
 import { GlassCard } from '@/src/components/GlassCard';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { useRouter } from 'expo-router';
+import { client } from '@/src/lib/api';
+
+const safeDate = (dateVal: any) => {
+  if (!dateVal) return new Date();
+  const d = new Date(dateVal);
+  return isNaN(d.getTime()) ? new Date() : d;
+};
+
+const timeAgo = (dateVal: any) => {
+  const date = safeDate(dateVal);
+  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+  if (seconds < 30) return "just now";
+  if (seconds < 60) return seconds + "s ago";
+  
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + "y ago";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + "mo ago";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + "d ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + "h ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + "m ago";
+  return "just now";
+};
 
 export default function CoordinatorNotifications() {
   const router = useRouter();
   const colorScheme = useColorScheme() ?? 'light';
   const theme = Colors[colorScheme];
+  const [notifications, setNotifications] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [searchQuery, setSearchQuery] = React.useState('');
+
+  const fetchNotifs = async () => {
+    try {
+      const data = await client.get('/notifications');
+      setNotifications(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchNotifs();
+  }, []);
+
+  const markAllRead = async () => {
+    try {
+      await client.put('/notifications/read/all', {});
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (e) {
+      Alert.alert('Error', 'Failed to mark all as read');
+    }
+  };
+
+  const deleteNotif = (id: string) => {
+    Alert.alert(
+      'Confirm Deletion',
+      'Are you sure you want to delete this notification?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await client.delete(`/notifications/${id}`);
+              setNotifications(prev => prev.filter(n => n.id !== id));
+            } catch (error: any) {
+              if (error.message === 'Notification not found') {
+                setNotifications(prev => prev.filter(n => n.id !== id));
+              } else {
+                Alert.alert('Error', 'Failed to delete notification');
+              }
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const markRead = async (id: string, currentRead: boolean) => {
+    if (currentRead) return;
+    try {
+        await client.put(`/notifications/${id}/read`, {});
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    } catch (e) {}
+  };
+
+  const filtered = notifications.filter(n => 
+    n.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    n.message?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <GradientBackground>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
-        {/* Elite Blue Header Banner */}
+      <ScrollView 
+        style={styles.scrollView} 
+        contentContainerStyle={styles.contentContainer} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={() => {setRefreshing(true); fetchNotifs();}} 
+            tintColor={theme.primary} 
+          />
+        }
+      >
         <View style={styles.headerBanner}>
             <View style={{ flex: 1 }}>
                 <Text style={styles.bannerTitle}>Coordinator Alerts</Text>
@@ -25,18 +134,16 @@ export default function CoordinatorNotifications() {
             </View>
             <View style={styles.bellBadge}>
                 <Bell size={24} color="#FFFFFF" strokeWidth={2.5} />
-                <View style={styles.notifDot} />
+                {unreadCount > 0 && <View style={styles.notifDot} />}
             </View>
         </View>
 
-        {/* Quick Metrics Summary */}
         <View style={styles.metricsRow}>
-            <MetricItem label="Unread" value="03" color={theme.primary} theme={theme} />
-            <MetricItem label="Actions" value="12" color="#F59E0B" theme={theme} />
-            <MetricItem label="Archive" value="45" color={theme.textSecondary} theme={theme} />
+            <MetricItem label="Unread" value={unreadCount.toString().padStart(2, '0')} color={theme.primary} theme={theme} />
+            <MetricItem label="Total" value={notifications.length.toString().padStart(2, '0')} color="#F59E0B" theme={theme} />
+            <MetricItem label="Active" value="01" color={theme.textSecondary} theme={theme} />
         </View>
 
-        {/* Search & Filter Hub */}
         <View style={styles.searchRow}>
             <View style={[styles.searchContainer, { backgroundColor: theme.card, borderColor: theme.border }]}>
                 <Search size={18} color={theme.textSecondary} style={styles.searchIcon} />
@@ -44,6 +151,8 @@ export default function CoordinatorNotifications() {
                     placeholder="Search your alerts..." 
                     style={[styles.searchInput, { color: theme.text }]}
                     placeholderTextColor={theme.textSecondary}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
                 />
             </View>
             <TouchableOpacity style={[styles.filterBtn, { backgroundColor: theme.card, borderColor: theme.border }]}>
@@ -51,37 +160,26 @@ export default function CoordinatorNotifications() {
             </TouchableOpacity>
         </View>
 
-        {/* Intelligence Feed Header */}
         <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>Recent Notifications</Text>
-            <TouchableOpacity><Text style={{ color: theme.primary, fontSize: 12, fontWeight: '800' }}>Mark all read</Text></TouchableOpacity>
+            <TouchableOpacity onPress={markAllRead}>
+                <Text style={{ color: theme.primary, fontSize: 12, fontWeight: '800' }}>Mark all read</Text>
+            </TouchableOpacity>
         </View>
 
         <View style={styles.list}>
-            <CNotificationItem 
-                title="New Student Application" 
-                msg="12 new students applied for 'UI/UX Masterclass' in the last hour." 
-                time="10m ago" 
-                type="action" 
-                isUnread={true}
-                theme={theme}
-            />
-            <CNotificationItem 
-                title="Activity Proposal Approved" 
-                msg="Your 'Python for Data' proposal has been approved by Admin Hassan. It is now live for students." 
-                time="2h ago" 
-                type="success" 
-                isUnread={false}
-                theme={theme}
-            />
-            <CNotificationItem 
-                title="Platform System Update" 
-                msg="Coordinators now have access to real-time attendance export features. Check the Help Center for more info." 
-                time="Yesterday" 
-                type="info" 
-                isUnread={false}
-                theme={theme}
-            />
+            {filtered.map(item => (
+                <CNotificationItem 
+                    key={item.id}
+                    item={item}
+                    theme={theme}
+                    onDelete={() => deleteNotif(item.id)}
+                    onPress={() => markRead(item.id, item.read)}
+                />
+            ))}
+            {filtered.length === 0 && !loading && (
+                <Text style={{ textAlign: 'center', color: theme.textSecondary, marginTop: 40 }}>No notifications found.</Text>
+            )}
         </View>
       </ScrollView>
     </GradientBackground>
@@ -97,49 +195,55 @@ function MetricItem({ label, value, color, theme }: any) {
     );
 }
 
-function CNotificationItem({ title, msg, time, type, isUnread, theme }: any) {
-    const getIcon = () => {
-        switch(type) {
+function CNotificationItem({ item, theme, onDelete, onPress }: any) {
+    const getIconInfo = () => {
+        switch(item.type) {
             case 'success': return { icon: CheckCircle2, color: '#22C55E' };
-            case 'action': return { icon: AlertCircle, color: '#F59E0B' };
+            case 'error': return { icon: AlertCircle, color: '#EF4444' };
+            case 'warning': return { icon: AlertCircle, color: '#F59E0B' };
             default: return { icon: Info, color: '#0EA5E9' };
         }
     }
-    const { icon: Icon, color } = getIcon();
+    const { icon: Icon, color } = getIconInfo();
 
     return (
-        <GlassCard style={[styles.card, { borderColor: theme.border, backgroundColor: isUnread ? theme.primary + '03' : theme.card }]}>
-             <View style={styles.cardMainRow}>
-                <View style={[styles.iconBox, { backgroundColor: color + '15' }]}>
-                    <Icon size={20} color={color} />
-                </View>
-                <View style={{ flex: 1 }}>
-                    <View style={styles.cHead}>
-                        <Text style={[styles.cTitle, { color: theme.text }]} numberOfLines={1}>{title}</Text>
-                        <Text style={[styles.cTime, { color: theme.textSecondary }]}>{time}</Text>
+        <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
+            <GlassCard style={[styles.card, { borderColor: theme.border, backgroundColor: !item.read ? theme.primary + '03' : theme.card }]}>
+                <View style={styles.cardMainRow}>
+                    <View style={[styles.iconBox, { backgroundColor: color + '15' }]}>
+                        <Icon size={20} color={color} />
                     </View>
-                    <Text style={[styles.cMsg, { color: theme.textSecondary }]} numberOfLines={2}>{msg}</Text>
+                    <View style={{ flex: 1 }}>
+                        <View style={styles.cHead}>
+                            <Text style={[styles.cTitle, { color: theme.text }, !item.read && { fontWeight: '900' }]} numberOfLines={1}>{item.title}</Text>
+                            <Text style={[styles.cTime, { color: theme.textSecondary }]}>{timeAgo(new Date(item.createdAt))}</Text>
+                        </View>
+                        <Text style={[styles.cMsg, { color: theme.textSecondary }]} numberOfLines={2}>{item.message}</Text>
+                    </View>
                 </View>
-             </View>
-             
-             <View style={[styles.cardFooter, { borderTopColor: theme.border }]}>
-                <View style={styles.statusRow}>
-                    <View style={[styles.statusDot, { backgroundColor: isUnread ? theme.primary : theme.textSecondary }]} />
-                    <Text style={[styles.statusLabel, { color: isUnread ? theme.primary : theme.textSecondary }]}>
-                        {isUnread ? 'Unread' : 'Archived'}
-                    </Text>
+                
+                <View style={[styles.cardFooter, { borderTopColor: theme.border }]}>
+                    <View style={styles.statusRow}>
+                        <View style={[styles.statusDot, { backgroundColor: !item.read ? theme.primary : theme.textSecondary }]} />
+                        <Text style={[styles.statusLabel, { color: !item.read ? theme.primary : theme.textSecondary }]}>
+                            {!item.read ? 'New Alert' : 'Archived'}
+                        </Text>
+                        <Text style={{ fontSize: 10, color: theme.textSecondary, marginLeft: 4 }}>
+                            • {safeDate(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                        </Text>
+                    </View>
+                    <View style={styles.cardActions}>
+                        <TouchableOpacity style={styles.actionIcon} onPress={onPress}>
+                            {!item.read ? <MailOpen size={14} color={theme.primary} /> : <Mail size={14} color={theme.textSecondary} />}
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.actionIcon} onPress={onDelete}>
+                            <Trash2 size={14} color="#EF4444" />
+                        </TouchableOpacity>
+                    </View>
                 </View>
-                <View style={styles.cardActions}>
-                    <TouchableOpacity style={styles.actionIcon}>
-                        {isUnread ? <MailOpen size={14} color={theme.primary} /> : <Mail size={14} color={theme.textSecondary} />}
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.actionIcon}>
-                        <Trash2 size={14} color="#EF4444" />
-                    </TouchableOpacity>
-                </View>
-             </View>
-        </GlassCard>
-    )
+            </GlassCard>
+        </TouchableOpacity>
+    );
 }
 
 const styles = StyleSheet.create({

@@ -46,8 +46,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         setUser(null);
       }
-    } catch (error) {
-      console.log('AuthContext: Profile fetch failed');
+    } catch (error: any) {
+      if (error?.message !== 'User not found') {
+        console.log('AuthContext: Profile fetch failed', error?.message);
+      }
+      // If profile fetch fails (e.g., user not found after DB reset), clear the token
+      await AsyncStorage.removeItem('user_token');
       setUser(null);
     } finally {
       setLoading(false);

@@ -11,7 +11,7 @@ import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { ThemedText } from '@/src/components/themed-text';
 import { GradientBackground } from '@/src/components/GradientBackground';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { client } from '@/src/lib/api';
 import { ENDPOINTS } from '@/src/lib/config';
 import { useAuth } from '@/src/context/AuthContext';
@@ -88,11 +88,7 @@ export default function StudentDashboard() {
       shakeLoop.current.start();
   };
 
-  React.useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = React.useCallback(async () => {
     try {
         setLoading(true);
         const [actsData, appsData, attendanceData, notifsData] = await Promise.all([
@@ -130,7 +126,13 @@ export default function StudentDashboard() {
     } finally {
         setLoading(false);
     }
-  };
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+        loadDashboardData();
+    }, [loadDashboardData])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);

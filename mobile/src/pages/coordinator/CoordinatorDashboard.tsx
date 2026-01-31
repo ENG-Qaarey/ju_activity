@@ -10,7 +10,7 @@ import { ThemedText } from '@/src/components/themed-text';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '@/src/context/AuthContext';
 import { client } from '@/src/lib/api';
 
@@ -33,33 +33,7 @@ export default function CoordinatorDashboard() {
   const shakeAnim = React.useRef(new Animated.Value(0)).current;
   const shakeLoop = React.useRef<Animated.CompositeAnimation | null>(null);
 
-  React.useEffect(() => {
-    if (hasUnread) {
-        shakeLoop.current?.stop();
-        shakeLoop.current = Animated.loop(
-            Animated.sequence([
-                Animated.timing(shakeAnim, { toValue: 10, duration: 100, useNativeDriver: true }),
-                Animated.timing(shakeAnim, { toValue: -10, duration: 100, useNativeDriver: true }),
-                Animated.timing(shakeAnim, { toValue: 10, duration: 100, useNativeDriver: true }),
-                Animated.timing(shakeAnim, { toValue: 0, duration: 100, useNativeDriver: true }),
-                Animated.delay(1000) 
-            ])
-        );
-        shakeLoop.current.start();
-    } else {
-        shakeLoop.current?.stop();
-        shakeAnim.setValue(0);
-    }
-    return () => shakeLoop.current?.stop();
-  }, [hasUnread]);
-
-  React.useEffect(() => {
-    if (user?.id) {
-      loadDashboardData();
-    }
-  }, [user]);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = React.useCallback(async () => {
     try {
       setLoading(true);
       // Fetch stats
@@ -95,7 +69,35 @@ export default function CoordinatorDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user?.id) {
+        loadDashboardData();
+      }
+    }, [user?.id, loadDashboardData])
+  );
+
+  React.useEffect(() => {
+    if (hasUnread) {
+        shakeLoop.current?.stop();
+        shakeLoop.current = Animated.loop(
+            Animated.sequence([
+                Animated.timing(shakeAnim, { toValue: 10, duration: 100, useNativeDriver: true }),
+                Animated.timing(shakeAnim, { toValue: -10, duration: 100, useNativeDriver: true }),
+                Animated.timing(shakeAnim, { toValue: 10, duration: 100, useNativeDriver: true }),
+                Animated.timing(shakeAnim, { toValue: 0, duration: 100, useNativeDriver: true }),
+                Animated.delay(1000) 
+            ])
+        );
+        shakeLoop.current.start();
+    } else {
+        shakeLoop.current?.stop();
+        shakeAnim.setValue(0);
+    }
+    return () => shakeLoop.current?.stop();
+  }, [hasUnread]);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
