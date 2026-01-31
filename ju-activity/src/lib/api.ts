@@ -114,6 +114,18 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify({ credential }),
     }),
+
+  forgotPassword: (email: string) =>
+    fetchApi<{ success: boolean }>('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+
+  resetPassword: (payload: { email: string; newPassword: string }) =>
+    fetchApi<{ success: boolean }>('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
 };
 
 // Users API

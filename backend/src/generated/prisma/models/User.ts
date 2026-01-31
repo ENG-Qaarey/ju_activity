@@ -47,6 +47,8 @@ export type UserMinAggregateOutputType = {
   emailVerified: boolean | null
   emailVerificationCodeHash: string | null
   emailVerificationCodeExpiresAt: Date | null
+  resetPasswordCodeHash: string | null
+  resetPasswordCodeExpiresAt: Date | null
   passwordHash: string | null
   passwordVersion: number | null
   createdAt: Date | null
@@ -66,6 +68,8 @@ export type UserMaxAggregateOutputType = {
   emailVerified: boolean | null
   emailVerificationCodeHash: string | null
   emailVerificationCodeExpiresAt: Date | null
+  resetPasswordCodeHash: string | null
+  resetPasswordCodeExpiresAt: Date | null
   passwordHash: string | null
   passwordVersion: number | null
   createdAt: Date | null
@@ -85,6 +89,8 @@ export type UserCountAggregateOutputType = {
   emailVerified: number
   emailVerificationCodeHash: number
   emailVerificationCodeExpiresAt: number
+  resetPasswordCodeHash: number
+  resetPasswordCodeExpiresAt: number
   passwordHash: number
   passwordVersion: number
   createdAt: number
@@ -114,6 +120,8 @@ export type UserMinAggregateInputType = {
   emailVerified?: true
   emailVerificationCodeHash?: true
   emailVerificationCodeExpiresAt?: true
+  resetPasswordCodeHash?: true
+  resetPasswordCodeExpiresAt?: true
   passwordHash?: true
   passwordVersion?: true
   createdAt?: true
@@ -133,6 +141,8 @@ export type UserMaxAggregateInputType = {
   emailVerified?: true
   emailVerificationCodeHash?: true
   emailVerificationCodeExpiresAt?: true
+  resetPasswordCodeHash?: true
+  resetPasswordCodeExpiresAt?: true
   passwordHash?: true
   passwordVersion?: true
   createdAt?: true
@@ -152,6 +162,8 @@ export type UserCountAggregateInputType = {
   emailVerified?: true
   emailVerificationCodeHash?: true
   emailVerificationCodeExpiresAt?: true
+  resetPasswordCodeHash?: true
+  resetPasswordCodeExpiresAt?: true
   passwordHash?: true
   passwordVersion?: true
   createdAt?: true
@@ -258,6 +270,8 @@ export type UserGroupByOutputType = {
   emailVerified: boolean
   emailVerificationCodeHash: string | null
   emailVerificationCodeExpiresAt: Date | null
+  resetPasswordCodeHash: string | null
+  resetPasswordCodeExpiresAt: Date | null
   passwordHash: string
   passwordVersion: number
   createdAt: Date
@@ -300,6 +314,8 @@ export type UserWhereInput = {
   emailVerified?: Prisma.BoolFilter<"User"> | boolean
   emailVerificationCodeHash?: Prisma.StringNullableFilter<"User"> | string | null
   emailVerificationCodeExpiresAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  resetPasswordCodeHash?: Prisma.StringNullableFilter<"User"> | string | null
+  resetPasswordCodeExpiresAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   passwordHash?: Prisma.StringFilter<"User"> | string
   passwordVersion?: Prisma.IntFilter<"User"> | number
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -328,6 +344,8 @@ export type UserOrderByWithRelationInput = {
   emailVerified?: Prisma.SortOrder
   emailVerificationCodeHash?: Prisma.SortOrderInput | Prisma.SortOrder
   emailVerificationCodeExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  resetPasswordCodeHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  resetPasswordCodeExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   passwordVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -359,6 +377,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   emailVerified?: Prisma.BoolFilter<"User"> | boolean
   emailVerificationCodeHash?: Prisma.StringNullableFilter<"User"> | string | null
   emailVerificationCodeExpiresAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  resetPasswordCodeHash?: Prisma.StringNullableFilter<"User"> | string | null
+  resetPasswordCodeExpiresAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
   passwordHash?: Prisma.StringFilter<"User"> | string
   passwordVersion?: Prisma.IntFilter<"User"> | number
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -387,6 +407,8 @@ export type UserOrderByWithAggregationInput = {
   emailVerified?: Prisma.SortOrder
   emailVerificationCodeHash?: Prisma.SortOrderInput | Prisma.SortOrder
   emailVerificationCodeExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  resetPasswordCodeHash?: Prisma.SortOrderInput | Prisma.SortOrder
+  resetPasswordCodeExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   passwordVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -414,6 +436,8 @@ export type UserScalarWhereWithAggregatesInput = {
   emailVerified?: Prisma.BoolWithAggregatesFilter<"User"> | boolean
   emailVerificationCodeHash?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   emailVerificationCodeExpiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  resetPasswordCodeHash?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  resetPasswordCodeExpiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   passwordHash?: Prisma.StringWithAggregatesFilter<"User"> | string
   passwordVersion?: Prisma.IntWithAggregatesFilter<"User"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -433,6 +457,8 @@ export type UserCreateInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -461,6 +487,8 @@ export type UserUncheckedCreateInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -489,6 +517,8 @@ export type UserUpdateInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -517,6 +547,8 @@ export type UserUncheckedUpdateInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -545,6 +577,8 @@ export type UserCreateManyInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -564,6 +598,8 @@ export type UserUpdateManyMutationInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -583,6 +619,8 @@ export type UserUncheckedUpdateManyInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -602,6 +640,8 @@ export type UserCountOrderByAggregateInput = {
   emailVerified?: Prisma.SortOrder
   emailVerificationCodeHash?: Prisma.SortOrder
   emailVerificationCodeExpiresAt?: Prisma.SortOrder
+  resetPasswordCodeHash?: Prisma.SortOrder
+  resetPasswordCodeExpiresAt?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   passwordVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -625,6 +665,8 @@ export type UserMaxOrderByAggregateInput = {
   emailVerified?: Prisma.SortOrder
   emailVerificationCodeHash?: Prisma.SortOrder
   emailVerificationCodeExpiresAt?: Prisma.SortOrder
+  resetPasswordCodeHash?: Prisma.SortOrder
+  resetPasswordCodeExpiresAt?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   passwordVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -644,6 +686,8 @@ export type UserMinOrderByAggregateInput = {
   emailVerified?: Prisma.SortOrder
   emailVerificationCodeHash?: Prisma.SortOrder
   emailVerificationCodeExpiresAt?: Prisma.SortOrder
+  resetPasswordCodeHash?: Prisma.SortOrder
+  resetPasswordCodeExpiresAt?: Prisma.SortOrder
   passwordHash?: Prisma.SortOrder
   passwordVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -843,6 +887,8 @@ export type UserCreateWithoutAdminProfileInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -870,6 +916,8 @@ export type UserUncheckedCreateWithoutAdminProfileInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -913,6 +961,8 @@ export type UserUpdateWithoutAdminProfileInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -940,6 +990,8 @@ export type UserUncheckedUpdateWithoutAdminProfileInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -967,6 +1019,8 @@ export type UserCreateWithoutCoordinatorProfileInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -994,6 +1048,8 @@ export type UserUncheckedCreateWithoutCoordinatorProfileInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -1037,6 +1093,8 @@ export type UserUpdateWithoutCoordinatorProfileInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1064,6 +1122,8 @@ export type UserUncheckedUpdateWithoutCoordinatorProfileInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1091,6 +1151,8 @@ export type UserCreateWithoutActivitiesAsCoordinatorInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -1118,6 +1180,8 @@ export type UserUncheckedCreateWithoutActivitiesAsCoordinatorInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -1161,6 +1225,8 @@ export type UserUpdateWithoutActivitiesAsCoordinatorInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1188,6 +1254,8 @@ export type UserUncheckedUpdateWithoutActivitiesAsCoordinatorInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1215,6 +1283,8 @@ export type UserCreateWithoutApplicationsInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -1242,6 +1312,8 @@ export type UserUncheckedCreateWithoutApplicationsInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -1285,6 +1357,8 @@ export type UserUpdateWithoutApplicationsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1312,6 +1386,8 @@ export type UserUncheckedUpdateWithoutApplicationsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1339,6 +1415,8 @@ export type UserCreateWithoutNotificationsInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -1366,6 +1444,8 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -1409,6 +1489,8 @@ export type UserUpdateWithoutNotificationsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1436,6 +1518,8 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1463,6 +1547,8 @@ export type UserCreateWithoutAttendanceRecordsInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -1490,6 +1576,8 @@ export type UserUncheckedCreateWithoutAttendanceRecordsInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -1522,6 +1610,8 @@ export type UserCreateWithoutMarkedAttendanceInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -1549,6 +1639,8 @@ export type UserUncheckedCreateWithoutMarkedAttendanceInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -1592,6 +1684,8 @@ export type UserUpdateWithoutAttendanceRecordsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1619,6 +1713,8 @@ export type UserUncheckedUpdateWithoutAttendanceRecordsInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1657,6 +1753,8 @@ export type UserUpdateWithoutMarkedAttendanceInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1684,6 +1782,8 @@ export type UserUncheckedUpdateWithoutMarkedAttendanceInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1711,6 +1811,8 @@ export type UserCreateWithoutAuditLogsAsActorInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -1738,6 +1840,8 @@ export type UserUncheckedCreateWithoutAuditLogsAsActorInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -1770,6 +1874,8 @@ export type UserCreateWithoutAuditLogsAsTargetInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -1797,6 +1903,8 @@ export type UserUncheckedCreateWithoutAuditLogsAsTargetInput = {
   emailVerified?: boolean
   emailVerificationCodeHash?: string | null
   emailVerificationCodeExpiresAt?: Date | string | null
+  resetPasswordCodeHash?: string | null
+  resetPasswordCodeExpiresAt?: Date | string | null
   passwordHash: string
   passwordVersion?: number
   createdAt?: Date | string
@@ -1840,6 +1948,8 @@ export type UserUpdateWithoutAuditLogsAsActorInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1867,6 +1977,8 @@ export type UserUncheckedUpdateWithoutAuditLogsAsActorInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1905,6 +2017,8 @@ export type UserUpdateWithoutAuditLogsAsTargetInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1932,6 +2046,8 @@ export type UserUncheckedUpdateWithoutAuditLogsAsTargetInput = {
   emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
   emailVerificationCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailVerificationCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  resetPasswordCodeHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resetPasswordCodeExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   passwordVersion?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2044,6 +2160,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   emailVerified?: boolean
   emailVerificationCodeHash?: boolean
   emailVerificationCodeExpiresAt?: boolean
+  resetPasswordCodeHash?: boolean
+  resetPasswordCodeExpiresAt?: boolean
   passwordHash?: boolean
   passwordVersion?: boolean
   createdAt?: boolean
@@ -2073,6 +2191,8 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   emailVerified?: boolean
   emailVerificationCodeHash?: boolean
   emailVerificationCodeExpiresAt?: boolean
+  resetPasswordCodeHash?: boolean
+  resetPasswordCodeExpiresAt?: boolean
   passwordHash?: boolean
   passwordVersion?: boolean
   createdAt?: boolean
@@ -2092,6 +2212,8 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   emailVerified?: boolean
   emailVerificationCodeHash?: boolean
   emailVerificationCodeExpiresAt?: boolean
+  resetPasswordCodeHash?: boolean
+  resetPasswordCodeExpiresAt?: boolean
   passwordHash?: boolean
   passwordVersion?: boolean
   createdAt?: boolean
@@ -2111,13 +2233,15 @@ export type UserSelectScalar = {
   emailVerified?: boolean
   emailVerificationCodeHash?: boolean
   emailVerificationCodeExpiresAt?: boolean
+  resetPasswordCodeHash?: boolean
+  resetPasswordCodeExpiresAt?: boolean
   passwordHash?: boolean
   passwordVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "role" | "studentId" | "avatar" | "department" | "joinedAt" | "status" | "emailVerified" | "emailVerificationCodeHash" | "emailVerificationCodeExpiresAt" | "passwordHash" | "passwordVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "role" | "studentId" | "avatar" | "department" | "joinedAt" | "status" | "emailVerified" | "emailVerificationCodeHash" | "emailVerificationCodeExpiresAt" | "resetPasswordCodeHash" | "resetPasswordCodeExpiresAt" | "passwordHash" | "passwordVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   activitiesAsCoordinator?: boolean | Prisma.User$activitiesAsCoordinatorArgs<ExtArgs>
   applications?: boolean | Prisma.User$applicationsArgs<ExtArgs>
@@ -2159,6 +2283,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     emailVerified: boolean
     emailVerificationCodeHash: string | null
     emailVerificationCodeExpiresAt: Date | null
+    resetPasswordCodeHash: string | null
+    resetPasswordCodeExpiresAt: Date | null
     passwordHash: string
     passwordVersion: number
     createdAt: Date
@@ -2607,6 +2733,8 @@ export interface UserFieldRefs {
   readonly emailVerified: Prisma.FieldRef<"User", 'Boolean'>
   readonly emailVerificationCodeHash: Prisma.FieldRef<"User", 'String'>
   readonly emailVerificationCodeExpiresAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly resetPasswordCodeHash: Prisma.FieldRef<"User", 'String'>
+  readonly resetPasswordCodeExpiresAt: Prisma.FieldRef<"User", 'DateTime'>
   readonly passwordHash: Prisma.FieldRef<"User", 'String'>
   readonly passwordVersion: Prisma.FieldRef<"User", 'Int'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>

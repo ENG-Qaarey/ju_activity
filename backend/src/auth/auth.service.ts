@@ -279,4 +279,93 @@ export class AuthService {
 
     return { success: true, user: this.sanitizeUser(userForResponse), token };
   }
+
+  async forgotPassword(email: string) {
+    if (!email) {
+      throw new BadRequestException('Email is required');
+    }
+
+    const normalizedEmail = this.normalizeEmail(email);
+    const user = await this.usersService.findByEmail(normalizedEmail);
+
+    if (!user) {
+      // Don't reveal if user exists for security, but log it
+      await this.auditLogs.create({
+        action: 'PASSWORD_RESET_REQUEST_FAILURE',
+        actorId: null,
+        targetId: null,
+        entity: 'user',
+        entityId: null,
+        message: `Password reset requested for non-existent email: ${normalizedEmail}`,
+      });
+      return { success: true }; // Return success to prevent email enumeration
+    }
+
+    // Generate 6-digit code
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const resetCodeHash = await bcrypt.hash(resetCode, 10);
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetPasswordCodeHash: resetCodeHash,
+        resetPasswordCodeExpiresAt: expiresAt,
+      },
+    });
+
+    await this.auditLogs.create({
+      action: 'PASSWORD_RESET_REQUEST_SUCCESS',
+      actorId: user.id,
+      targetId: user.id,
+      entity: 'user',
+      entityId: user.id,
+      message: `Password reset code generated for ${user.email}`,
+    });
+
+    // In a real app, send email here. For now, log to console.
+    console.log('-----------------------------------------');
+    console.log(`PASSWORD RESET CODE FOR ${user.email}: ${resetCode}`);
+    console.log('-----------------------------------------');
+
+    return { success: true };
+  }
+
+  async resetPassword(payload: { email: string; newPassword: string }) {
+    const { email, newPassword } = payload;
+
+    if (!email || !newPassword) {
+      throw new BadRequestException('Missing required fields');
+    }
+
+    const normalizedEmail = this.normalizeEmail(email);
+    const user = await this.usersService.findByEmail(normalizedEmail);
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        passwordVersion: { increment: 1 },
+        resetPasswordCodeHash: null,
+        resetPasswordCodeExpiresAt: null,
+      },
+    });
+
+    await this.auditLogs.create({
+      action: 'PASSWORD_RESET_SUCCESS',
+      actorId: user.id,
+      targetId: user.id,
+      entity: 'user',
+      entityId: user.id,
+      message: `Password successfully reset (direct) for ${user.email}`,
+    });
+
+    return { success: true };
+  }
 }

@@ -84,6 +84,8 @@ model User {
   emailVerified  Boolean   @default(false)
   emailVerificationCodeHash String?
   emailVerificationCodeExpiresAt DateTime?
+  resetPasswordCodeHash String?
+  resetPasswordCodeExpiresAt DateTime?
   passwordHash   String
   passwordVersion Int      @default(0)
   createdAt      DateTime  @default(now())
