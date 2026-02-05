@@ -25,7 +25,7 @@ import Reanimated from 'react-native-reanimated';
 import { BlurView as ExpoBlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
-import { ArrowLeft, ChevronDown, Send, Paperclip, Smile, Camera, Mic, Info, MoreVertical, Play, Pause, Square, Trash2, Clock, Reply, X, Star, Pin, Share2, FilePlus, Image as ImageIcon, FileText, Download, File, User, Search, Ban, Settings, Bell, BellOff, Users, Zap, Plus } from 'lucide-react-native';
+import { ArrowLeft, ChevronDown, Send, Paperclip, Smile, Camera, Mic, Info, MoreVertical, Play, Pause, Square, Trash2, Clock, Reply, X, Star, Pin, Share2, FilePlus, Image as ImageIcon, FileText, Download, File, User, Search, Ban, Settings, Bell, BellOff, Users, Zap, Plus, Keyboard as KeyboardIcon, MapPin, Calendar, BarChart2 } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
 import { useColorScheme } from '@/src/hooks/use-color-scheme';
 import { Colors } from '@/src/data/theme';
@@ -794,8 +794,15 @@ export default function ChatScreen() {
     let interval: any;
     if (isRecording && !isPaused) {
       interval = setInterval(() => {
-        setWaveData(new Array(25).fill(0).map(() => Math.max(4, Math.random() * 24 + 4)));
-      }, 100);
+        LayoutAnimation.configureNext(LayoutAnimation.create(70, LayoutAnimation.Types.linear, LayoutAnimation.Properties.opacity));
+        setWaveData(new Array(30).fill(0).map((_, i) => {
+            const t = Date.now() / 150;
+            const wave1 = Math.sin(t + i / 5) * 8;
+            const wave2 = Math.cos(t * 1.5 - i / 3) * 5;
+            const noise = Math.random() * 4;
+            return Math.max(2, 12 + wave1 + wave2 + noise); 
+        }));
+      }, 70);
     } else if (!isRecording) {
       setWaveData(new Array(25).fill(4));
     }
@@ -1064,6 +1071,31 @@ export default function ChatScreen() {
       console.error('File upload failed', err);
       // Mark as failed in UI
       Alert.alert('Upload Failed', 'There was an error uploading your file. Please try again.');
+    }
+  };
+
+  const handleCamera = async () => {
+    try {
+      setShowAttachmentMenu(false);
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      
+      if (permission.status !== 'granted') {
+          Alert.alert('Permission needed', 'Camera permission is required to take photos.');
+          return;
+      }
+      
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images', 'videos'],
+        allowsEditing: false,
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        uploadAndSendMessage(asset.uri, asset.type === 'video' ? 'video' as any : 'image');
+      }
+    } catch (err) {
+      console.error('Camera launch failed', err);
     }
   };
 
@@ -1586,9 +1618,21 @@ export default function ChatScreen() {
           <View style={styles.inputActionsRow}>
             <TouchableOpacity 
               style={styles.plusBtn}
-              onPress={() => setShowAttachmentMenu(!showAttachmentMenu)}
+              onPress={() => {
+                if (showAttachmentMenu) {
+                   setShowAttachmentMenu(false);
+                   // Optionally focus input here if ref is available
+                } else {
+                   Keyboard.dismiss();
+                   setTimeout(() => setShowAttachmentMenu(true), 50);
+                }
+              }}
             >
-              <Plus size={26} color={theme.primary} />
+              {showAttachmentMenu ? (
+                <KeyboardIcon size={26} color={theme.text} />
+              ) : (
+                <Plus size={26} color={theme.primary} />
+              )}
             </TouchableOpacity>
 
             {isRecording ? (
@@ -1607,8 +1651,8 @@ export default function ChatScreen() {
                             style={[
                               styles.liveWaveBar, 
                               { 
-                                height: isPaused ? 4 : height,
-                                backgroundColor: theme.textSecondary 
+                                height: isPaused ? 2 : height,
+                                backgroundColor: isPaused ? '#475569' : '#E2E8F0',
                               }
                             ]} 
                           />
@@ -1619,23 +1663,23 @@ export default function ChatScreen() {
                 {/* Bottom Row: Controls */}
                 <View style={styles.recordingBottomRow}>
                     <TouchableOpacity onPress={() => stopRecording(false)} style={styles.recordActionBtn}>
-                      <Trash2 size={24} color={theme.text} />
+                      <Trash2 size={24} color="#CBD5E1" />
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={togglePause} style={styles.recordPauseBtn}>
                        {isPaused ? (
-                          <View style={styles.resumeCircle}>
-                             <View style={styles.resumeTriangle} />
+                          <View style={[styles.resumeCircle, { backgroundColor: 'transparent', borderWidth: 2, borderColor: '#EF4444' }]}>
+                             <Mic size={20} color="#EF4444" />
                           </View>
                        ) : (
-                          <View style={styles.pauseCircle}>
-                             <Pause size={18} color="#EF4444" fill="#EF4444" />
+                          <View style={[styles.pauseCircle, { backgroundColor: 'transparent', borderWidth: 2, borderColor: '#EF4444' }]}>
+                             <Pause size={20} color="#EF4444" fill="#EF4444" />
                           </View>
                        )}
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => stopRecording(true)} style={styles.recordSendBtn}>
-                      <Send size={20} color="#FFF" />
+                    <TouchableOpacity onPress={() => stopRecording(true)} style={[styles.recordSendBtn, { backgroundColor: '#FFF', width: 48, height: 48, borderRadius: 24 }]}>
+                      <Send size={22} color="#000" fill="#000" />
                     </TouchableOpacity>
                 </View>
               </View>
@@ -1655,7 +1699,7 @@ export default function ChatScreen() {
 
                 {!inputText.trim() ? (
                   <View style={styles.inputRightActions}>
-                    <TouchableOpacity style={styles.inputActionBtn}>
+                    <TouchableOpacity style={styles.inputActionBtn} onPress={handleCamera}>
                       <Camera size={24} color={theme.primary} />
                     </TouchableOpacity>
                     <TouchableOpacity 
@@ -1675,6 +1719,32 @@ export default function ChatScreen() {
           </View>
         </View>
       </KeyboardAvoidingView>
+
+      {showAttachmentMenu && (
+        <View style={[styles.attachmentGrid, { backgroundColor: theme.card }]}>
+          {[
+            { id: 'camera', label: 'Camera', icon: Camera, color: '#EC407A', onPress: handleCamera },
+            { id: 'photos', label: 'Photos', icon: ImageIcon, color: '#AB47BC', onPress: handlePickImage },
+            { id: 'document', label: 'Document', icon: FileText, color: '#5C6BC0', onPress: handlePickDocument },
+            { id: 'location', label: 'Location', icon: MapPin, color: '#26A69A', onPress: () => {} },
+            { id: 'contact', label: 'Contact', icon: User, color: '#42A5F5', onPress: () => {} },
+            { id: 'poll', label: 'Poll', icon: BarChart2, color: '#FBC02D', onPress: () => {} },
+            { id: 'event', label: 'Event', icon: Calendar, color: '#EF5350', onPress: () => {} },
+            { id: 'quick', label: 'Quick replies', icon: Zap, color: '#FF9800', onPress: () => {} },
+          ].map((item, index) => (
+            <TouchableOpacity key={item.id} style={styles.gridItem} onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              item.onPress();
+              setShowAttachmentMenu(false);
+            }}>
+              <View style={[styles.iconCircle, { backgroundColor: item.color }]}>
+                <item.icon size={26} color="#FFF" />
+              </View>
+              <Text style={[styles.gridLabel, { color: theme.text }]}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
       {/* Header Options Menu Modal */}
       <Modal
@@ -1813,42 +1883,6 @@ export default function ChatScreen() {
         </TouchableOpacity>
       </Modal>
 
-      {/* Attachment Menu */}
-      {showAttachmentMenu && (
-        <>
-          <TouchableOpacity 
-            style={styles.menuOverlay} 
-            activeOpacity={1} 
-            onPress={() => setShowAttachmentMenu(false)}
-          />
-          <View style={[styles.attachmentMenu, { backgroundColor: theme.card, borderColor: theme.border }]}>
-            <TouchableOpacity 
-              style={styles.menuItem} 
-              onPress={handlePickDocument}
-            >
-              <View style={[styles.menuIconCircle, { backgroundColor: '#3B82F6' }]}>
-                <FilePlus size={20} color="#FFF" />
-              </View>
-              <Text style={[styles.menuItemText, { color: theme.text }]}>Add file</Text>
-            </TouchableOpacity>
-
-            <View style={[styles.menuDivider, { backgroundColor: theme.border }]} />
-
-            <TouchableOpacity 
-              style={styles.menuItem} 
-              onPress={handlePickImage}
-            >
-              <View style={[styles.menuIconCircle, { backgroundColor: '#10B981' }]}>
-                <FileText size={20} color="#FFF" />
-              </View>
-              <View>
-                <Text style={[styles.menuItemText, { color: theme.text }]}>Upload / attach document</Text>
-                <Text style={[styles.menuItemSubtext, { color: theme.textSecondary }]}>Images, PDFs, files, etc.</Text>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </>
-      )}
 
       {/* Full Screen Image Viewer */}
       <Modal
@@ -2418,9 +2452,12 @@ const styles = StyleSheet.create({
   },
   recordingTimerText: {
     fontSize: 24,
-    fontWeight: '300',
-    marginRight: 20,
-    fontVariant: ['tabular-nums'],
+    fontWeight: '400', // Monospace usually needs normal weight
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    width: 80, 
+    textAlign: 'left',
+    marginRight: 6,
+    color: '#F1F5F9',
   },
   liveWaveform: {
     flex: 1,
@@ -2431,8 +2468,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   liveWaveBar: {
-    width: 3,
-    borderRadius: 1.5,
+    width: 2,
+    borderRadius: 1,
+    marginHorizontal: 1,
   },
   recordingBottomRow: {
     flexDirection: 'row',
@@ -2447,50 +2485,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   recordPauseBtn: {
-    width: 56,
-    height: 56,
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
   },
   pauseCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: '#EF4444',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#EF4444',
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 4, elevation: 2
   },
   resumeCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: '#EF4444',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent',
-  },
-  resumeTriangle: {
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
-    borderLeftWidth: 14,
-    borderRightWidth: 0,
-    borderBottomWidth: 10,
-    borderTopWidth: 10,
-    borderLeftColor: '#EF4444',
-    borderRightColor: 'transparent',
-    borderBottomColor: 'transparent',
-    borderTopColor: 'transparent',
-    marginLeft: 4, 
   },
 
   recordSendBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#0F172A', // Dark/Black color
     justifyContent: 'center',
     alignItems: 'center',
@@ -2991,5 +3012,38 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     letterSpacing: 0.5,
+  },
+  // Attachment Menu Grid Styles
+  attachmentGrid: {
+    width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+    minHeight: 330,
+    paddingBottom: 40,
+  },
+  gridItem: {
+    width: '25%', 
+    alignItems: 'center',
+    marginVertical: 12,
+  },
+  iconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  gridLabel: {
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '500',
   },
 });
