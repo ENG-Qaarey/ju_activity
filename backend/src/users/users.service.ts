@@ -70,6 +70,120 @@ export class UsersService {
     });
   }
 
+  async getChatDirectory(excludeUserId: string, search?: string) {
+    // Get the requesting user's activities to filter visibility
+    const currentUser = await this.prisma.user.findUnique({
+      where: { id: excludeUserId },
+      select: {
+        role: true,
+        applications: {
+          where: { status: 'approved' },
+          select: { activityId: true }
+        },
+        activitiesAsCoordinator: {
+          select: { id: true }
+        }
+      }
+    });
+
+    if (!currentUser) throw new NotFoundException('User not found');
+
+    const myActivityIds = [
+      ...currentUser.applications.map(a => a.activityId),
+      ...currentUser.activitiesAsCoordinator.map(a => a.id)
+    ];
+
+    const where: any = {
+      id: { not: excludeUserId },
+      status: 'active',
+    };
+
+    // If student, restrict visibility to shared activities or admins
+    if (currentUser.role === 'student') {
+      const visibilityFilter = {
+        OR: [
+          { role: 'admin' },
+          {
+            applications: {
+              some: {
+                activityId: { in: myActivityIds },
+                status: 'approved'
+              }
+            }
+          },
+          {
+            activitiesAsCoordinator: {
+              some: {
+                id: { in: myActivityIds }
+              }
+            }
+          }
+        ]
+      };
+
+      if (search) {
+        where.AND = [
+          visibilityFilter,
+          {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' } },
+              { email: { contains: search, mode: 'insensitive' } },
+            ]
+          }
+        ];
+      } else {
+        Object.assign(where, visibilityFilter);
+      }
+    } else if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    return this.prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+        role: true,
+        applications: {
+          where: {
+            status: 'approved',
+            // For students, only show applications to activities they share
+            ...(currentUser.role === 'student' ? { activityId: { in: myActivityIds } } : {})
+          },
+          select: {
+            activityId: true,
+            activity: {
+              select: {
+                title: true,
+                image: true,
+              }
+            }
+          }
+        },
+        activitiesAsCoordinator: {
+          where: {
+            // For students, only show activities they share
+            ...(currentUser.role === 'student' ? { id: { in: myActivityIds } } : {})
+          },
+          select: {
+            id: true,
+            title: true,
+            image: true,
+          }
+        }
+      },
+      orderBy: {
+        name: 'asc',
+      },
+      take: 100,
+    });
+  }
+
   async findOne(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },

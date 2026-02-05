@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -14,6 +14,7 @@ import { CoordinatorsModule } from './coordinators/coordinators.module';
 import { AuthzModule } from './authz/authz.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { CategoriesModule } from './categories/categories.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -30,8 +31,18 @@ import { CategoriesModule } from './categories/categories.module';
     CoordinatorsModule,
     AuditLogsModule,
     CategoriesModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply((req, res, next) => {
+        console.log(`Incoming Request: ${req.method} ${req.url}`);
+        next();
+      })
+      .forRoutes('*');
+  }
+}

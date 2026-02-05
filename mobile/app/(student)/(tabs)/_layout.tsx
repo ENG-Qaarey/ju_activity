@@ -8,6 +8,8 @@ import { Image } from 'expo-image';
 import { useAuth } from '@/src/context/AuthContext';
 import { IMAGE_BASE } from '@/src/lib/config';
 import { ShakingBellIcon } from '@/src/components/ShakingBellIcon';
+import { ChatIcon } from '@/src/components/ChatIcon';
+import { getAvatarUrl } from '@/src/lib/media';
 
 export default function StudentTabsLayout() {
   const { user } = useAuth();
@@ -21,7 +23,7 @@ export default function StudentTabsLayout() {
         headerLeft: () => (
           <View style={styles.headerLeftContainer}>
              <Image 
-              source={{ uri: user?.avatar ? (user.avatar.startsWith('http') ? user.avatar : `${IMAGE_BASE}${user.avatar}`) : 'https://github.com/shadcn.png' }} 
+              source={getAvatarUrl(user?.avatar)} 
               style={[styles.headerAvatar, { borderColor: theme.border }]} 
             />
             <View style={styles.profileTextContainer}>
@@ -36,9 +38,11 @@ export default function StudentTabsLayout() {
         headerTitle: '',
         headerRight: () => (
           <View style={styles.headerIcons}>
-            <TouchableOpacity style={[styles.headerIconBtn, { backgroundColor: theme.background }]}>
-              <MessageCircle size={20} color={theme.icon} />
-            </TouchableOpacity>
+            <ChatIcon 
+              size={20} 
+              color={theme.icon} 
+              backgroundColor={theme.background}
+            />
           </View>
         ),
         headerStyle: {
