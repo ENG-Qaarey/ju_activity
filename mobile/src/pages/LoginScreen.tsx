@@ -66,7 +66,14 @@ function FloatingOrb({ size, x, y, duration, delay }: any) {
   );
 }
 
-  export default function Login() {
+  /**
+ * Render the login screen and manage the complete user authentication flow.
+ *
+ * Performs client-side validation (email presence and must end with `@gmail.com`, password presence), displays toast feedback, calls the authentication API, persists the auth token and last-login/current-user info in AsyncStorage, updates global auth/profile/theme state, and navigates to a role-specific route on success.
+ *
+ * @returns The React element tree for the login screen.
+ */
+export default function Login() {
   const { refreshTheme } = useTheme();
   const { setUser, refreshProfile } = useAuth();
   const { showToast } = useToast();
@@ -182,7 +189,8 @@ function FloatingOrb({ size, x, y, duration, delay }: any) {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         <Animated.ScrollView
           keyboardShouldPersistTaps="handled"
